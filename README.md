@@ -6,7 +6,10 @@ into playlists** that you can play right inside the app.
 - Sign in with **Google** or **Facebook**
 - Search YouTube for music videos and save them to your personal library
 - Create playlists, drag songs into them, and reorder with drag & drop
-- Play any saved song in an embedded YouTube player
+- Play a single song or a whole playlist with a persistent player
+- Switch between **Normal** and **Compact** views
+  - *Normal*: thumbnail cards with the video visible
+  - *Compact*: single-line, audio-only rows (no video, no thumbnails)
 - Works on desktop and mobile
 
 Everything runs on **free tiers**: Next.js on Vercel + Supabase (Postgres &
@@ -73,10 +76,14 @@ different, and you need both.
 │   │       ├── dashboard/page.tsx    # Search + library + playlists
 │   │       └── playlists/[id]/page.tsx # One playlist + player + reordering
 │   ├── components/                   # React components (cards, search, panels…)
+│   │   ├── PlayerEngine.tsx          # The single YouTube player instance
+│   │   └── NowPlayingBar.tsx         # Bottom playback bar (video or audio only)
 │   └── lib/
 │       ├── supabase/                 # Supabase clients (browser, server, middleware)
 │       ├── database.types.ts         # TypeScript types for the database
 │       ├── oauth.ts                  # ⭐ List of login providers
+│       ├── player.tsx                # Playback/queue state for the whole app
+│       ├── view-mode.tsx             # Normal vs compact mode (persisted)
 │       ├── youtube.ts                # YouTube API helper (server only)
 │       └── ...
 └── .env.local.example                # Copy to .env.local and fill in
@@ -327,6 +334,19 @@ Duplicates are impossible by design:
 - On a playlist page, songs are a **sortable list** — dragging a row updates the
   `position` column so your order is saved.
 
+### Player and view modes
+
+- A single YouTube player instance lives in the persistent bottom bar
+  (`src/components/PlayerEngine.tsx`) so music keeps playing while you move
+  between the dashboard and playlist pages.
+- **Normal mode** shows the video in that bar. **Compact mode** collapses the
+  video to a 1x1 px element, so only the audio plays.
+- Play buttons exist on every saved song and on every playlist. Playing a
+  playlist turns the playlist card into a scrollable queue that keeps the
+  current song centred (about five songs are visible at a time).
+- When a song ends, the player automatically advances to the next one in the
+  queue. The chosen view mode is remembered in `localStorage`.
+
 ### Scripts
 
 ```bash
@@ -374,6 +394,7 @@ The login page, the callback route and the profile trigger all work unchanged.
 | YouTube search returns an error / 429 | Your API key is wrong, the YouTube Data API v3 isn't enabled, or you hit the daily quota (10,000 units/day on the free tier; each search uses ~101). |
 | Songs or playlists don't show up | Re-run the migration. If you skipped RLS, the row insert will fail; if RLS is on but policies are missing, reads return nothing. |
 | `new row violates row-level security policy` | You ran part of the migration only. Run the whole SQL file again — it is safe to re-run. |
+| "This video can't be played in the app" | The video's owner has disabled embedding. Try a different result. |
 
 ---
 

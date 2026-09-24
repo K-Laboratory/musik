@@ -21,16 +21,10 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import { useData } from "@/components/DataProvider";
-import {
-  AlertIcon,
-  ListIcon,
-  PlayIcon,
-  PlusIcon,
-  TrashIcon,
-} from "@/components/Icons";
+import { AlertIcon, ListIcon, PlusIcon, TrashIcon } from "@/components/Icons";
 import { SortableSongRow } from "@/components/SongCard";
-import { YouTubePlayer } from "@/components/YouTubePlayer";
 import { getErrorMessage } from "@/lib/errors";
+import { usePlayer } from "@/lib/player";
 import type { PlaylistSong, Song } from "@/lib/types";
 
 interface PlaylistItem {
@@ -41,12 +35,14 @@ interface PlaylistItem {
 function PlaylistSongItem({
   item,
   active,
-  onPlay,
+  playing,
+  onTogglePlay,
   onRemove,
 }: {
   item: PlaylistItem;
   active: boolean;
-  onPlay: () => void;
+  playing: boolean;
+  onTogglePlay: () => void;
   onRemove: () => void;
 }) {
   const sortable = useSortable({ id: item.entry.id });
@@ -56,26 +52,18 @@ function PlaylistSongItem({
       song={item.song}
       sortable={sortable}
       active={active}
-      onSelect={onPlay}
+      playing={playing}
+      onTogglePlay={onTogglePlay}
+      onSelect={onTogglePlay}
       actions={
-        <>
-          <button
-            type="button"
-            aria-label={`Play ${item.song.title}`}
-            onClick={onPlay}
-            className="rounded-md p-1.5 text-slate-300 transition hover:bg-violet-500/15 hover:text-violet-200"
-          >
-            <PlayIcon className="h-4 w-4" />
-          </button>
-          <button
-            type="button"
-            aria-label={`Remove ${item.song.title} from playlist`}
-            onClick={onRemove}
-            className="rounded-md p-1.5 text-slate-400 transition hover:bg-red-500/10 hover:text-red-300"
-          >
-            <TrashIcon className="h-4 w-4" />
-          </button>
-        </>
+        <button
+          type="button"
+          aria-label={`Remove ${item.song.title} from playlist`}
+          onClick={onRemove}
+          className="rounded-md p-1.5 text-slate-400 transition hover:bg-red-500/10 hover:text-red-300"
+        >
+          <TrashIcon className="h-4 w-4" />
+        </button>
       }
     />
   );
@@ -93,7 +81,7 @@ export function PlaylistDetailClient({ playlistId }: { playlistId: string }) {
     notify,
   } = useData();
 
-  const [activeVideoId, setActiveVideoId] = useState<string | null>(null);
+  const { playPlaylist, toggle, currentSong, isPlaying } = usePlayer();
   const [showLibrary, setShowLibrary] = useState(false);
 
   const playlist = playlists.find((item) => item.id === playlistId) ?? null;
@@ -111,10 +99,6 @@ export function PlaylistDetailClient({ playlistId }: { playlistId: string }) {
       .filter((item): item is PlaylistItem => Boolean(item.song));
   }, [playlistSongs, songs, playlistId]);
 
-  const activeSong =
-    items.find((item) => item.song.youtube_video_id === activeVideoId)?.song ??
-    null;
-
   const availableSongs = useMemo(() => {
     const inPlaylist = new Set(items.map((item) => item.song.id));
     return songs.filter((song) => !inPlaylist.has(song.id));
@@ -127,6 +111,14 @@ export function PlaylistDetailClient({ playlistId }: { playlistId: string }) {
     }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
+
+  function playFrom(index: number) {
+    playPlaylist(
+      playlistId,
+      items.map((item) => item.song),
+      index,
+    );
+  }
 
   async function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
@@ -150,9 +142,6 @@ export function PlaylistDetailClient({ playlistId }: { playlistId: string }) {
   async function handleRemove(item: PlaylistItem) {
     try {
       await removeSongFromPlaylist(item.entry.id);
-      if (activeVideoId === item.song.youtube_video_id) {
-        setActiveVideoId(null);
-      }
     } catch (err) {
       notify(getErrorMessage(err, "Could not remove the song."), "error");
     }
@@ -200,6 +189,10 @@ export function PlaylistDetailClient({ playlistId }: { playlistId: string }) {
     );
   }
 
+  const playlistIsPlaying = items.some(
+    (item) => item.song.id === currentSong?.id,
+  );
+
   return (
     <div className="space-y-6">
       <div>
@@ -213,8 +206,8 @@ export function PlaylistDetailClient({ playlistId }: { playlistId: string }) {
           <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-600/15 text-violet-300">
             <ListIcon className="h-5 w-5" />
           </span>
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-white">
+          <div className="min-w-0 flex-1">
+            <h1 className="truncate text-2xl font-semibold tracking-tight text-white">
               {playlist.name}
             </h1>
             <p className="text-sm text-slate-400">
@@ -222,15 +215,19 @@ export function PlaylistDetailClient({ playlistId }: { playlistId: string }) {
               handle to reorder
             </p>
           </div>
+          {items.length > 0 && (
+            <button
+              type="button"
+              onClick={() =>
+                playlistIsPlaying && isPlaying ? toggle() : playFrom(0)
+              }
+              className="flex items-center gap-2 rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-violet-500"
+            >
+              {playlistIsPlaying && isPlaying ? "Pause" : "Play all"}
+            </button>
+          )}
         </div>
       </div>
-
-      {activeSong && (
-        <YouTubePlayer
-          videoId={activeSong.youtube_video_id}
-          title={activeSong.title}
-        />
-      )}
 
       {items.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-slate-800 px-6 py-12 text-center">
@@ -250,18 +247,20 @@ export function PlaylistDetailClient({ playlistId }: { playlistId: string }) {
             strategy={verticalListSortingStrategy}
           >
             <ul className="space-y-2.5">
-              {items.map((item) => (
-                <li key={item.entry.id}>
-                  <PlaylistSongItem
-                    item={item}
-                    active={
-                      activeSong?.youtube_video_id === item.song.youtube_video_id
-                    }
-                    onPlay={() => setActiveVideoId(item.song.youtube_video_id)}
-                    onRemove={() => void handleRemove(item)}
-                  />
-                </li>
-              ))}
+              {items.map((item, index) => {
+                const isCurrent = currentSong?.id === item.song.id;
+                return (
+                  <li key={item.entry.id}>
+                    <PlaylistSongItem
+                      item={item}
+                      active={isCurrent}
+                      playing={isCurrent && isPlaying}
+                      onTogglePlay={() => (isCurrent ? toggle() : playFrom(index))}
+                      onRemove={() => void handleRemove(item)}
+                    />
+                  </li>
+                );
+              })}
             </ul>
           </SortableContext>
         </DndContext>

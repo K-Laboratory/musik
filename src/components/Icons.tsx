@@ -193,3 +193,60 @@ export function SpinnerIcon(props: IconProps) {
     </svg>
   );
 }
+
+export function PauseIcon(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
+      <path fill="currentColor" d="M7 5h4v14H7zM13 5h4v14h-4z" />
+    </svg>
+  );
+}
+
+export function SkipNextIcon(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
+      <path fill="currentColor" d="M6 5v14l10-7z" />
+      <path fill="currentColor" d="M16 5h2.5v14H16z" />
+    </svg>
+  );
+}
+
+export function SkipPreviousIcon(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
+      <path fill="currentColor" d="M18 5v14L8 12z" />
+      <path fill="currentColor" d="M5.5 5H8v14H5.5z" />
+    </svg>
+  );
+}
+
+export function GridIcon(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" {...base} aria-hidden="true" {...props}>
+      <rect x="3" y="3" width="7.5" height="7.5" rx="1.5" />
+      <rect x="13.5" y="3" width="7.5" height="7.5" rx="1.5" />
+      <rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5" />
+      <rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.5" />
+    </svg>
+  );
+}
+
+export function RowsIcon(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" {...base} aria-hidden="true" {...props}>
+      <path d="M4 6h16M4 12h16M4 18h16" />
+    </svg>
+  );
+}
+
+export function EqualizerIcon(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
+      <path
+        fill="currentColor"
+        d="M4 14h2.5v6H4zM10.75 8h2.5v12h-2.5zM17.5 4H20v16h-2.5z"
+      />
+    </svg>
+  );
+}
+

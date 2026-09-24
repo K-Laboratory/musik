@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { AppShell } from "@/components/AppShell";
 import { DataProvider } from "@/components/DataProvider";
 import { SetupNotice } from "@/components/SetupNotice";
+import { PlayerProvider } from "@/lib/player";
+import { ViewModeProvider } from "@/lib/view-mode";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
 
@@ -30,7 +32,11 @@ export default async function AppLayout({
 
   return (
     <DataProvider user={user}>
-      <AppShell>{children}</AppShell>
+      <ViewModeProvider>
+        <PlayerProvider>
+          <AppShell>{children}</AppShell>
+        </PlayerProvider>
+      </ViewModeProvider>
     </DataProvider>
   );
 }

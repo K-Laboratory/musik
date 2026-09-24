@@ -19,7 +19,9 @@ import { PlaylistPanel } from "@/components/PlaylistPanel";
 import { DraggableSongCard, SongCardVisual } from "@/components/SongCard";
 import { SongSearch } from "@/components/SongSearch";
 import { getErrorMessage } from "@/lib/errors";
+import { usePlayer } from "@/lib/player";
 import type { Song } from "@/lib/types";
+import { useViewMode } from "@/lib/view-mode";
 
 export function DashboardClient() {
   const {
@@ -32,6 +34,8 @@ export function DashboardClient() {
     notify,
   } = useData();
 
+  const { playSong, toggle, isCurrentSong, isPlaying } = usePlayer();
+  const { mode } = useViewMode();
   const [activeSong, setActiveSong] = useState<Song | null>(null);
 
   const sensors = useSensors(
@@ -139,7 +143,10 @@ export function DashboardClient() {
             )}
 
             {loading && songs.length === 0 ? (
-              <div className="grid gap-2.5 sm:grid-cols-2" aria-hidden="true">
+              <div
+                className={`grid gap-2.5 ${mode === "compact" ? "" : "sm:grid-cols-2"}`}
+                aria-hidden="true"
+              >
                 {Array.from({ length: 4 }).map((_, index) => (
                   <div
                     key={index}
@@ -160,24 +167,30 @@ export function DashboardClient() {
                 </p>
               </div>
             ) : (
-              <ul className="grid gap-2.5 sm:grid-cols-2">
-                {songs.map((song) => (
-                  <li key={song.id}>
-                    <DraggableSongCard
-                      song={song}
-                      actions={
-                        <button
-                          type="button"
-                          aria-label={`Remove ${song.title} from library`}
-                          onClick={() => void handleRemoveSong(song)}
-                          className="rounded-md p-1.5 text-slate-400 transition hover:bg-red-500/10 hover:text-red-300"
-                        >
-                          <TrashIcon className="h-4 w-4" />
-                        </button>
-                      }
-                    />
-                  </li>
-                ))}
+              <ul className={`grid gap-2.5 ${mode === "compact" ? "" : "sm:grid-cols-2"}`}>
+                {songs.map((song) => {
+                  const current = isCurrentSong(song.id);
+                  return (
+                    <li key={song.id}>
+                      <DraggableSongCard
+                        song={song}
+                        active={current}
+                        playing={current && isPlaying}
+                        onTogglePlay={() => (current ? toggle() : playSong(song))}
+                        actions={
+                          <button
+                            type="button"
+                            aria-label={`Remove ${song.title} from library`}
+                            onClick={() => void handleRemoveSong(song)}
+                            className="rounded-md p-1.5 text-slate-400 transition hover:bg-red-500/10 hover:text-red-300"
+                          >
+                            <TrashIcon className="h-4 w-4" />
+                          </button>
+                        }
+                      />
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </section>
@@ -188,9 +201,10 @@ export function DashboardClient() {
 
       <DragOverlay dropAnimation={null}>
         {activeSong ? (
-          <div className="w-72 cursor-grabbing">
+          <div className="w-80 cursor-grabbing">
             <SongCardVisual
               song={activeSong}
+              variant={mode}
               className="border-violet-500/60 shadow-2xl shadow-violet-900/40"
             />
           </div>

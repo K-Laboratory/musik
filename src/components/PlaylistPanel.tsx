@@ -2,29 +2,35 @@
 
 import { useDroppable } from "@dnd-kit/core";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { useData } from "@/components/DataProvider";
 import {
   CheckIcon,
   CloseIcon,
+  EqualizerIcon,
   ListIcon,
+  PauseIcon,
   PencilIcon,
+  PlayIcon,
   PlusIcon,
   TrashIcon,
 } from "@/components/Icons";
 import { getErrorMessage } from "@/lib/errors";
-import type { Playlist } from "@/lib/types";
+import { usePlayer } from "@/lib/player";
+import type { Playlist, PlaylistSong, Song } from "@/lib/types";
 
-/** A single playlist card that acts as a drop target for song cards. */
+/** A single playlist card that acts as a drop target and has a play button. */
 export function PlaylistCard({
   playlist,
-  songCount,
+  songs,
 }: {
   playlist: Playlist;
-  songCount: number;
+  songs: Song[];
 }) {
   const { renamePlaylist, deletePlaylist, notify } = useData();
+  const { playPlaylist, toggle, isPlaylistPlaying, isPlaying, currentSong } =
+    usePlayer();
   const { setNodeRef, isOver } = useDroppable({
     id: `playlist-${playlist.id}`,
     data: { type: "playlist", playlistId: playlist.id },
@@ -33,6 +39,29 @@ export function PlaylistCard({
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(playlist.name);
   const [busy, setBusy] = useState(false);
+
+  const listRef = useRef<HTMLUListElement>(null);
+  const activeItemRef = useRef<HTMLLIElement>(null);
+
+  const isActive = isPlaylistPlaying(playlist.id);
+  const isExpanded = isActive && songs.length > 0;
+
+  // Keep the playing song centred in the (scrollable) expanded list.
+  useEffect(() => {
+    if (!isExpanded) return;
+    const container = listRef.current;
+    const item = activeItemRef.current;
+    if (!container || !item) return;
+
+    const containerRect = container.getBoundingClientRect();
+    const itemRect = item.getBoundingClientRect();
+    const delta =
+      itemRect.top -
+      containerRect.top -
+      container.clientHeight / 2 +
+      item.clientHeight / 2;
+    container.scrollTop += delta;
+  }, [isExpanded, currentSong?.id]);
 
   async function saveName() {
     const trimmed = draft.trim();
@@ -80,9 +109,34 @@ export function PlaylistCard({
       }`}
     >
       <div className="flex items-center gap-2">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-violet-600/15 text-violet-300">
-          <ListIcon className="h-4 w-4" />
-        </span>
+        {songs.length > 0 ? (
+          <button
+            type="button"
+            onClick={() =>
+              isActive ? toggle() : playPlaylist(playlist.id, songs)
+            }
+            aria-label={
+              isActive && isPlaying
+                ? `Pause ${playlist.name}`
+                : `Play ${playlist.name}`
+            }
+            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition ${
+              isActive && isPlaying
+                ? "bg-violet-500 text-white"
+                : "bg-violet-600/15 text-violet-300 hover:bg-violet-600 hover:text-white"
+            }`}
+          >
+            {isActive && isPlaying ? (
+              <PauseIcon className="h-4 w-4" />
+            ) : (
+              <PlayIcon className="h-4 w-4" />
+            )}
+          </button>
+        ) : (
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-800 text-slate-500">
+            <ListIcon className="h-4 w-4" />
+          </span>
+        )}
 
         {editing ? (
           <form
@@ -135,7 +189,7 @@ export function PlaylistCard({
               {playlist.name}
             </p>
             <p className="text-xs text-slate-400">
-              {songCount} {songCount === 1 ? "song" : "songs"}
+              {songs.length} {songs.length === 1 ? "song" : "songs"}
             </p>
           </Link>
         )}
@@ -165,15 +219,83 @@ export function PlaylistCard({
           </div>
         )}
       </div>
+
+      {isExpanded && (
+        <ul
+          ref={listRef}
+          className="mt-2 max-h-44 space-y-0.5 overflow-y-auto pr-0.5"
+        >
+          {songs.map((song, index) => {
+            const isCurrent = currentSong?.id === song.id;
+            return (
+              <li
+                key={song.id}
+                ref={isCurrent ? activeItemRef : undefined}
+              >
+                <button
+                  type="button"
+                  onClick={() => playPlaylist(playlist.id, songs, index)}
+                  className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition ${
+                    isCurrent
+                      ? "bg-violet-500/20 text-violet-100"
+                      : "text-slate-300 hover:bg-slate-800 hover:text-white"
+                  }`}
+                >
+                  <span className="flex w-4 shrink-0 items-center justify-center text-slate-500">
+                    {isCurrent && isPlaying ? (
+                      <EqualizerIcon className="h-3 w-3 text-violet-300" />
+                    ) : (
+                      index + 1
+                    )}
+                  </span>
+                  <span className="min-w-0 flex-1 truncate">
+                    {song.title}
+                  </span>
+                  <span className="shrink-0 tabular-nums text-slate-500">
+                    {song.duration ?? ""}
+                  </span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </div>
   );
 }
 
 /** Sidebar panel: create a playlist + list existing playlists. */
 export function PlaylistPanel({ className = "" }: { className?: string }) {
-  const { playlists, playlistSongs, createPlaylist, notify, loading } = useData();
+  const { playlists, playlistSongs, songs, createPlaylist, notify, loading } =
+    useData();
   const [newName, setNewName] = useState("");
   const [creating, setCreating] = useState(false);
+
+  const songsByPlaylist = useMemo(() => {
+    const songById = new Map(songs.map((song) => [song.id, song]));
+    const grouped = new Map<string, PlaylistSong[]>();
+
+    for (const entry of playlistSongs) {
+      const list = grouped.get(entry.playlist_id) ?? [];
+      list.push(entry);
+      grouped.set(entry.playlist_id, list);
+    }
+
+    const result = new Map<string, Song[]>();
+    for (const [playlistId, entries] of grouped) {
+      entries.sort(
+        (a, b) =>
+          a.position - b.position || a.created_at.localeCompare(b.created_at),
+      );
+      result.set(
+        playlistId,
+        entries
+          .map((entry) => songById.get(entry.song_id))
+          .filter((song): song is Song => Boolean(song)),
+      );
+    }
+    return result;
+  }, [songs, playlistSongs]);
 
   async function handleCreate(event: React.FormEvent) {
     event.preventDefault();
@@ -190,11 +312,6 @@ export function PlaylistPanel({ className = "" }: { className?: string }) {
     } finally {
       setCreating(false);
     }
-  }
-
-  const counts = new Map<string, number>();
-  for (const entry of playlistSongs) {
-    counts.set(entry.playlist_id, (counts.get(entry.playlist_id) ?? 0) + 1);
   }
 
   return (
@@ -245,7 +362,7 @@ export function PlaylistPanel({ className = "" }: { className?: string }) {
           <PlaylistCard
             key={playlist.id}
             playlist={playlist}
-            songCount={counts.get(playlist.id) ?? 0}
+            songs={songsByPlaylist.get(playlist.id) ?? []}
           />
         ))}
       </div>

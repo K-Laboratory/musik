@@ -4,8 +4,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
+import { NowPlayingBar } from "@/components/NowPlayingBar";
 import { useData } from "@/components/DataProvider";
 import { Toasts } from "@/components/Toasts";
+import { ViewModeToggle } from "@/components/ViewModeToggle";
+import { usePlayer } from "@/lib/player";
 import { CloseIcon, ListIcon, LogoutIcon, MenuIcon, MusicIcon } from "./Icons";
 
 const NAV_ITEMS = [{ href: "/dashboard", label: "Dashboard", icon: ListIcon }];
@@ -57,6 +60,7 @@ function Avatar({
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { profile, user } = useData();
+  const { currentSong } = usePlayer();
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -104,6 +108,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="hidden sm:block">{navLinks}</div>
 
           <div className="hidden items-center gap-3 sm:flex">
+            <ViewModeToggle />
             <div className="flex items-center gap-2.5">
               <Avatar src={avatarUrl} name={displayName} size={32} />
               <span className="max-w-[10rem] truncate text-sm text-slate-300">
@@ -145,6 +150,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </span>
             </div>
             {navLinks}
+            <div className="mt-3 flex items-center justify-between gap-3">
+              <span className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                View mode
+              </span>
+              <ViewModeToggle />
+            </div>
             <form action="/auth/signout" method="post" className="mt-3">
               <button
                 type="submit"
@@ -158,11 +169,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         )}
       </header>
 
-      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+      <main
+        className={`mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 sm:py-8 lg:px-8 ${
+          currentSong ? "pb-28 sm:pb-32" : ""
+        }`}
+      >
         {children}
       </main>
 
       <Toasts />
+      <NowPlayingBar />
     </div>
   );
 }
