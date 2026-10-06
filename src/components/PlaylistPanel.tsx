@@ -16,6 +16,7 @@ import {
   PlusIcon,
   TrashIcon,
 } from "@/components/Icons";
+import { useLabels } from "@/lib/disguise";
 import { getErrorMessage } from "@/lib/errors";
 import { usePlayer } from "@/lib/player";
 import type { Playlist, PlaylistSong, Song } from "@/lib/types";
@@ -31,6 +32,7 @@ export function PlaylistCard({
   const { renamePlaylist, deletePlaylist, notify } = useData();
   const { playPlaylist, toggle, isPlaylistPlaying, isPlaying, currentSong } =
     usePlayer();
+  const labels = useLabels();
   const { setNodeRef, isOver } = useDroppable({
     id: `playlist-${playlist.id}`,
     data: { type: "playlist", playlistId: playlist.id },
@@ -73,10 +75,10 @@ export function PlaylistCard({
     setBusy(true);
     try {
       await renamePlaylist(playlist.id, trimmed);
-      notify("Playlist renamed.", "success");
+      notify(labels.renamedToast, "success");
       setEditing(false);
     } catch (err) {
-      notify(getErrorMessage(err, "Could not rename the playlist."), "error");
+      notify(getErrorMessage(err, labels.renameError), "error");
     } finally {
       setBusy(false);
     }
@@ -85,16 +87,16 @@ export function PlaylistCard({
   async function handleDelete() {
     if (
       typeof window !== "undefined" &&
-      !window.confirm(`Delete the playlist "${playlist.name}"?`)
+      !window.confirm(labels.deleteConfirm(playlist.name))
     ) {
       return;
     }
     setBusy(true);
     try {
       await deletePlaylist(playlist.id);
-      notify("Playlist deleted.", "success");
+      notify(labels.deletedToast, "success");
     } catch (err) {
-      notify(getErrorMessage(err, "Could not delete the playlist."), "error");
+      notify(getErrorMessage(err, labels.deleteError), "error");
       setBusy(false);
     }
   }
@@ -189,7 +191,7 @@ export function PlaylistCard({
               {playlist.name}
             </p>
             <p className="text-xs text-slate-400">
-              {songs.length} {songs.length === 1 ? "song" : "songs"}
+              {labels.itemCount(songs.length)}
             </p>
           </Link>
         )}
@@ -268,6 +270,7 @@ export function PlaylistCard({
 export function PlaylistPanel({ className = "" }: { className?: string }) {
   const { playlists, playlistSongs, songs, createPlaylist, notify, loading } =
     useData();
+  const labels = useLabels();
   const [newName, setNewName] = useState("");
   const [creating, setCreating] = useState(false);
 
@@ -306,9 +309,9 @@ export function PlaylistPanel({ className = "" }: { className?: string }) {
     try {
       await createPlaylist(trimmed);
       setNewName("");
-      notify("Playlist created.", "success");
+      notify(labels.createToast, "success");
     } catch (err) {
-      notify(getErrorMessage(err, "Could not create the playlist."), "error");
+      notify(getErrorMessage(err, labels.createError), "error");
     } finally {
       setCreating(false);
     }
@@ -319,14 +322,14 @@ export function PlaylistPanel({ className = "" }: { className?: string }) {
       className={`rounded-2xl border border-slate-800 bg-slate-900/40 p-4 ${className}`}
     >
       <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-400">
-        Playlists
+        {labels.projectsHeading}
       </h2>
 
       <form onSubmit={handleCreate} className="mt-3 flex gap-2">
         <input
           value={newName}
           onChange={(event) => setNewName(event.target.value)}
-          placeholder="New playlist name"
+          placeholder={labels.newProjectPlaceholder}
           maxLength={100}
           className="min-w-0 flex-1 rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/30"
         />
@@ -341,7 +344,7 @@ export function PlaylistPanel({ className = "" }: { className?: string }) {
       </form>
 
       <p className="mt-3 text-xs text-slate-500">
-        Tip: drag a song card onto a playlist to add it.
+        {labels.dragTip}
       </p>
 
       <div className="mt-3 space-y-2">
@@ -354,7 +357,7 @@ export function PlaylistPanel({ className = "" }: { className?: string }) {
 
         {!loading && playlists.length === 0 && (
           <p className="rounded-xl border border-dashed border-slate-800 px-3 py-6 text-center text-sm text-slate-500">
-            No playlists yet. Create one above.
+            {labels.noProjects}
           </p>
         )}
 

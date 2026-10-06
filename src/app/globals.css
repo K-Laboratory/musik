@@ -61,3 +61,154 @@ body {
 body.dnd-dragging {
   touch-action: none;
 }
+
+/* ------------------------------------------------------------------ */
+/* Work disguise: classic grey (Windows 2000/98) theme.               */
+/* Applied when <html data-ui="work"> is set by the DisguiseProvider.  */
+/* ------------------------------------------------------------------ */
+[data-ui="work"] {
+  --font-sans: Tahoma, Verdana, "Segoe UI", Geneva, sans-serif;
+
+  /* Invert the slate scale: dark surfaces become light, text becomes dark. */
+  --color-slate-950: #d4d0c8;
+  --color-slate-900: #ffffff;
+  --color-slate-800: #c0c0c0;
+  --color-slate-700: #808080;
+  --color-slate-600: #808080;
+  --color-slate-500: #6b6b6b;
+  --color-slate-400: #2f2f2f;
+  --color-slate-300: #1a1a1a;
+  --color-slate-200: #000000;
+  --color-slate-100: #000000;
+
+  /* Violet accents become classic navy text and grey control faces. */
+  --color-violet-600: #d4d0c8;
+  --color-violet-500: #c0bdb5;
+  --color-violet-400: #808080;
+  --color-violet-300: #000080;
+  --color-violet-200: #000080;
+  --color-violet-100: #000080;
+  --color-violet-50: #eceae4;
+
+  --color-emerald-500: #008000;
+  --color-emerald-300: #006400;
+  --color-emerald-100: #004d00;
+  --color-emerald-950: #e2f6e2;
+  --color-red-500: #c00000;
+  --color-red-300: #9e0000;
+  --color-red-200: #800000;
+  --color-red-100: #800000;
+  --color-red-950: #ffe3e3;
+}
+
+/* Everything is square and flat, like the classic shell. */
+[data-ui="work"] *,
+[data-ui="work"] *::before,
+[data-ui="work"] *::after {
+  border-radius: 0 !important;
+}
+
+/* Text that would otherwise be white-on-light. */
+[data-ui="work"] .text-white,
+[data-ui="work"] .text-slate-900 {
+  color: #000000 !important;
+}
+
+/* The Google button keeps its white face with a dark label. */
+[data-ui="work"] .bg-white {
+  background-color: #ffffff !important;
+}
+[data-ui="work"] .hover\:bg-slate-100:hover {
+  background-color: #e6e6e6 !important;
+}
+
+[data-ui="work"] body {
+  background-color: #d4d0c8;
+  color: #000000;
+}
+
+/* Classic chiselled buttons. */
+[data-ui="work"] button {
+  border: 2px solid;
+  border-color: #ffffff #808080 #808080 #ffffff;
+  background-color: #d4d0c8;
+  color: #000000;
+  box-shadow: none;
+}
+[data-ui="work"] button:hover:not(:disabled) {
+  background-color: #e2dfd8;
+}
+[data-ui="work"] button:active:not(:disabled),
+[data-ui="work"] button[aria-pressed="true"] {
+  border-color: #808080 #ffffff #ffffff #808080;
+}
+[data-ui="work"] button:disabled {
+  color: #808080;
+  text-shadow: 1px 1px 0 #ffffff;
+}
+
+/* Links styled as buttons keep the raised edge. */
+[data-ui="work"] a.bg-violet-600,
+[data-ui="work"] a.bg-violet-500 {
+  border: 2px solid;
+  border-color: #ffffff #808080 #808080 #ffffff;
+  background-color: #d4d0c8;
+  color: #000000;
+}
+
+/* Sunken text fields. */
+[data-ui="work"] input:not([type="range"]),
+[data-ui="work"] textarea,
+[data-ui="work"] select {
+  border: 2px solid;
+  border-color: #808080 #ffffff #ffffff #808080;
+  background-color: #ffffff;
+  color: #000000;
+  border-radius: 0 !important;
+}
+[data-ui="work"] input::placeholder {
+  color: #808080;
+}
+
+/* The header becomes a plain classic toolbar. */
+[data-ui="work"] header {
+  background-color: #d4d0c8 !important;
+  border-bottom: 2px solid #808080;
+  backdrop-filter: none;
+}
+
+/* Flatten decorative shadows. */
+[data-ui="work"] .shadow-2xl,
+[data-ui="work"] .shadow-lg,
+[data-ui="work"] .shadow-sm {
+  box-shadow: none !important;
+}
+
+/* Classic range (seek) thumb; the track colour is set inline. */
+[data-ui="work"] input[type="range"] {
+  border: none !important;
+}
+[data-ui="work"] input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 10px;
+  height: 16px;
+  background-color: #d4d0c8;
+  border: 1px solid #000000;
+  border-radius: 0;
+}
+[data-ui="work"] input[type="range"]::-moz-range-thumb {
+  width: 10px;
+  height: 16px;
+  background-color: #d4d0c8;
+  border: 1px solid #000000;
+  border-radius: 0;
+}
+
+/* Scrollbars match the classic shell. */
+[data-ui="work"] * {
+  scrollbar-color: #808080 #d4d0c8;
+}
+[data-ui="work"] *::-webkit-scrollbar-thumb {
+  background-color: #808080;
+}

@@ -6,10 +6,19 @@ import { useState } from "react";
 
 import { NowPlayingBar } from "@/components/NowPlayingBar";
 import { useData } from "@/components/DataProvider";
+import { DisguiseToggle } from "@/components/DisguiseToggle";
 import { Toasts } from "@/components/Toasts";
 import { ViewModeToggle } from "@/components/ViewModeToggle";
+import { useDisguise, useLabels } from "@/lib/disguise";
 import { usePlayer } from "@/lib/player";
-import { CloseIcon, ListIcon, LogoutIcon, MenuIcon, MusicIcon } from "./Icons";
+import {
+  CloseIcon,
+  FolderIcon,
+  ListIcon,
+  LogoutIcon,
+  MenuIcon,
+  MusicIcon,
+} from "./Icons";
 
 const NAV_ITEMS = [{ href: "/dashboard", label: "Dashboard", icon: ListIcon }];
 
@@ -61,11 +70,13 @@ function Avatar({
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { profile, user } = useData();
   const { currentSong } = usePlayer();
+  const { isWork } = useDisguise();
+  const labels = useLabels();
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
 
   const displayName =
-    profile?.display_name || user.email?.split("@")[0] || "Music lover";
+    profile?.display_name || user.email?.split("@")[0] || labels.defaultUser;
   const avatarUrl = profile?.avatar_url ?? null;
 
   const navLinks = (
@@ -85,7 +96,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             }`}
           >
             <Icon className="h-4 w-4" />
-            {item.label}
+            {labels.navDashboard}
           </Link>
         );
       })}
@@ -98,17 +109,22 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
           <Link href="/dashboard" className="flex items-center gap-2.5">
             <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-600/20 text-violet-300">
-              <MusicIcon className="h-5 w-5" />
+              {isWork ? (
+                <FolderIcon className="h-5 w-5" />
+              ) : (
+                <MusicIcon className="h-5 w-5" />
+              )}
             </span>
             <span className="text-base font-semibold tracking-tight text-white">
-              Favorite Songs
+              {labels.brand}
             </span>
           </Link>
 
           <div className="hidden sm:block">{navLinks}</div>
 
           <div className="hidden items-center gap-3 sm:flex">
-            <ViewModeToggle />
+            {!isWork && <ViewModeToggle />}
+            <DisguiseToggle />
             <div className="flex items-center gap-2.5">
               <Avatar src={avatarUrl} name={displayName} size={32} />
               <span className="max-w-[10rem] truncate text-sm text-slate-300">
@@ -150,11 +166,19 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </span>
             </div>
             {navLinks}
+            {!isWork && (
+              <div className="mt-3 flex items-center justify-between gap-3">
+                <span className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                  View mode
+                </span>
+                <ViewModeToggle />
+              </div>
+            )}
             <div className="mt-3 flex items-center justify-between gap-3">
               <span className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                View mode
+                Appearance
               </span>
-              <ViewModeToggle />
+              <DisguiseToggle />
             </div>
             <form action="/auth/signout" method="post" className="mt-3">
               <button

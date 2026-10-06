@@ -7,9 +7,11 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 
+import { useLabels } from "@/lib/disguise";
 import { getErrorMessage } from "@/lib/errors";
 import { createClient } from "@/lib/supabase/client";
 import type {
@@ -71,6 +73,11 @@ export function DataProvider({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const labels = useLabels();
+  const labelsRef = useRef(labels);
+  useEffect(() => {
+    labelsRef.current = labels;
+  }, [labels]);
 
   const dismissToast = useCallback((id: string) => {
     setToasts((current) => current.filter((toast) => toast.id !== id));
@@ -119,7 +126,7 @@ export function DataProvider({
       setPlaylists(playlistsRes.data ?? []);
       setPlaylistSongs(playlistSongsRes.data ?? []);
     } catch (err) {
-      setError(getErrorMessage(err, "Could not load your library."));
+      setError(getErrorMessage(err, labelsRef.current.loadError));
     } finally {
       setLoading(false);
     }

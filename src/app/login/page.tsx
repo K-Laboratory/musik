@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 
+import { LoginBrand, LoginFooter } from "@/components/LoginBrand";
 import { OAuthButtons } from "@/components/OAuthButtons";
-import { MusicIcon } from "@/components/Icons";
 import { SetupNotice } from "@/components/SetupNotice";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
@@ -52,17 +52,7 @@ export default async function LoginPage({
       />
 
       <div className="relative w-full max-w-md animate-slide-up rounded-3xl border border-slate-800 bg-slate-900/80 p-8 shadow-2xl backdrop-blur">
-        <div className="mb-8 flex flex-col items-center text-center">
-          <span className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-600/20 text-violet-300">
-            <MusicIcon className="h-7 w-7" />
-          </span>
-          <h1 className="text-2xl font-semibold tracking-tight text-white">
-            Favorite Songs
-          </h1>
-          <p className="mt-2 text-sm text-slate-400">
-            Save the music you love, build playlists, and listen anytime.
-          </p>
-        </div>
+        <LoginBrand />
 
         {errorMessage && (
           <p
@@ -75,10 +65,7 @@ export default async function LoginPage({
 
         <OAuthButtons next={nextPath} />
 
-        <p className="mt-6 text-center text-xs leading-relaxed text-slate-500">
-          By signing in you agree to let us store your saved songs and
-          playlists. We never post anything on your behalf.
-        </p>
+        <LoginFooter />
       </div>
     </main>
   );

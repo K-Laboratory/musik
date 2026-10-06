@@ -250,3 +250,57 @@ export function EqualizerIcon(props: IconProps) {
   );
 }
 
+/** Classic folder, used as the work-mode brand mark. */
+export function FolderIcon(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
+      <path
+        fill="currentColor"
+        d="M2 5.5A1.5 1.5 0 0 1 3.5 4h5.2c.5 0 .97.24 1.26.65l1 1.35H20.5A1.5 1.5 0 0 1 22 7.5v11A1.5 1.5 0 0 1 20.5 20h-17A1.5 1.5 0 0 1 2 18.5v-13Z"
+      />
+    </svg>
+  );
+}
+
+/** Classic document/file. */
+export function DocumentIcon(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
+      <path
+        fill="currentColor"
+        d="M6 2.75A1.75 1.75 0 0 1 7.75 1h6.19c.46 0 .9.18 1.24.5l4.06 4.06c.32.33.5.78.5 1.24v14.45A1.75 1.75 0 0 1 18 23H7.75A1.75 1.75 0 0 1 6 21.25V2.75Z"
+      />
+    </svg>
+  );
+}
+
+/** Classic monitor/computer, used for the work-mode toggle. */
+export function MonitorIcon(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
+      <path
+        fill="currentColor"
+        d="M3 3.75A1.75 1.75 0 0 1 4.75 2h14.5A1.75 1.75 0 0 1 21 3.75v10.5A1.75 1.75 0 0 1 19.25 16H4.75A1.75 1.75 0 0 1 3 14.25V3.75Z"
+      />
+      <path fill="currentColor" d="M8 18h8v2H8zM6 20h12v2H6z" />
+    </svg>
+  );
+}
+
+/** Briefcase, used to enter work mode. */
+export function BriefcaseIcon(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
+      <path
+        fill="currentColor"
+        d="M9 4.5A2.5 2.5 0 0 1 11.5 2h1A2.5 2.5 0 0 1 15 4.5V6h3.5A2.5 2.5 0 0 1 21 8.5v1.2a2 2 0 0 1-.2.88A17.9 17.9 0 0 1 12 13a17.9 17.9 0 0 1-8.8-2.42A2 2 0 0 1 3 9.7V8.5A2.5 2.5 0 0 1 5.5 6H9V4.5Zm2 0V6h2V4.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5Z"
+      />
+      <path
+        fill="currentColor"
+        d="M3 11.6A19.9 19.9 0 0 0 12 15a19.9 19.9 0 0 0 9-3.4v6.9A2.5 2.5 0 0 1 18.5 21h-13A2.5 2.5 0 0 1 3 18.5v-6.9Z"
+      />
+    </svg>
+  );
+}
+
+

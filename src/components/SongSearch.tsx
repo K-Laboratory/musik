@@ -5,12 +5,14 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { useData } from "@/components/DataProvider";
 import { PlusIcon, SearchIcon, SpinnerIcon } from "@/components/Icons";
+import { useLabels } from "@/lib/disguise";
 import { getErrorMessage } from "@/lib/errors";
 import { useDebounce } from "@/lib/hooks/useDebounce";
 import type { YouTubeSearchResult } from "@/lib/types";
 
 export function SongSearch() {
   const { songs, addSongFromYouTube, notify } = useData();
+  const labels = useLabels();
 
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<YouTubeSearchResult[]>([]);
@@ -86,7 +88,7 @@ export function SongSearch() {
 
   async function handleSelect(result: YouTubeSearchResult) {
     if (savedVideoIds.has(result.videoId)) {
-      notify(`"${result.title}" is already in your library.`, "info");
+      notify(labels.alreadyInLibrary(result.title), "info");
       setOpen(false);
       return;
     }
@@ -96,15 +98,15 @@ export function SongSearch() {
       const { status } = await addSongFromYouTube(result);
       notify(
         status === "added"
-          ? `Added "${result.title}" to your library.`
-          : `"${result.title}" is already in your library.`,
+          ? labels.addedToLibrary(result.title)
+          : labels.alreadyInLibrary(result.title),
         status === "added" ? "success" : "info",
       );
       setQuery("");
       setResults([]);
       setOpen(false);
     } catch (err) {
-      notify(getErrorMessage(err, "Could not save that song."), "error");
+      notify(getErrorMessage(err, labels.saveError), "error");
     } finally {
       setAddingId(null);
     }
@@ -134,7 +136,7 @@ export function SongSearch() {
   return (
     <div ref={containerRef} className="relative">
       <label htmlFor="song-search" className="sr-only">
-        Search for a song
+        {labels.searchAria}
       </label>
       <div className="relative">
         <SearchIcon className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500" />
@@ -148,7 +150,7 @@ export function SongSearch() {
           }}
           onFocus={() => query.trim().length >= 2 && setOpen(true)}
           onKeyDown={handleKeyDown}
-          placeholder="Search YouTube for a song..."
+          placeholder={labels.searchPlaceholder}
           autoComplete="off"
           className="w-full rounded-xl border border-slate-700 bg-slate-900 py-3 pl-11 pr-11 text-sm text-white placeholder:text-slate-500 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/30"
         />
@@ -232,7 +234,7 @@ export function SongSearch() {
                           <SpinnerIcon className="h-4 w-4 animate-spin text-violet-300" />
                         ) : inLibrary ? (
                           <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[11px] font-medium text-emerald-300">
-                            Saved
+                            {labels.savedBadge}
                           </span>
                         ) : (
                           <span className="flex h-7 w-7 items-center justify-center rounded-full bg-violet-600 text-white">
@@ -249,7 +251,7 @@ export function SongSearch() {
 
           {!error && !loading && results.length === 0 && (
             <p className="px-4 py-3 text-sm text-slate-400">
-              No songs found. Try a different search.
+              {labels.noResults}
             </p>
           )}
         </div>

@@ -23,6 +23,7 @@ import { useMemo, useState } from "react";
 import { useData } from "@/components/DataProvider";
 import { AlertIcon, ListIcon, PlusIcon, TrashIcon } from "@/components/Icons";
 import { SortableSongRow } from "@/components/SongCard";
+import { useLabels } from "@/lib/disguise";
 import { getErrorMessage } from "@/lib/errors";
 import { usePlayer } from "@/lib/player";
 import type { PlaylistSong, Song } from "@/lib/types";
@@ -82,6 +83,7 @@ export function PlaylistDetailClient({ playlistId }: { playlistId: string }) {
   } = useData();
 
   const { playPlaylist, toggle, currentSong, isPlaying } = usePlayer();
+  const labels = useLabels();
   const [showLibrary, setShowLibrary] = useState(false);
 
   const playlist = playlists.find((item) => item.id === playlistId) ?? null;
@@ -143,7 +145,7 @@ export function PlaylistDetailClient({ playlistId }: { playlistId: string }) {
     try {
       await removeSongFromPlaylist(item.entry.id);
     } catch (err) {
-      notify(getErrorMessage(err, "Could not remove the song."), "error");
+      notify(getErrorMessage(err, labels.removeError), "error");
     }
   }
 
@@ -151,11 +153,11 @@ export function PlaylistDetailClient({ playlistId }: { playlistId: string }) {
     try {
       const { status } = await addSongToPlaylist(playlistId, song.id);
       notify(
-        status === "added" ? "Added to playlist." : "Already in this playlist.",
+        status === "added" ? labels.addedToProject : labels.alreadyInProject,
         status === "added" ? "success" : "info",
       );
     } catch (err) {
-      notify(getErrorMessage(err, "Could not add the song."), "error");
+      notify(getErrorMessage(err, labels.addToProjectError), "error");
     }
   }
 
@@ -175,15 +177,17 @@ export function PlaylistDetailClient({ playlistId }: { playlistId: string }) {
         <span className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-800/70 text-slate-400">
           <AlertIcon className="h-6 w-6" />
         </span>
-        <h1 className="text-lg font-semibold text-white">Playlist not found</h1>
+        <h1 className="text-lg font-semibold text-white">
+          {labels.notFoundTitle}
+        </h1>
         <p className="mt-1 text-sm text-slate-400">
-          It may have been deleted, or the link is incorrect.
+          {labels.notFoundHint}
         </p>
         <Link
           href="/dashboard"
           className="mt-5 inline-flex rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-violet-500"
         >
-          Back to dashboard
+          {labels.backToWorkspace}
         </Link>
       </div>
     );
@@ -200,7 +204,7 @@ export function PlaylistDetailClient({ playlistId }: { playlistId: string }) {
           href="/dashboard"
           className="text-sm text-slate-400 transition hover:text-slate-200"
         >
-          &larr; Back to dashboard
+          &larr; {labels.backToWorkspace}
         </Link>
         <div className="mt-3 flex flex-wrap items-center gap-3">
           <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-600/15 text-violet-300">
@@ -211,8 +215,7 @@ export function PlaylistDetailClient({ playlistId }: { playlistId: string }) {
               {playlist.name}
             </h1>
             <p className="text-sm text-slate-400">
-              {items.length} {items.length === 1 ? "song" : "songs"} - drag the
-              handle to reorder
+              {labels.itemCount(items.length)} - drag the handle to reorder
             </p>
           </div>
           {items.length > 0 && (
@@ -223,7 +226,7 @@ export function PlaylistDetailClient({ playlistId }: { playlistId: string }) {
               }
               className="flex items-center gap-2 rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-violet-500"
             >
-              {playlistIsPlaying && isPlaying ? "Pause" : "Play all"}
+              {playlistIsPlaying && isPlaying ? "Pause" : labels.playAll}
             </button>
           )}
         </div>
@@ -231,9 +234,9 @@ export function PlaylistDetailClient({ playlistId }: { playlistId: string }) {
 
       {items.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-slate-800 px-6 py-12 text-center">
-          <p className="text-sm text-slate-300">This playlist is empty.</p>
+          <p className="text-sm text-slate-300">{labels.emptyProjectTitle}</p>
           <p className="mt-1 text-sm text-slate-500">
-            Drag songs onto it from the dashboard, or add them below.
+            {labels.emptyProjectHint}
           </p>
         </div>
       ) : (
@@ -274,7 +277,7 @@ export function PlaylistDetailClient({ playlistId }: { playlistId: string }) {
           aria-expanded={showLibrary}
         >
           <span className="text-sm font-semibold uppercase tracking-wide text-slate-400">
-            Add from your library
+            {labels.addFromWorkspace}
           </span>
           <span className="text-sm text-slate-400">
             {showLibrary ? "Hide" : `Show (${availableSongs.length})`}
@@ -285,7 +288,7 @@ export function PlaylistDetailClient({ playlistId }: { playlistId: string }) {
           <div className="mt-3 space-y-2">
             {availableSongs.length === 0 ? (
               <p className="rounded-xl border border-dashed border-slate-800 px-3 py-6 text-center text-sm text-slate-500">
-                Every song in your library is already in this playlist.
+                {labels.allInProject}
               </p>
             ) : (
               availableSongs.map((song) => (

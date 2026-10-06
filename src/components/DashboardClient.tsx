@@ -14,10 +14,16 @@ import {
 import { useState } from "react";
 
 import { useData } from "@/components/DataProvider";
-import { AlertIcon, MusicIcon, TrashIcon } from "@/components/Icons";
+import {
+  AlertIcon,
+  DocumentIcon,
+  MusicIcon,
+  TrashIcon,
+} from "@/components/Icons";
 import { PlaylistPanel } from "@/components/PlaylistPanel";
 import { DraggableSongCard, SongCardVisual } from "@/components/SongCard";
 import { SongSearch } from "@/components/SongSearch";
+import { useDisguise, useLabels } from "@/lib/disguise";
 import { getErrorMessage } from "@/lib/errors";
 import { usePlayer } from "@/lib/player";
 import type { Song } from "@/lib/types";
@@ -36,6 +42,8 @@ export function DashboardClient() {
 
   const { playSong, toggle, isCurrentSong, isPlaying } = usePlayer();
   const { mode } = useViewMode();
+  const { isWork } = useDisguise();
+  const labels = useLabels();
   const [activeSong, setActiveSong] = useState<Song | null>(null);
 
   const sensors = useSensors(
@@ -68,12 +76,12 @@ export function DashboardClient() {
         );
         notify(
           status === "added"
-            ? "Added to playlist."
-            : "That song is already in this playlist.",
+            ? labels.addedToProject
+            : labels.alreadyInProject,
           status === "added" ? "success" : "info",
         );
       } catch (err) {
-        notify(getErrorMessage(err, "Could not add the song."), "error");
+        notify(getErrorMessage(err, labels.addToProjectError), "error");
       }
     }
   }
@@ -81,15 +89,15 @@ export function DashboardClient() {
   async function handleRemoveSong(song: Song) {
     if (
       typeof window !== "undefined" &&
-      !window.confirm(`Remove "${song.title}" from your library?`)
+      !window.confirm(labels.removeConfirm(song.title))
     ) {
       return;
     }
     try {
       await removeSong(song.id);
-      notify("Removed from your library.", "success");
+      notify(labels.removedFromLibrary, "success");
     } catch (err) {
-      notify(getErrorMessage(err, "Could not remove the song."), "error");
+      notify(getErrorMessage(err, labels.removeError), "error");
     }
   }
 
@@ -105,10 +113,10 @@ export function DashboardClient() {
         <div className="min-w-0 space-y-6">
           <section>
             <h1 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">
-              Find a song
+              {labels.findHeading}
             </h1>
             <p className="mt-1 text-sm text-slate-400">
-              Search YouTube and save songs to your library.
+              {labels.findSubtitle}
             </p>
             <div className="mt-4">
               <SongSearch />
@@ -118,7 +126,7 @@ export function DashboardClient() {
           <section>
             <div className="mb-3 flex items-center justify-between gap-3">
               <h2 className="text-lg font-semibold text-white">
-                My Songs{" "}
+                {labels.documentsHeading}{" "}
                 <span className="text-sm font-normal text-slate-400">
                   ({songs.length})
                 </span>
@@ -157,13 +165,17 @@ export function DashboardClient() {
             ) : songs.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-slate-800 px-6 py-12 text-center">
                 <span className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-800/70 text-slate-400">
-                  <MusicIcon className="h-6 w-6" />
+                  {isWork ? (
+                    <DocumentIcon className="h-6 w-6" />
+                  ) : (
+                    <MusicIcon className="h-6 w-6" />
+                  )}
                 </span>
                 <p className="text-sm text-slate-300">
-                  Your library is empty.
+                  {labels.emptyLibraryTitle}
                 </p>
                 <p className="mt-1 text-sm text-slate-500">
-                  Use the search box above to add your first song.
+                  {labels.emptyLibraryHint}
                 </p>
               </div>
             ) : (

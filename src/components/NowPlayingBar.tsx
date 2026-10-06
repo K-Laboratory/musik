@@ -10,6 +10,7 @@ import {
   SkipNextIcon,
   SkipPreviousIcon,
 } from "@/components/Icons";
+import { useDisguise } from "@/lib/disguise";
 import { usePlayer } from "@/lib/player";
 import { useViewMode } from "@/lib/view-mode";
 
@@ -32,9 +33,11 @@ function formatTime(seconds: number): string {
  *
  * - Normal mode: shows the YouTube video alongside the controls.
  * - Compact mode: the video is collapsed (audio only) and a slim bar is shown.
+ * - Work mode: the player UI is reduced to a neutral progress bar and a single
+ *   play/pause button; no video, title or music-styled controls.
  *
- * It is always mounted so the underlying player stays alive between songs and
- * page navigations; when idle it is simply moved off-screen.
+ * The <PlayerEngine /> is always mounted in the same place so audio keeps
+ * playing when the disguise (or the view mode) changes.
  */
 export function NowPlayingBar() {
   const {
@@ -51,6 +54,7 @@ export function NowPlayingBar() {
     seek,
   } = usePlayer();
   const { isCompact } = useViewMode();
+  const { isWork } = useDisguise();
 
   // While the user drags the slider we show a local value so the 500 ms
   // progress poll doesn't fight the drag. `dragTimeRef` keeps the latest value
@@ -88,6 +92,9 @@ export function NowPlayingBar() {
     };
   }, [isDragging, seek]);
 
+  const trackColor = isWork ? "rgb(128 128 128)" : "rgb(51 65 85)";
+  const fillColor = isWork ? "rgb(0 0 128)" : "rgb(139 92 246)";
+
   return (
     <div
       aria-hidden={idle}
@@ -106,7 +113,7 @@ export function NowPlayingBar() {
           step={1}
           value={value}
           disabled={!seekable}
-          aria-label="Seek"
+          aria-label={isWork ? "Progress" : "Seek"}
           onChange={(event) => {
             const seconds = Number(event.target.value);
             dragTimeRef.current = seconds;
@@ -119,7 +126,7 @@ export function NowPlayingBar() {
             commitSeek(Number((event.target as HTMLInputElement).value))
           }
           style={{
-            background: `linear-gradient(to right, rgb(139 92 246) ${progress}%, rgb(51 65 85) ${progress}%)`,
+            background: `linear-gradient(to right, ${fillColor} ${progress}%, ${trackColor} ${progress}%)`,
           }}
           className="h-1.5 w-full flex-1 cursor-pointer appearance-none rounded-full outline-none transition disabled:cursor-default disabled:opacity-50 [&::-moz-range-thumb]:h-3.5 [&::-moz-range-thumb]:w-3.5 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-violet-400 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-0 [&::-webkit-slider-thumb]:bg-violet-400"
         />
@@ -129,32 +136,38 @@ export function NowPlayingBar() {
       <div className="mx-auto flex w-full max-w-7xl items-center gap-3 px-4 py-2.5 sm:px-6 lg:px-8">
         <div
           className={`shrink-0 overflow-hidden rounded-lg bg-black ${
-            isCompact ? "h-px w-px opacity-0" : "aspect-video w-32 sm:w-52"
+            isCompact || isWork
+              ? "h-px w-px opacity-0"
+              : "aspect-video w-32 sm:w-52"
           }`}
         >
           <PlayerEngine className="h-full w-full" />
         </div>
 
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium text-white">
-            {currentSong?.title ?? ""}
-          </p>
-          <p className="truncate text-xs text-slate-400">
-            {currentSong?.channel_title ?? ""}
-            {currentSong?.duration ? ` - ${currentSong.duration}` : ""}
-          </p>
-        </div>
+        {!isWork && (
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-medium text-white">
+              {currentSong?.title ?? ""}
+            </p>
+            <p className="truncate text-xs text-slate-400">
+              {currentSong?.channel_title ?? ""}
+              {currentSong?.duration ? ` - ${currentSong.duration}` : ""}
+            </p>
+          </div>
+        )}
 
         <div className="flex shrink-0 items-center gap-1 sm:gap-1.5">
-          <button
-            type="button"
-            onClick={previous}
-            disabled={!hasPrevious}
-            aria-label="Previous song"
-            className="rounded-full p-2 text-slate-300 transition hover:bg-slate-800 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            <SkipPreviousIcon className="h-5 w-5" />
-          </button>
+          {!isWork && (
+            <button
+              type="button"
+              onClick={previous}
+              disabled={!hasPrevious}
+              aria-label="Previous song"
+              className="rounded-full p-2 text-slate-300 transition hover:bg-slate-800 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              <SkipPreviousIcon className="h-5 w-5" />
+            </button>
+          )}
           <button
             type="button"
             onClick={toggle}
@@ -167,23 +180,27 @@ export function NowPlayingBar() {
               <PlayIcon className="h-5 w-5" />
             )}
           </button>
-          <button
-            type="button"
-            onClick={next}
-            disabled={!hasNext}
-            aria-label="Next song"
-            className="rounded-full p-2 text-slate-300 transition hover:bg-slate-800 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            <SkipNextIcon className="h-5 w-5" />
-          </button>
-          <button
-            type="button"
-            onClick={stop}
-            aria-label="Close player"
-            className="ml-1 rounded-full p-2 text-slate-400 transition hover:bg-slate-800 hover:text-white"
-          >
-            <CloseIcon className="h-5 w-5" />
-          </button>
+          {!isWork && (
+            <>
+              <button
+                type="button"
+                onClick={next}
+                disabled={!hasNext}
+                aria-label="Next song"
+                className="rounded-full p-2 text-slate-300 transition hover:bg-slate-800 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <SkipNextIcon className="h-5 w-5" />
+              </button>
+              <button
+                type="button"
+                onClick={stop}
+                aria-label="Close player"
+                className="ml-1 rounded-full p-2 text-slate-400 transition hover:bg-slate-800 hover:text-white"
+              >
+                <CloseIcon className="h-5 w-5" />
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>
