@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { ClassifyRunner } from "@/components/admin/ClassifyRunner";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata = { title: "Admin - Emotion Classification" };
@@ -60,10 +61,12 @@ export default async function AdminOverviewPage() {
         </h2>
         <p className="mt-2 text-sm text-slate-300">
           {pending === 0
-            ? "Every catalog song has an analysis. (Classification runs in Step 3.)"
-            : `${pending} of ${songs} songs are not analyzed yet. The classification pipeline lands in Step 3.`}
+            ? "Every catalog song has an analysis."
+            : `${pending} of ${songs} songs are not analyzed yet.`}
         </p>
       </div>
+
+      <ClassifyRunner />
     </div>
   );
 }

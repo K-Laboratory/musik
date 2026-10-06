@@ -41,12 +41,38 @@ export default async function AdminSongsPage({
     .order("title", { ascending: true })
     .range(from, to);
 
-  const { data: gens } = await supabase
-    .from("generations")
-    .select("*")
-    .order("position", { ascending: true });
+  const songIds = (songs ?? []).map((s) => s.id);
+
+  const [{ data: gens }, { data: emotionRows }, { data: analysisRows }, { data: emotions }] =
+    await Promise.all([
+      supabase.from("generations").select("*").order("position", { ascending: true }),
+      songIds.length
+        ? supabase.from("song_emotions").select("*").in("song_id", songIds)
+        : Promise.resolve({ data: [] as { song_id: string; emotion_id: string; confidence: number; is_primary: boolean }[] }),
+      songIds.length
+        ? supabase.from("song_analysis").select("*").in("song_id", songIds)
+        : Promise.resolve({ data: [] as { song_id: string; quadrant: string | null; valence: number | null; arousal: number | null; needs_review: boolean }[] }),
+      supabase.from("emotions").select("id, name"),
+    ]);
 
   const genLabel = new Map((gens ?? []).map((g) => [g.id, g.label_en]));
+  void genLabel;
+  const emotionName = new Map((emotions ?? []).map((e) => [e.id, e.name]));
+
+  const tagsBySong = new Map<string, { name: string; confidence: number; is_primary: boolean }[]>();
+  for (const row of emotionRows ?? []) {
+    const list = tagsBySong.get(row.song_id) ?? [];
+    list.push({
+      name: emotionName.get(row.emotion_id) ?? row.emotion_id,
+      confidence: row.confidence,
+      is_primary: row.is_primary,
+    });
+    tagsBySong.set(row.song_id, list);
+  }
+  for (const list of tagsBySong.values()) list.sort((a, b) => b.confidence - a.confidence);
+
+  const analysisBySong = new Map((analysisRows ?? []).map((a) => [a.song_id, a]));
+
   const total = count ?? 0;
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
@@ -106,31 +132,67 @@ export default async function AdminSongsPage({
               <th className="px-4 py-2.5 font-medium">Title</th>
               <th className="px-4 py-2.5 font-medium">Artist</th>
               <th className="px-4 py-2.5 font-medium">Year</th>
-              <th className="px-4 py-2.5 font-medium">Generation</th>
+              <th className="px-4 py-2.5 font-medium">Emotions</th>
+              <th className="px-4 py-2.5 font-medium">V / A</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-800">
-            {(songs ?? []).map((song, index) => (
-              <tr key={song.id} className="hover:bg-slate-900/40">
-                <td className="px-4 py-2 text-slate-500">{from + index + 1}</td>
-                <td className="px-4 py-2 font-medium text-white">
-                  {song.title}
-                </td>
-                <td className="px-4 py-2 text-slate-300">{song.artist}</td>
-                <td className="px-4 py-2 text-slate-400">
-                  {song.year ?? "—"}
-                </td>
-                <td className="px-4 py-2 text-slate-400">
-                  {song.generation_id
-                    ? (genLabel.get(song.generation_id) ?? song.generation_id)
-                    : "—"}
-                </td>
-              </tr>
-            ))}
+            {(songs ?? []).map((song, index) => {
+              const tags = tagsBySong.get(song.id) ?? [];
+              const analysis = analysisBySong.get(song.id);
+              return (
+                <tr key={song.id} className="hover:bg-slate-900/40">
+                  <td className="px-4 py-2 text-slate-500">{from + index + 1}</td>
+                  <td className="px-4 py-2 font-medium text-white">
+                    {song.title}
+                  </td>
+                  <td className="px-4 py-2 text-slate-300">{song.artist}</td>
+                  <td className="px-4 py-2 text-slate-400">
+                    {song.year ?? "—"}
+                  </td>
+                  <td className="px-4 py-2">
+                    {tags.length === 0 ? (
+                      <span className="text-xs text-slate-600">
+                        {analysis ? "—" : "not analyzed"}
+                      </span>
+                    ) : (
+                      <span className="flex flex-wrap gap-1">
+                        {tags.map((tag) => (
+                          <span
+                            key={tag.name}
+                            className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${
+                              tag.is_primary
+                                ? "bg-violet-600/25 text-violet-100"
+                                : "bg-slate-800 text-slate-300"
+                            }`}
+                            title={`confidence ${tag.confidence.toFixed(2)}`}
+                          >
+                            {tag.name}
+                          </span>
+                        ))}
+                        {analysis?.needs_review && (
+                          <span
+                            className="rounded-full bg-amber-500/20 px-2 py-0.5 text-[11px] font-medium text-amber-200"
+                            title="Low confidence"
+                          >
+                            review
+                          </span>
+                        )}
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-4 py-2 tabular-nums text-slate-400">
+                    {analysis
+                      ? `${analysis.valence?.toFixed(1) ?? "—"} / ${analysis.arousal?.toFixed(1) ?? "—"}`
+                      : "—"}
+                  </td>
+                </tr>
+              );
+            })}
             {(songs ?? []).length === 0 && (
               <tr>
                 <td
-                  colSpan={5}
+                  colSpan={6}
                   className="px-4 py-10 text-center text-slate-500"
                 >
                   No songs match. Run the seed migration to load the catalog.

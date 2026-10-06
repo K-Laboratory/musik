@@ -74,13 +74,30 @@ Notes:
       taxonomy files.
 - [x] **Step 2b — Admin dashboard skeleton.** Schema + `/admin` routes to
       browse songs, taxonomy, and (later) classifications.
-- [ ] **Step 3 — Classification pipeline.** A server job that: takes songs →
+- [x] **Step 3 — Classification pipeline.** A server job that: takes songs →
       transiently fetches lyrics → calls an LLM/embedding model → writes
       emotions/valence/arousal/confidence. Idempotent, rate-limited, resumable.
 - [ ] **Step 4 — Review UI.** Low-confidence queue, manual correction, bulk
       re-classify when the taxonomy version changes.
 - [ ] **Step 5 — Scale.** Grow to ~1000 songs × N generations; add a licensed
       audio-feature source (tempo/energy/key) to complement text analysis.
+
+## Step 3 — how the pipeline works
+
+- `GET  /api/admin/classify` — pipeline status (pending/analyzed; configured?).
+- `POST /api/admin/classify/song` — classify one song by id.
+- `POST /api/admin/classify/batch` — classify a small batch (max 10). The admin
+  UI loops this until nothing is pending.
+
+Per song the server: fetches lyrics **transiently** (LRCLIB by default) →
+builds a prompt from the taxonomy → calls an OpenAI-compatible chat model →
+stores ONLY `song_analysis` (valence, arousal, quadrant, model, rationale,
+needs_review) and `song_emotions` (tags + confidence). Lyrics are never
+written to the database.
+
+Env vars: `OPENAI_API_KEY` (required), `CLASSIFIER_MODEL` (default
+`gpt-4o-mini`), `CLASSIFIER_API_BASE`, and the optional `LYRICS_*` settings.
+Set `LYRICS_PROVIDER=none` to classify from metadata only.
 
 ## Open questions for later steps
 
