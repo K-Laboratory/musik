@@ -14,8 +14,15 @@ import { loadYouTubeIframeApi } from "@/lib/youtube-iframe";
  * the audio playing without showing any video.
  */
 export function PlayerEngine({ className = "" }: { className?: string }) {
-  const { currentSong, isPlaying, setIsPlaying, setProgress, setReady, next } =
-    usePlayer();
+  const {
+    currentSong,
+    isPlaying,
+    setIsPlaying,
+    setProgress,
+    setReady,
+    setSeekHandler,
+    next,
+  } = usePlayer();
   const { notify } = useData();
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -65,6 +72,13 @@ export function PlayerEngine({ className = "" }: { className?: string }) {
             onReady: () => {
               if (destroyed) return;
               playerRef.current = player;
+              setSeekHandler((seconds) => {
+                try {
+                  player.seekTo(seconds, true);
+                } catch {
+                  // Player not ready yet.
+                }
+              });
               setLocalReady(true);
               setReady(true);
             },
@@ -97,6 +111,7 @@ export function PlayerEngine({ className = "" }: { className?: string }) {
 
     return () => {
       destroyed = true;
+      setSeekHandler(null);
       try {
         playerRef.current?.destroy();
       } catch {
@@ -105,7 +120,7 @@ export function PlayerEngine({ className = "" }: { className?: string }) {
       playerRef.current = null;
       mount.remove();
     };
-  }, [setReady]);
+  }, [setReady, setSeekHandler]);
 
   // Load the current video (or stop when nothing is selected).
   useEffect(() => {

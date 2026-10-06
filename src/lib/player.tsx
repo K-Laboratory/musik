@@ -52,10 +52,14 @@ interface PlayerContextValue {
   next: () => void;
   previous: () => void;
   stop: () => void;
+  /** Jump to a position (in seconds) in the current song. */
+  seek: (seconds: number) => void;
   // Low-level hooks used by <PlayerEngine />:
   setIsPlaying: (value: boolean) => void;
   setProgress: (currentTime: number, duration: number) => void;
   setReady: (value: boolean) => void;
+  /** Registers the underlying player's seek implementation. */
+  setSeekHandler: (handler: ((seconds: number) => void) | null) => void;
 }
 
 const initialState: PlayerState = {
@@ -79,6 +83,11 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     songsRef.current = songs;
   }, [songs]);
+
+  // The actual seek implementation lives in <PlayerEngine />, which owns the
+  // YouTube player instance. It registers itself here so any component can
+  // request a seek through the shared context.
+  const seekHandlerRef = useRef<((seconds: number) => void) | null>(null);
 
   const playSong = useCallback((song: Song) => {
     const library = songsRef.current;
@@ -169,6 +178,28 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     setIsReady(value);
   }, []);
 
+  const setSeekHandler = useCallback(
+    (handler: ((seconds: number) => void) | null) => {
+      seekHandlerRef.current = handler;
+    },
+    [],
+  );
+
+  const seek = useCallback(
+    (seconds: number) => {
+      const target = Math.max(0, seconds);
+      seekHandlerRef.current?.(target);
+      // Reflect the new position immediately so the bar doesn't jump back
+      // while waiting for the next progress poll.
+      setState((current) =>
+        current.currentTime === target
+          ? current
+          : { ...current, currentTime: target },
+      );
+    },
+    [],
+  );
+
   const currentSong = state.queue[state.index] ?? null;
 
   const isCurrentSong = useCallback(
@@ -202,9 +233,11 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       next,
       previous,
       stop,
+      seek,
       setIsPlaying,
       setProgress,
       setReady,
+      setSeekHandler,
     }),
     [
       state.queue,
@@ -223,9 +256,11 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       next,
       previous,
       stop,
+      seek,
       setIsPlaying,
       setProgress,
       setReady,
+      setSeekHandler,
     ],
   );
 

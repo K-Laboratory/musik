@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
+
 import { PlayerEngine } from "@/components/PlayerEngine";
 import {
   CloseIcon,
@@ -10,6 +12,20 @@ import {
 } from "@/components/Icons";
 import { usePlayer } from "@/lib/player";
 import { useViewMode } from "@/lib/view-mode";
+
+/** Formats a number of seconds as `m:ss` (or `h:mm:ss` for long songs). */
+function formatTime(seconds: number): string {
+  if (!Number.isFinite(seconds) || seconds < 0) return "0:00";
+  const total = Math.floor(seconds);
+  const hours = Math.floor(total / 3600);
+  const minutes = Math.floor((total % 3600) / 60);
+  const secs = total % 60;
+  const paddedSecs = String(secs).padStart(2, "0");
+  if (hours > 0) {
+    return `${hours}:${String(minutes).padStart(2, "0")}:${paddedSecs}`;
+  }
+  return `${minutes}:${paddedSecs}`;
+}
 
 /**
  * Persistent player at the bottom of the app.
@@ -32,12 +48,45 @@ export function NowPlayingBar() {
     next,
     previous,
     stop,
+    seek,
   } = usePlayer();
   const { isCompact } = useViewMode();
 
+  // While the user drags the slider we show a local value so the 500 ms
+  // progress poll doesn't fight the drag. `dragTimeRef` keeps the latest value
+  // available to the global pointer-up handler below.
+  const [dragTime, setDragTime] = useState<number | null>(null);
+  const dragTimeRef = useRef<number | null>(null);
+
   const idle = !currentSong;
-  const progress =
-    duration > 0 ? Math.min(100, (currentTime / duration) * 100) : 0;
+  const seekable = duration > 0;
+  const displayedTime = dragTime ?? currentTime;
+  const value = seekable ? Math.min(displayedTime, duration) : 0;
+  const progress = seekable ? Math.min(100, (value / duration) * 100) : 0;
+
+  const commitSeek = (seconds: number) => {
+    seek(seconds);
+    setDragTime(null);
+  };
+
+  // Commit the seek wherever the pointer is released (the slider does not
+  // always receive pointerup if the drag ends outside it).
+  const isDragging = dragTime !== null;
+  useEffect(() => {
+    if (!isDragging) return;
+    const finish = () => {
+      const pending = dragTimeRef.current;
+      dragTimeRef.current = null;
+      setDragTime(null);
+      if (pending !== null) seek(pending);
+    };
+    window.addEventListener("pointerup", finish);
+    window.addEventListener("pointercancel", finish);
+    return () => {
+      window.removeEventListener("pointerup", finish);
+      window.removeEventListener("pointercancel", finish);
+    };
+  }, [isDragging, seek]);
 
   return (
     <div
@@ -48,11 +97,33 @@ export function NowPlayingBar() {
           : "translate-y-0 opacity-100"
       }`}
     >
-      <div className="h-0.5 w-full bg-slate-800">
-        <div
-          className="h-full bg-violet-500 transition-[width] duration-500 ease-linear"
-          style={{ width: `${progress}%` }}
+      <div className="mx-auto flex w-full max-w-7xl items-center gap-2 px-4 pt-2 text-[11px] tabular-nums text-slate-400 sm:px-6 lg:px-8">
+        <span className="w-9 shrink-0 text-right">{formatTime(value)}</span>
+        <input
+          type="range"
+          min={0}
+          max={seekable ? duration : 1}
+          step={1}
+          value={value}
+          disabled={!seekable}
+          aria-label="Seek"
+          onChange={(event) => {
+            const seconds = Number(event.target.value);
+            dragTimeRef.current = seconds;
+            setDragTime(seconds);
+          }}
+          onKeyUp={(event) =>
+            commitSeek(Number((event.target as HTMLInputElement).value))
+          }
+          onBlur={(event) =>
+            commitSeek(Number((event.target as HTMLInputElement).value))
+          }
+          style={{
+            background: `linear-gradient(to right, rgb(139 92 246) ${progress}%, rgb(51 65 85) ${progress}%)`,
+          }}
+          className="h-1.5 w-full flex-1 cursor-pointer appearance-none rounded-full outline-none transition disabled:cursor-default disabled:opacity-50 [&::-moz-range-thumb]:h-3.5 [&::-moz-range-thumb]:w-3.5 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-violet-400 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-0 [&::-webkit-slider-thumb]:bg-violet-400"
         />
+        <span className="w-9 shrink-0">{formatTime(duration)}</span>
       </div>
 
       <div className="mx-auto flex w-full max-w-7xl items-center gap-3 px-4 py-2.5 sm:px-6 lg:px-8">
