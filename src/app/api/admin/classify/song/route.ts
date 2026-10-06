@@ -107,7 +107,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       ok: true,
       songId: song.id,
-      hadLyrics: Boolean(lyrics),
+      lyricsSource: lyrics?.provider ?? "model-knowledge",
       valence: result.valence,
       arousal: result.arousal,
       quadrant,

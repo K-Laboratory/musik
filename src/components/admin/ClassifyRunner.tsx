@@ -16,7 +16,7 @@ interface BatchResult {
     songId: string;
     title: string;
     ok: boolean;
-    hadLyrics?: boolean;
+    lyricsSource?: string;
     error?: string;
   }[];
 }
@@ -70,7 +70,7 @@ export function ClassifyRunner() {
         for (const item of data.results) {
           setLog((l) => [
             ...l,
-            `${item.ok ? "✓" : "✗"} ${item.title}${item.hadLyrics === false ? " (no lyrics)" : ""}${item.error ? ` — ${item.error}` : ""}`,
+            `${item.ok ? "✓" : "✗"} ${item.title}${item.lyricsSource ? ` [${item.lyricsSource}]` : ""}${item.error ? ` — ${item.error}` : ""}`,
           ]);
         }
         if (data.processed === 0 || data.remaining === 0) break;

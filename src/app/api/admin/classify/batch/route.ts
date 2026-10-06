@@ -19,7 +19,7 @@ interface SongOutcome {
   songId: string;
   title: string;
   ok: boolean;
-  hadLyrics?: boolean;
+  lyricsSource?: string;
   error?: string;
 }
 
@@ -133,7 +133,7 @@ export async function POST(request: Request) {
         songId: song.id,
         title: song.title,
         ok: true,
-        hadLyrics: Boolean(lyrics),
+        lyricsSource: lyrics?.provider ?? "model-knowledge",
       });
     } catch (error) {
       results.push({
