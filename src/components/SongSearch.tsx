@@ -89,7 +89,6 @@ export function SongSearch() {
   async function handleSelect(result: YouTubeSearchResult) {
     if (savedVideoIds.has(result.videoId)) {
       notify(labels.alreadyInLibrary(result.title), "info");
-      setOpen(false);
       return;
     }
 
@@ -102,9 +101,8 @@ export function SongSearch() {
           : labels.alreadyInLibrary(result.title),
         status === "added" ? "success" : "info",
       );
-      setQuery("");
-      setResults([]);
-      setOpen(false);
+      // Keep the query and results so more songs can be added from the same
+      // search. The dropdown closes only on outside click, Escape or blur.
     } catch (err) {
       notify(getErrorMessage(err, labels.saveError), "error");
     } finally {
