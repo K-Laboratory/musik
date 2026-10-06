@@ -216,7 +216,7 @@ export function DashboardClient() {
           <div className="w-80 cursor-grabbing">
             <SongCardVisual
               song={activeSong}
-              variant={mode}
+              variant={isWork ? "compact" : mode}
               className="border-violet-500/60 shadow-2xl shadow-violet-900/40"
             />
           </div>

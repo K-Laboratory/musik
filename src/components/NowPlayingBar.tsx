@@ -7,6 +7,7 @@ import {
   CloseIcon,
   PauseIcon,
   PlayIcon,
+  SettingsIcon,
   SkipNextIcon,
   SkipPreviousIcon,
 } from "@/components/Icons";
@@ -174,7 +175,9 @@ export function NowPlayingBar() {
             aria-label={isPlaying ? "Pause" : "Play"}
             className="flex h-10 w-10 items-center justify-center rounded-full bg-violet-600 text-white transition hover:bg-violet-500"
           >
-            {isPlaying ? (
+            {isWork ? (
+              <SettingsIcon className="h-5 w-5" />
+            ) : isPlaying ? (
               <PauseIcon className="h-5 w-5" />
             ) : (
               <PlayIcon className="h-5 w-5" />

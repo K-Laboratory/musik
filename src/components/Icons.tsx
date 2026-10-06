@@ -303,4 +303,26 @@ export function BriefcaseIcon(props: IconProps) {
   );
 }
 
+/** Gear/cog, used to make playback controls read as generic settings. */
+export function SettingsIcon(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" {...base} aria-hidden="true" {...props}>
+      <circle cx="12" cy="12" r="3.25" />
+      <path d="M19.5 12a7.5 7.5 0 0 0-.1-1.2l2-1.55-2-3.46-2.35.94a7.5 7.5 0 0 0-2.05-1.18L14.65 3h-4l-.36 2.55A7.5 7.5 0 0 0 8.25 6.7L5.9 5.79l-2 3.46 2 1.55a7.5 7.5 0 0 0 0 2.4l-2 1.55 2 3.46 2.35-.94a7.5 7.5 0 0 0 2.05 1.18L10.65 21h4l.36-2.55a7.5 7.5 0 0 0 2.04-1.18l2.35.94 2-3.46-2-1.55c.06-.39.1-.79.1-1.2Z" />
+    </svg>
+  );
+}
+
+/** Coffee cup, used for the "Break" toggle that returns to the music view. */
+export function CoffeeIcon(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" {...base} aria-hidden="true" {...props}>
+      <path d="M17 8h1a4 4 0 1 1 0 8h-1" />
+      <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z" />
+      <path d="M6 2v2M10 2v2M14 2v2" />
+    </svg>
+  );
+}
+
+
 

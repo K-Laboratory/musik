@@ -9,7 +9,8 @@ import {
   type ReactNode,
 } from "react";
 
-import { GripIcon, PauseIcon, PlayIcon } from "@/components/Icons";
+import { GripIcon, PauseIcon, PlayIcon, SettingsIcon } from "@/components/Icons";
+import { useDisguise } from "@/lib/disguise";
 import type { Song } from "@/lib/types";
 import { useViewMode } from "@/lib/view-mode";
 
@@ -50,6 +51,7 @@ export const SongCardVisual = forwardRef<HTMLDivElement, SongCardVisualProps>(
     ref,
   ) {
     const isCompact = variant === "compact";
+    const { isWork } = useDisguise();
 
     const grip = showGrip ? (
       <button
@@ -81,7 +83,9 @@ export const SongCardVisual = forwardRef<HTMLDivElement, SongCardVisualProps>(
                   : "bg-slate-800 text-slate-200 hover:bg-violet-600 hover:text-white"
               }`}
             >
-              {playing ? (
+              {isWork ? (
+                <SettingsIcon className="h-4 w-4" />
+              ) : playing ? (
                 <PauseIcon className="h-4 w-4" />
               ) : (
                 <PlayIcon className="h-4 w-4" />
@@ -103,7 +107,9 @@ export const SongCardVisual = forwardRef<HTMLDivElement, SongCardVisualProps>(
       return (
         <div
           ref={ref}
-          className={`${shell} gap-2 rounded-lg px-2.5 py-1.5 ${className}`}
+          className={`${shell} gap-2 rounded-lg px-2.5 py-1.5 ${
+            isWork ? "work-row" : ""
+          } ${className}`}
           {...rest}
         >
           {grip}
@@ -189,6 +195,7 @@ export function DraggableSongCard({
   onTogglePlay,
 }: DraggableSongCardProps) {
   const { mode } = useViewMode();
+  const { isWork } = useDisguise();
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: `song-${song.id}`,
     data: { type: "song", songId: song.id },
@@ -198,7 +205,7 @@ export function DraggableSongCard({
     <SongCardVisual
       ref={setNodeRef}
       song={song}
-      variant={mode}
+      variant={isWork ? "compact" : mode}
       actions={actions}
       active={active}
       playing={playing}
@@ -232,6 +239,7 @@ export function SortableSongRow({
   onSelect,
 }: SortableSongRowProps) {
   const { mode } = useViewMode();
+  const { isWork } = useDisguise();
   const {
     attributes,
     listeners,
@@ -254,7 +262,7 @@ export function SortableSongRow({
       ref={setNodeRef}
       style={style}
       song={song}
-      variant={mode}
+      variant={isWork ? "compact" : mode}
       actions={actions}
       active={active}
       playing={playing}

@@ -14,9 +14,10 @@ import {
   PencilIcon,
   PlayIcon,
   PlusIcon,
+  SettingsIcon,
   TrashIcon,
 } from "@/components/Icons";
-import { useLabels } from "@/lib/disguise";
+import { useDisguise, useLabels } from "@/lib/disguise";
 import { getErrorMessage } from "@/lib/errors";
 import { usePlayer } from "@/lib/player";
 import type { Playlist, PlaylistSong, Song } from "@/lib/types";
@@ -32,6 +33,7 @@ export function PlaylistCard({
   const { renamePlaylist, deletePlaylist, notify } = useData();
   const { playPlaylist, toggle, isPlaylistPlaying, isPlaying, currentSong } =
     usePlayer();
+  const { isWork } = useDisguise();
   const labels = useLabels();
   const { setNodeRef, isOver } = useDroppable({
     id: `playlist-${playlist.id}`,
@@ -128,7 +130,9 @@ export function PlaylistCard({
                 : "bg-violet-600/15 text-violet-300 hover:bg-violet-600 hover:text-white"
             }`}
           >
-            {isActive && isPlaying ? (
+            {isWork ? (
+              <SettingsIcon className="h-4 w-4" />
+            ) : isActive && isPlaying ? (
               <PauseIcon className="h-4 w-4" />
             ) : (
               <PlayIcon className="h-4 w-4" />
@@ -244,7 +248,7 @@ export function PlaylistCard({
                   }`}
                 >
                   <span className="flex w-4 shrink-0 items-center justify-center text-slate-500">
-                    {isCurrent && isPlaying ? (
+                    {isCurrent && isPlaying && !isWork ? (
                       <EqualizerIcon className="h-3 w-3 text-violet-300" />
                     ) : (
                       index + 1

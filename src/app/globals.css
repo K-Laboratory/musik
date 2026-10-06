@@ -212,3 +212,75 @@ body.dnd-dragging {
 [data-ui="work"] *::-webkit-scrollbar-thumb {
   background-color: #808080;
 }
+
+/* Dense, old-school work layout: tighten gaps and padding everywhere. */
+[data-ui="work"] .gap-6 {
+  gap: 0.75rem;
+}
+[data-ui="work"] .gap-3 {
+  gap: 0.5rem;
+}
+[data-ui="work"] .gap-2\.5 {
+  gap: 0.125rem;
+}
+[data-ui="work"] .gap-2 {
+  gap: 0.25rem;
+}
+
+[data-ui="work"] .space-y-6 > * + * {
+  margin-top: 0.75rem;
+}
+[data-ui="work"] .space-y-3 > * + * {
+  margin-top: 0.375rem;
+}
+[data-ui="work"] .space-y-2\.5 > * + * {
+  margin-top: 0.125rem;
+}
+[data-ui="work"] .space-y-2 > * + * {
+  margin-top: 0.25rem;
+}
+
+[data-ui="work"] .mt-4 {
+  margin-top: 0.5rem;
+}
+[data-ui="work"] .mt-3 {
+  margin-top: 0.375rem;
+}
+[data-ui="work"] .mb-3 {
+  margin-bottom: 0.375rem;
+}
+[data-ui="work"] .mb-4 {
+  margin-bottom: 0.5rem;
+}
+
+[data-ui="work"] .p-4 {
+  padding: 0.5rem;
+}
+[data-ui="work"] .p-3 {
+  padding: 0.375rem;
+}
+[data-ui="work"] .p-2\.5 {
+  padding: 0.25rem 0.375rem;
+}
+[data-ui="work"] .px-4 {
+  padding-inline: 0.5rem;
+}
+[data-ui="work"] .px-6 {
+  padding-inline: 0.75rem;
+}
+[data-ui="work"] .py-2\.5 {
+  padding-block: 0.25rem;
+}
+[data-ui="work"] .py-6 {
+  padding-block: 0.75rem;
+}
+[data-ui="work"] .py-12 {
+  padding-block: 1.25rem;
+}
+
+/* The song rows in work mode are a single, very tight line. */
+[data-ui="work"] .work-row {
+  padding-block: 0.0625rem;
+  padding-inline: 0.375rem;
+}
+
