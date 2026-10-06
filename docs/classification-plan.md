@@ -72,8 +72,8 @@ Notes:
       generations, with sources.
 - [x] **Step 2a — Seed data.** 100-song millennial catalog + machine-readable
       taxonomy files.
-- [ ] **Step 2b — Admin dashboard skeleton.** Schema + `/admin` routes to
-      browse songs, taxonomy, and (later) classifications. *← next*
+- [x] **Step 2b — Admin dashboard skeleton.** Schema + `/admin` routes to
+      browse songs, taxonomy, and (later) classifications.
 - [ ] **Step 3 — Classification pipeline.** A server job that: takes songs →
       transiently fetches lyrics → calls an LLM/embedding model → writes
       emotions/valence/arousal/confidence. Idempotent, rate-limited, resumable.

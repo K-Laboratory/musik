@@ -115,9 +115,181 @@ export interface Database {
         };
         Relationships: [];
       };
+      // --- Emotion classification (admin) ---------------------------------
+      admin_emails: {
+        Row: { email: string; created_at: string };
+        Insert: { email: string; created_at?: string };
+        Update: { email?: string; created_at?: string };
+        Relationships: [];
+      };
+      generations: {
+        Row: {
+          id: string;
+          label_en: string;
+          label_vi: string;
+          birth_start: number | null;
+          birth_end: number | null;
+          formative_era: string | null;
+          position: number;
+        };
+        Insert: {
+          id: string;
+          label_en: string;
+          label_vi: string;
+          birth_start?: number | null;
+          birth_end?: number | null;
+          formative_era?: string | null;
+          position?: number;
+        };
+        Update: {
+          id?: string;
+          label_en?: string;
+          label_vi?: string;
+          birth_start?: number | null;
+          birth_end?: number | null;
+          formative_era?: string | null;
+          position?: number;
+        };
+        Relationships: [];
+      };
+      emotions: {
+        Row: {
+          id: string;
+          name: string;
+          definition: string | null;
+          sounds_like: string | null;
+          valence: number;
+          arousal: number;
+          quadrant: string;
+        };
+        Insert: {
+          id: string;
+          name: string;
+          definition?: string | null;
+          sounds_like?: string | null;
+          valence: number;
+          arousal: number;
+          quadrant: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          definition?: string | null;
+          sounds_like?: string | null;
+          valence?: number;
+          arousal?: number;
+          quadrant?: string;
+        };
+        Relationships: [];
+      };
+      catalog_songs: {
+        Row: {
+          id: string;
+          title: string;
+          artist: string;
+          year: number | null;
+          generation_id: string | null;
+          source: string | null;
+          source_id: string | null;
+          source_url: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          title: string;
+          artist: string;
+          year?: number | null;
+          generation_id?: string | null;
+          source?: string | null;
+          source_id?: string | null;
+          source_url?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          title?: string;
+          artist?: string;
+          year?: number | null;
+          generation_id?: string | null;
+          source?: string | null;
+          source_id?: string | null;
+          source_url?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      song_emotions: {
+        Row: {
+          id: string;
+          song_id: string;
+          emotion_id: string;
+          confidence: number;
+          is_primary: boolean;
+          source: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          song_id: string;
+          emotion_id: string;
+          confidence?: number;
+          is_primary?: boolean;
+          source?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          song_id?: string;
+          emotion_id?: string;
+          confidence?: number;
+          is_primary?: boolean;
+          source?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      song_analysis: {
+        Row: {
+          id: string;
+          song_id: string;
+          valence: number | null;
+          arousal: number | null;
+          quadrant: string | null;
+          model: string | null;
+          taxonomy_version: number;
+          rationale: string | null;
+          needs_review: boolean;
+          analyzed_at: string;
+        };
+        Insert: {
+          id?: string;
+          song_id: string;
+          valence?: number | null;
+          arousal?: number | null;
+          quadrant?: string | null;
+          model?: string | null;
+          taxonomy_version?: number;
+          rationale?: string | null;
+          needs_review?: boolean;
+          analyzed_at?: string;
+        };
+        Update: {
+          id?: string;
+          song_id?: string;
+          valence?: number | null;
+          arousal?: number | null;
+          quadrant?: string | null;
+          model?: string | null;
+          taxonomy_version?: number;
+          rationale?: string | null;
+          needs_review?: boolean;
+          analyzed_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: { is_admin: { Args: Record<string, never>; Returns: boolean } };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
   };

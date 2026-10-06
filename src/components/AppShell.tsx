@@ -11,6 +11,7 @@ import { Toasts } from "@/components/Toasts";
 import { ViewModeToggle } from "@/components/ViewModeToggle";
 import { useDisguise, useLabels } from "@/lib/disguise";
 import { usePlayer } from "@/lib/player";
+import { useIsAdmin } from "@/lib/use-is-admin";
 import {
   CloseIcon,
   FolderIcon,
@@ -74,6 +75,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const labels = useLabels();
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
+  const isAdmin = useIsAdmin();
 
   const displayName =
     profile?.display_name || user.email?.split("@")[0] || labels.defaultUser;
@@ -124,6 +126,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
           <div className="hidden items-center gap-3 sm:flex">
             {!isWork && <ViewModeToggle />}
+            {isAdmin && (
+              <Link
+                href="/admin"
+                className="rounded-lg border border-slate-700 px-2.5 py-1.5 text-xs font-medium text-slate-300 transition hover:border-slate-600 hover:bg-slate-800 hover:text-white"
+              >
+                Admin
+              </Link>
+            )}
             <DisguiseToggle />
             <div className="flex items-center gap-2.5">
               <Avatar src={avatarUrl} name={displayName} size={32} />
