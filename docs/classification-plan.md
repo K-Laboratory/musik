@@ -95,9 +95,13 @@ stores ONLY `song_analysis` (valence, arousal, quadrant, model, rationale,
 needs_review) and `song_emotions` (tags + confidence). Lyrics are never
 written to the database.
 
-Env vars: `OPENAI_API_KEY` (required), `CLASSIFIER_MODEL` (default
-`gpt-4o-mini`), `CLASSIFIER_API_BASE`, and the optional `LYRICS_*` settings.
-Set `LYRICS_PROVIDER=none` to classify from metadata only.
+Env vars: the classifier accepts any OpenAI-compatible provider. Set
+`CLASSIFIER_API_KEY` (preferred), or `DEEPSEEK_API_KEY` / `OPENAI_API_KEY`.
+With a DeepSeek key and no explicit base URL, it defaults to
+`https://api.deepseek.com/v1` and model `deepseek-chat`. Override with
+`CLASSIFIER_API_BASE` / `CLASSIFIER_MODEL`. The optional `LYRICS_*` settings
+control lyric fetching; set `LYRICS_PROVIDER=none` to classify from metadata
+only.
 
 ## Open questions for later steps
 

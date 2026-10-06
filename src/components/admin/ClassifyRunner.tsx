@@ -122,8 +122,9 @@ export function ClassifyRunner() {
 
       {status && !status.configured && (
         <p className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-200">
-          Set <code>OPENAI_API_KEY</code> (and optionally{" "}
-          <code>CLASSIFIER_MODEL</code>) to enable classification.
+          Set <code>CLASSIFIER_API_KEY</code> (or <code>DEEPSEEK_API_KEY</code>{" "}
+          / <code>OPENAI_API_KEY</code>) and optionally{" "}
+          <code>CLASSIFIER_MODEL</code> to enable classification.
         </p>
       )}
 

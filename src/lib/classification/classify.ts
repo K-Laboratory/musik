@@ -17,6 +17,39 @@ export class ClassifierError extends Error {
 }
 
 const DEFAULT_MODEL = "gpt-4o-mini";
+const DEFAULT_BASE_URL = "https://api.openai.com/v1";
+const DEEPSEEK_BASE_URL = "https://api.deepseek.com/v1";
+const DEEPSEEK_DEFAULT_MODEL = "deepseek-chat";
+
+/**
+ * Resolves the API key, base URL and model from the environment.
+ *
+ * Works with any OpenAI-compatible provider. Prefer the generic
+ * `CLASSIFIER_API_KEY`; fall back to `OPENAI_API_KEY` or `DEEPSEEK_API_KEY`.
+ * If a DeepSeek key is used we default to DeepSeek's endpoint and model.
+ */
+function resolveProvider(): { apiKey: string; baseUrl: string; model: string } {
+  const apiKey =
+    process.env.CLASSIFIER_API_KEY ||
+    process.env.DEEPSEEK_API_KEY ||
+    process.env.OPENAI_API_KEY ||
+    "";
+
+  const usingDeepSeek =
+    !process.env.CLASSIFIER_API_BASE &&
+    !process.env.OPENAI_API_KEY &&
+    Boolean(process.env.DEEPSEEK_API_KEY || process.env.CLASSIFIER_API_KEY);
+
+  const baseUrl = (
+    process.env.CLASSIFIER_API_BASE ??
+    (usingDeepSeek ? DEEPSEEK_BASE_URL : DEFAULT_BASE_URL)
+  ).replace(/\/$/, "");
+
+  const defaultModel = usingDeepSeek ? DEEPSEEK_DEFAULT_MODEL : DEFAULT_MODEL;
+  const model = process.env.CLASSIFIER_MODEL ?? defaultModel;
+
+  return { apiKey, baseUrl, model };
+}
 
 function clamp(value: number, min: number, max: number): number {
   if (!Number.isFinite(value)) return 0;
@@ -43,16 +76,13 @@ export async function classifySong(
   system: string,
   user: string,
 ): Promise<ClassificationResult> {
-  const apiKey = process.env.OPENAI_API_KEY;
+  const { apiKey, baseUrl, model } = resolveProvider();
   if (!apiKey) {
-    throw new ClassifierError("OPENAI_API_KEY is not set.", 500);
+    throw new ClassifierError(
+      "No classifier API key set (CLASSIFIER_API_KEY, DEEPSEEK_API_KEY or OPENAI_API_KEY).",
+      500,
+    );
   }
-
-  const baseUrl = (process.env.CLASSIFIER_API_BASE ?? "https://api.openai.com/v1").replace(
-    /\/$/,
-    "",
-  );
-  const model = process.env.CLASSIFIER_MODEL ?? DEFAULT_MODEL;
 
   const response = await fetch(`${baseUrl}/chat/completions`, {
     method: "POST",
@@ -134,10 +164,10 @@ export function quadrantFor(valence: number, arousal: number): string {
 }
 
 export function classifierModel(): string {
-  return process.env.CLASSIFIER_MODEL ?? DEFAULT_MODEL;
+  return resolveProvider().model;
 }
 
 /** True when the server has what it needs to run the pipeline. */
 export function isClassifierConfigured(): boolean {
-  return Boolean(process.env.OPENAI_API_KEY);
+  return Boolean(resolveProvider().apiKey);
 }
