@@ -1,0 +1,41 @@
+{
+  "$schema": "Internal taxonomy for the emotion classification pipeline.",
+  "version": 1,
+  "valence_arousal_scale": { "min": -2, "max": 2 },
+  "quadrants": {
+    "Q1_happy": { "condition": "v>=0 && a>=0", "label": "Happy / Activated" },
+    "Q2_angry": { "condition": "v<0 && a>=0", "label": "Angry / Tense" },
+    "Q3_sad": { "condition": "v<0 && a<0", "label": "Sad / Low" },
+    "Q4_relaxed": { "condition": "v>=0 && a<0", "label": "Relaxed / Calm" }
+  },
+  "emotions": [
+    { "id": "joyful",     "name": "Joyful / Happy",         "valence": 2.0,  "arousal": 2.0,  "quadrant": "Q1_happy",   "sounds_like": "Upbeat major-key pop, fast tempo" },
+    { "id": "euphoric",   "name": "Euphoric / Pumped-up",   "valence": 2.0,  "arousal": 2.0,  "quadrant": "Q1_happy",   "sounds_like": "Festival EDM drop, stadium anthem" },
+    { "id": "triumphant", "name": "Triumphant / Heroic",    "valence": 2.0,  "arousal": 1.5,  "quadrant": "Q1_happy",   "sounds_like": "Cinematic brass fanfare, orchestral finale" },
+    { "id": "erotic",     "name": "Erotic / Sensual",       "valence": 1.5,  "arousal": 0.0,  "quadrant": "Q4_relaxed", "sounds_like": "Slow R&B groove, breathy vocals" },
+    { "id": "tender",     "name": "Tender / Affectionate",  "valence": 2.0,  "arousal": -1.0, "quadrant": "Q4_relaxed", "sounds_like": "Soft acoustic ballad, lullaby" },
+    { "id": "nostalgic",  "name": "Nostalgic / Sentimental","valence": 1.0,  "arousal": -0.5, "quadrant": "Q4_relaxed", "sounds_like": "Vintage torch song, old standard" },
+    { "id": "dreamy",     "name": "Dreamy / Ethereal",      "valence": 1.0,  "arousal": -1.5, "quadrant": "Q4_relaxed", "sounds_like": "Ambient, shoegaze, reverb-washed pads" },
+    { "id": "serene",     "name": "Serene / Peaceful",      "valence": 1.5,  "arousal": -2.0, "quadrant": "Q4_relaxed", "sounds_like": "New-age piano, slow drone" },
+    { "id": "relaxed",    "name": "Relaxed / Mellow",       "valence": 1.5,  "arousal": -1.0, "quadrant": "Q4_relaxed", "sounds_like": "Chill lo-fi hip-hop, bossa nova" },
+    { "id": "awe",        "name": "Awe / Wonder",           "valence": 1.5,  "arousal": 0.5,  "quadrant": "Q1_happy",   "sounds_like": "Choral crescendo, epic post-rock" },
+    { "id": "funky",      "name": "Funky / Groovy",         "valence": 1.5,  "arousal": 1.5,  "quadrant": "Q1_happy",   "sounds_like": "Funk, disco, upbeat soul" },
+    { "id": "humorous",   "name": "Humorous / Quirky",      "valence": 1.0,  "arousal": 1.0,  "quadrant": "Q1_happy",   "sounds_like": "Cartoon music, novelty song" },
+    { "id": "bittersweet","name": "Bittersweet / Wistful",  "valence": -0.5, "arousal": -0.5, "quadrant": "Q3_sad",     "sounds_like": "Minor-key folk with warm harmony" },
+    { "id": "sad",        "name": "Sad / Melancholic",      "valence": -2.0, "arousal": -1.5, "quadrant": "Q3_sad",     "sounds_like": "Slow minor-key piano, blues" },
+    { "id": "brooding",   "name": "Brooding / Reflective",  "valence": -1.0, "arousal": -1.0, "quadrant": "Q3_sad",     "sounds_like": "Slow post-punk, moody trip-hop" },
+    { "id": "tense",      "name": "Tense / Anxious",        "valence": -1.5, "arousal": 1.0,  "quadrant": "Q2_angry",   "sounds_like": "Dissonant strings, ticking percussion" },
+    { "id": "angry",      "name": "Angry / Aggressive",     "valence": -2.0, "arousal": 2.0,  "quadrant": "Q2_angry",   "sounds_like": "Distorted metal, hardcore punk" },
+    { "id": "fearful",    "name": "Fearful / Scary",        "valence": -2.0, "arousal": 1.5,  "quadrant": "Q2_angry",   "sounds_like": "Horror-film stingers, discordant clusters" },
+    { "id": "defiant",    "name": "Defiant / Rebellious",   "valence": -0.5, "arousal": 2.0,  "quadrant": "Q2_angry",   "sounds_like": "Protest rock, punk chant" },
+    { "id": "neutral",    "name": "Neutral / Ambient",      "valence": 0.0,  "arousal": 0.0,  "quadrant": "Q3_sad",     "sounds_like": "Muzak, minimal tone bed" }
+  ],
+  "generations": [
+    { "id": "pre1975",     "label_en": "Pre-1975 (Saigon golden age)", "label_vi": "thế hệ trước 1975", "birth_years": [1930, 1959], "formative_era": "Nhạc vàng, bolero, tiền chiến, Saigon rock" },
+    { "id": "genx",        "label_en": "Gen X",                        "label_vi": "thế hệ 7x",         "birth_years": [1965, 1979], "formative_era": "Bao cấp → Đổi Mới; nhạc đỏ (N), nhạc vàng (S), nhạc nhẹ" },
+    { "id": "millennial",  "label_en": "Millennials",                  "label_vi": "thế hệ 8x",         "birth_years": [1980, 1989], "formative_era": "Late-90s–2000s nhạc trẻ boom; nhạc Hoa lời Việt" },
+    { "id": "gen9x",       "label_en": "9x bridge",                    "label_vi": "thế hệ 9x",         "birth_years": [1990, 1999], "formative_era": "Yahoo era → 2010s V-pop; teen pop, early hip-hop" },
+    { "id": "genz",        "label_en": "Gen Z",                        "label_vi": "thế hệ 10x (2K)",   "birth_years": [2000, 2012], "formative_era": "Streaming/TikTok, indie wave, Rap Việt" },
+    { "id": "diaspora",    "label_en": "Diaspora",                     "label_vi": "Việt Kiều",         "birth_years": null,         "formative_era": "Pre-1975 repertoire preserved abroad; Paris By Night" }
+  ]
+}
