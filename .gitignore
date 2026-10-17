@@ -30,3 +30,20 @@ yarn-debug.log*
 yarn-error.log*
 .idea
 .vscode
+
+# AI Projects managed exclusions
+.ai/
+.venv/
+node_modules/
+.next/
+__pycache__/
+*.pyc
+.env
+.env.*
+!.env.example
+Input/
+Output/
+input/
+output/
+data/
+*.sqlite3
