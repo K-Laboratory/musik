@@ -1,0 +1,11 @@
+{
+  "python.defaultInterpreterPath": "/home/tony/ai_projects/_Environment/runtimes/python/cpython-3.12-linux-x86_64-gnu/bin/python3.12",
+  "terminal.integrated.env.linux": {
+    "AI_PROJECT_ROOT": "/home/tony/ai_projects/Life/01_musik",
+    "AI_ENV_ROOT": "/home/tony/ai_projects/_Environment",
+    "CODEX_HOME": "/home/tony/ai_projects/_Environment/configuration/codex"
+  },
+  "files.exclude": {
+    ".ai": true
+  }
+}
