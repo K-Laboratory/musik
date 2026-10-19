@@ -9,6 +9,7 @@ import {
   SpinnerIcon,
 } from "@/components/Icons";
 import { useAdminLabels } from "@/lib/admin-i18n";
+import { useLanguage } from "@/lib/disguise";
 
 interface SongDetails {
   id: string;
@@ -24,6 +25,38 @@ interface SongDetails {
   lyrics_source: string | null;
   lyrics_source_url: string | null;
   lyrics_updated_at: string | null;
+}
+
+interface AnalysisDetails {
+  valence: number | null;
+  arousal: number | null;
+  quadrant: string | null;
+  needs_review: boolean;
+  rationale: string | null;
+  model: string | null;
+  analyzed_at: string;
+}
+
+interface TagDetails {
+  id: string;
+  name: string;
+  name_vi: string | null;
+  confidence: number;
+  is_primary: boolean;
+}
+
+interface EmotionOption {
+  id: string;
+  name: string;
+  name_vi: string | null;
+}
+
+interface EditorResponse {
+  song?: SongDetails;
+  analysis?: AnalysisDetails | null;
+  tags?: TagDetails[];
+  emotions?: EmotionOption[];
+  error?: string;
 }
 
 interface EnrichResponse {
@@ -42,7 +75,15 @@ export function SongEditor({
   onClose: () => void;
 }) {
   const labels = useAdminLabels();
+  const { language } = useLanguage();
   const [details, setDetails] = useState<SongDetails | null>(null);
+  const [analysis, setAnalysis] = useState<AnalysisDetails | null>(null);
+  const [emotions, setEmotions] = useState<EmotionOption[]>([]);
+  const [tags, setTags] = useState<TagDetails[]>([]);
+  const [valence, setValence] = useState("0");
+  const [arousal, setArousal] = useState("0");
+  const [needsReview, setNeedsReview] = useState(false);
+  const [classificationTouched, setClassificationTouched] = useState(false);
   const [youtubeUrl, setYoutubeUrl] = useState("");
   const [lyricsText, setLyricsText] = useState("");
   const [lyricsSourceUrl, setLyricsSourceUrl] = useState("");
@@ -57,10 +98,7 @@ export function SongEditor({
     setError("");
     try {
       const response = await fetch(`/api/admin/songs/${song.id}`);
-      const data = (await response.json()) as {
-        song?: SongDetails;
-        error?: string;
-      };
+      const data = (await response.json()) as EditorResponse;
       if (!response.ok || !data.song) {
         setError(data.error ?? labels.couldNotLoad);
         return;
@@ -69,6 +107,13 @@ export function SongEditor({
       setYoutubeUrl(data.song.youtube_url ?? "");
       setLyricsText(data.song.lyrics_text ?? "");
       setLyricsSourceUrl(data.song.lyrics_source_url ?? "");
+      setAnalysis(data.analysis ?? null);
+      setEmotions(data.emotions ?? []);
+      setTags(data.tags ?? []);
+      setValence(String(data.analysis?.valence ?? 0));
+      setArousal(String(data.analysis?.arousal ?? 0));
+      setNeedsReview(data.analysis?.needs_review ?? false);
+      setClassificationTouched(false);
     } catch {
       setError(labels.couldNotLoad);
     } finally {
@@ -93,6 +138,54 @@ export function SongEditor({
     };
   }, [onClose]);
 
+  const toggleTag = (id: string) => {
+    setClassificationTouched(true);
+    setTags((current) => {
+      const existing = current.find((tag) => tag.id === id);
+      let next = existing
+        ? current.filter((tag) => tag.id !== id)
+        : [
+            ...current,
+            {
+              id,
+              name: emotions.find((emotion) => emotion.id === id)?.name ?? id,
+              name_vi:
+                emotions.find((emotion) => emotion.id === id)?.name_vi ?? null,
+              confidence: 0.7,
+              is_primary: current.length === 0,
+            },
+          ];
+      if (next.length > 0 && !next.some((tag) => tag.is_primary)) {
+        next = next.map((tag, index) => ({
+          ...tag,
+          is_primary: index === 0,
+        }));
+      }
+      return next;
+    });
+  };
+
+  const setPrimary = (id: string) => {
+    setClassificationTouched(true);
+    setTags((current) =>
+      current.map((tag) => ({ ...tag, is_primary: tag.id === id })),
+    );
+  };
+
+  const setConfidence = (id: string, value: number) => {
+    setClassificationTouched(true);
+    setTags((current) =>
+      current.map((tag) =>
+        tag.id === id
+          ? {
+              ...tag,
+              confidence: Math.max(0, Math.min(1, value)),
+            }
+          : tag,
+      ),
+    );
+  };
+
   const save = async () => {
     setSaving(true);
     setError("");
@@ -112,6 +205,36 @@ export function SongEditor({
           lyricsText === (details?.lyrics_text ?? "")
             ? details?.lyrics_source ?? "manual"
             : "manual";
+      }
+      if (classificationTouched) {
+        const numericValence = Number(valence);
+        const numericArousal = Number(arousal);
+        if (
+          !Number.isFinite(numericValence) ||
+          !Number.isFinite(numericArousal) ||
+          numericValence < -2 ||
+          numericValence > 2 ||
+          numericArousal < -2 ||
+          numericArousal > 2
+        ) {
+          setError(labels.invalidClassification);
+          return;
+        }
+        if (tags.length === 0) {
+          setError(labels.classificationRequired);
+          return;
+        }
+        payload.classification = {
+          valence: numericValence,
+          arousal: numericArousal,
+          needs_review: needsReview,
+          rationale: analysis?.rationale ?? "Manual edit",
+          tags: tags.map((tag) => ({
+            id: tag.id,
+            confidence: tag.confidence,
+            is_primary: tag.is_primary,
+          })),
+        };
       }
 
       if (Object.keys(payload).length === 0) {
@@ -317,6 +440,124 @@ export function SongEditor({
                 placeholder={labels.lyricsSourceUrl}
                 className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-white placeholder:text-slate-600 focus:border-violet-500 focus:outline-none"
               />
+            </section>
+
+            <section className="space-y-2">
+              <div className="flex items-center justify-between gap-3">
+                <h3 className="text-sm font-medium text-slate-200">
+                  {labels.classification}
+                </h3>
+                {analysis?.model && (
+                  <span className="text-[11px] text-slate-500">
+                    {analysis.model}
+                  </span>
+                )}
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label className="block text-xs text-slate-400">
+                  {labels.valence}
+                  <input
+                    type="number"
+                    min={-2}
+                    max={2}
+                    step={0.1}
+                    value={valence}
+                    onChange={(event) => {
+                      setClassificationTouched(true);
+                      setValence(event.target.value);
+                    }}
+                    className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus:border-violet-500 focus:outline-none"
+                  />
+                </label>
+                <label className="block text-xs text-slate-400">
+                  {labels.arousal}
+                  <input
+                    type="number"
+                    min={-2}
+                    max={2}
+                    step={0.1}
+                    value={arousal}
+                    onChange={(event) => {
+                      setClassificationTouched(true);
+                      setArousal(event.target.value);
+                    }}
+                    className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus:border-violet-500 focus:outline-none"
+                  />
+                </label>
+              </div>
+
+              <label className="flex items-center gap-2 text-xs text-slate-300">
+                <input
+                  type="checkbox"
+                  checked={needsReview}
+                  onChange={(event) => {
+                    setClassificationTouched(true);
+                    setNeedsReview(event.target.checked);
+                  }}
+                  className="h-4 w-4 rounded border-slate-600 bg-slate-900 accent-violet-600"
+                />
+                {labels.needsReview}
+              </label>
+
+              <div className="max-h-56 overflow-y-auto rounded-lg border border-slate-700 bg-slate-950">
+                {emotions.map((emotion) => {
+                  const tag = tags.find((item) => item.id === emotion.id);
+                  const name =
+                    language === "vi"
+                      ? emotion.name_vi ?? emotion.name
+                      : emotion.name;
+                  return (
+                    <div
+                      key={emotion.id}
+                      className="flex items-center gap-2 border-b border-slate-800 px-2.5 py-1.5 text-xs last:border-b-0"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={Boolean(tag)}
+                        onChange={() => toggleTag(emotion.id)}
+                        disabled={!tag && tags.length >= 3}
+                        title={!tag && tags.length >= 3 ? labels.maxTags : name}
+                        className="h-4 w-4 shrink-0 rounded border-slate-600 bg-slate-900 accent-violet-600 disabled:opacity-40"
+                        aria-label={name}
+                      />
+                      <span className="min-w-0 flex-1 truncate text-slate-300">
+                        {name}
+                      </span>
+                      {tag && (
+                        <>
+                          <input
+                            type="number"
+                            min={0}
+                            max={1}
+                            step={0.05}
+                            value={tag.confidence}
+                            onChange={(event) =>
+                              setConfidence(
+                                emotion.id,
+                                Number(event.target.value),
+                              )
+                            }
+                            title={labels.confidence}
+                            aria-label={`${labels.confidence}: ${name}`}
+                            className="w-16 rounded-md border border-slate-700 bg-slate-900 px-1.5 py-1 text-center text-xs text-white focus:border-violet-500 focus:outline-none"
+                          />
+                          <label className="flex shrink-0 items-center gap-1 text-[11px] text-slate-400">
+                            <input
+                              type="radio"
+                              name="primary-emotion"
+                              checked={tag.is_primary}
+                              onChange={() => setPrimary(emotion.id)}
+                              className="accent-violet-600"
+                            />
+                            {labels.primaryTag}
+                          </label>
+                        </>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             </section>
 
             {(error || notice) && (

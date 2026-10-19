@@ -1,15 +1,22 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type FocusEvent,
+  type MouseEvent,
+} from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 
 import {
   AlertIcon,
   CheckIcon,
+  DocumentIcon,
   PencilIcon,
   PlayIcon,
   RefreshIcon,
-  SparklesIcon,
   SpinnerIcon,
 } from "@/components/Icons";
 import { SongEditor } from "@/components/admin/SongEditor";
@@ -28,6 +35,7 @@ export interface AdminSongRow {
   youtube_title: string | null;
   youtube_channel: string | null;
   lyrics_preview: string | null;
+  lyrics_text: string | null;
   lyrics_source: string | null;
   has_lyrics: boolean;
   tags: {
@@ -102,135 +110,102 @@ function fill(
   );
 }
 
-interface LyricsPreviewState {
-  status: "idle" | "loading" | "ready" | "none" | "error";
-  preview?: string;
-  excerpt?: string;
-  provider?: string;
-  url?: string | null;
-}
-
-function LyricsPreview({
-  songId,
+function LyricsCell({
   preview,
+  fullText,
   source,
 }: {
-  songId: string;
   preview: string | null;
+  fullText: string | null;
   source: string | null;
 }) {
   const labels = useAdminLabels();
-  const [state, setState] = useState<LyricsPreviewState>({ status: "idle" });
-  const started = useRef(false);
+  const [tip, setTip] = useState<{
+    left: number;
+    top: number;
+    width: number;
+  } | null>(null);
+  const hideTimer = useRef<number | null>(null);
 
-  if (preview) {
-    return (
-      <div className="max-w-[210px]" title={preview}>
-        <p className="line-clamp-2 text-xs text-slate-300">{preview}</p>
-        <span className="mt-0.5 block text-[11px] text-slate-500">
-          {source ?? labels.saved}
-        </span>
-      </div>
-    );
-  }
+  useEffect(() => {
+    return () => {
+      if (hideTimer.current !== null) window.clearTimeout(hideTimer.current);
+    };
+  }, []);
 
-  const load = async () => {
-    if (started.current) return;
-    started.current = true;
-    setState({ status: "loading" });
-
-    try {
-      const response = await fetch(
-        `/api/admin/lyrics?songId=${encodeURIComponent(songId)}`,
-      );
-      if (!response.ok) {
-        setState({ status: "error" });
-        return;
-      }
-      const data = (await response.json()) as {
-        available: boolean;
-        provider?: string;
-        url?: string | null;
-        preview?: string;
-        excerpt?: string;
-      };
-      if (!data.available || !data.preview) {
-        setState({ status: "none" });
-        return;
-      }
-      setState({
-        status: "ready",
-        preview: data.preview,
-        excerpt: data.excerpt,
-        provider: data.provider,
-        url: data.url,
-      });
-    } catch {
-      setState({ status: "error" });
+  const cancelHide = () => {
+    if (hideTimer.current !== null) {
+      window.clearTimeout(hideTimer.current);
+      hideTimer.current = null;
     }
   };
 
-  if (state.status === "idle") {
-    return (
-      <button
-        type="button"
-        onClick={() => void load()}
-        onMouseEnter={() => void load()}
-        onFocus={() => void load()}
-        className="text-xs text-violet-300 transition hover:text-violet-200"
-        title={labels.loadPreview}
-      >
-        {labels.hoverPreview}
-      </button>
-    );
-  }
+  const scheduleHide = () => {
+    cancelHide();
+    hideTimer.current = window.setTimeout(() => setTip(null), 150);
+  };
 
-  if (state.status === "loading") {
-    return (
-      <span className="inline-flex items-center gap-1.5 text-xs text-slate-500">
-        <SpinnerIcon className="h-3 w-3 animate-spin" />
-        {labels.loading}
-      </span>
+  const showAt = (element: HTMLDivElement) => {
+    if (!fullText) return;
+    cancelHide();
+    const rect = element.getBoundingClientRect();
+    const width = Math.min(440, window.innerWidth - 24);
+    const left = Math.min(
+      Math.max(12, rect.left),
+      Math.max(12, window.innerWidth - width - 12),
     );
-  }
+    const panelHeight = Math.min(340, window.innerHeight - 24);
+    const top =
+      rect.bottom + 8 + panelHeight > window.innerHeight
+        ? Math.max(12, rect.top - panelHeight - 8)
+        : rect.bottom + 8;
+    setTip({ left, top, width });
+  };
 
-  if (state.status === "none") {
-    return (
-      <span className="text-xs text-slate-600" title="No lyrics found">
-        {labels.notFound}
-      </span>
-    );
-  }
+  const show = (event: MouseEvent<HTMLDivElement>) => {
+    showAt(event.currentTarget);
+  };
 
-  if (state.status === "error") {
-    return (
-      <span className="text-xs text-slate-600" title={labels.lyricsLookupFailed}>
-        {labels.unavailable}
-      </span>
-    );
-  }
+  const showFocus = (event: FocusEvent<HTMLDivElement>) => {
+    showAt(event.currentTarget);
+  };
 
   return (
-    <div
-      className="max-w-[210px]"
-      title={`${state.excerpt ?? state.preview ?? ""}\n\nSource: ${state.provider ?? "unknown"}`}
-    >
-      <p className="line-clamp-1 text-xs text-slate-300">{state.preview}</p>
-      {state.url ? (
-        <a
-          href={state.url}
-          target="_blank"
-          rel="noreferrer"
-          className="mt-0.5 inline-block text-[11px] text-violet-300 hover:text-violet-200"
-        >
-          {labels.fullLyrics}
-        </a>
-      ) : (
-        <span className="mt-0.5 block text-[11px] text-slate-600">
-          {state.provider}
+    <>
+      <div
+        className="max-w-[220px] cursor-help"
+        onMouseEnter={show}
+        onMouseLeave={scheduleHide}
+        onFocus={showFocus}
+        onBlur={scheduleHide}
+        tabIndex={fullText ? 0 : -1}
+      >
+        <p className="line-clamp-2 text-xs text-slate-300 underline decoration-slate-700 decoration-dotted underline-offset-2">
+          {preview ?? labels.notFound}
+        </p>
+        <span className="mt-0.5 block text-[11px] text-slate-500">
+          {source ?? (fullText ? labels.saved : "")}
+          {fullText ? ` - ${labels.lyricsHoverHint}` : ""}
         </span>
-      )}
-    </div>
+      </div>
+      {tip &&
+        fullText &&
+        createPortal(
+          <div
+            className="fixed z-[60] max-h-[340px] overflow-y-auto rounded-xl border border-slate-700 bg-slate-950 p-3 text-xs leading-relaxed text-slate-200 shadow-2xl"
+            style={{ left: tip.left, top: tip.top, width: tip.width }}
+            onMouseEnter={cancelHide}
+            onMouseLeave={scheduleHide}
+          >
+            <p className="mb-2 text-[11px] uppercase tracking-wide text-slate-500">
+              {labels.fullLyrics}
+              {source ? ` - ${source}` : ""}
+            </p>
+            <p className="whitespace-pre-wrap">{fullText}</p>
+          </div>,
+          document.body,
+        )}
+    </>
   );
 }
 
@@ -301,7 +276,9 @@ export function SongTable({
   const { language } = useLanguage();
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [running, setRunning] = useState(false);
-  const [enriching, setEnriching] = useState(false);
+  const [enrichingKind, setEnrichingKind] = useState<
+    "youtube" | "lyrics" | null
+  >(null);
   const [stopping, setStopping] = useState(false);
   const [progress, setProgress] = useState({ done: 0, total: 0 });
   const [log, setLog] = useState<LogEntry[]>([]);
@@ -310,7 +287,7 @@ export function SongTable({
   const stopRef = useRef(false);
   const selectAllRef = useRef<HTMLInputElement>(null);
 
-  const busy = running || enriching;
+  const busy = running || enrichingKind !== null;
   const allSelected = songs.length > 0 && selected.size === songs.length;
   const someSelected = selected.size > 0 && !allSelected;
 
@@ -448,19 +425,18 @@ export function SongTable({
     }
   };
 
-  const runEnrich = async () => {
+  const runEnrich = async (kind: "youtube" | "lyrics") => {
     if (busy || selected.size === 0) return;
 
     const ids = [...selected];
     stopRef.current = false;
-    setEnriching(true);
+    setEnrichingKind(kind);
     setStopping(false);
     setLog([]);
     setSummary("");
     setProgress({ done: 0, total: ids.length });
 
     let updated = 0;
-    let partial = 0;
     let skipped = 0;
     let failed = 0;
     let done = 0;
@@ -473,7 +449,7 @@ export function SongTable({
         const response = await fetch("/api/admin/enrich", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ songIds: chunk, kind: "both" }),
+          body: JSON.stringify({ songIds: chunk, kind }),
         });
 
         if (!response.ok) {
@@ -495,41 +471,42 @@ export function SongTable({
 
         const data = (await response.json()) as EnrichResponse;
         for (const result of data.results) {
-          const parts: string[] = [];
           let songFailed = false;
           let changed = false;
+          let detail = "";
 
-          if (result.youtube) {
-            if (result.youtube.skipped) {
-              parts.push(labels.youtubeAlreadySet);
-            } else if (result.youtube.ok) {
+          if (kind === "youtube") {
+            const item = result.youtube;
+            if (!item) {
+              songFailed = true;
+              detail = labels.noResultReturned;
+            } else if (item.skipped) {
+              detail = labels.youtubeAlreadySet;
+            } else if (item.ok) {
               changed = true;
-              parts.push(
-                `YouTube: ${result.youtube.title ?? "match"}${result.youtube.score ? ` (${result.youtube.score})` : ""}`,
-              );
+              detail = `YouTube: ${item.title ?? "match"}${item.score ? ` (${item.score})` : ""}`;
             } else {
               songFailed = true;
-              parts.push(`YouTube: ${result.youtube.error ?? labels.autoFillFailed}`);
+              detail = `YouTube: ${item.error ?? labels.autoFillFailed}`;
             }
-          }
-
-          if (result.lyrics) {
-            if (result.lyrics.skipped) {
-              parts.push(labels.lyricsAlreadySet);
-            } else if (result.lyrics.ok) {
+          } else {
+            const item = result.lyrics;
+            if (!item) {
+              songFailed = true;
+              detail = labels.noResultReturned;
+            } else if (item.skipped) {
+              detail = labels.lyricsAlreadySet;
+            } else if (item.ok) {
               changed = true;
-              parts.push(
-                `Lyrics: ${result.lyrics.provider ?? "found"} (${result.lyrics.chars ?? 0} chars)`,
-              );
+              detail = `Lyrics: ${item.provider ?? "found"} (${item.chars ?? 0} chars)`;
             } else {
               songFailed = true;
-              parts.push(`Lyrics: ${result.lyrics.error ?? labels.autoFillFailed}`);
+              detail = `Lyrics: ${item.error ?? labels.autoFillFailed}`;
             }
           }
 
           if (changed) {
             updated += 1;
-            if (songFailed) partial += 1;
           } else if (songFailed) {
             failed += 1;
           } else {
@@ -541,8 +518,8 @@ export function SongTable({
             {
               songId: result.songId,
               title: result.title,
-              ok: changed || !songFailed,
-              detail: parts.join("; "),
+              ok: !songFailed,
+              detail,
             },
           ]);
         }
@@ -561,9 +538,8 @@ export function SongTable({
         );
       } else {
         setSummary(
-          fill(labels.autoFilledSummary, {
+          fill(labels.autoFilledKindSummary, {
             updated,
-            partial,
             skipped,
             failed,
           }),
@@ -573,7 +549,7 @@ export function SongTable({
       setSelected(new Set());
       router.refresh();
     } finally {
-      setEnriching(false);
+      setEnrichingKind(null);
       setStopping(false);
     }
   };
@@ -596,7 +572,7 @@ export function SongTable({
             ? labels.selectSongs
             : fill(labels.selected, { count: selected.size })}
         </p>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center justify-end gap-2">
           {selected.size > 0 && !busy && (
             <button
               type="button"
@@ -613,26 +589,44 @@ export function SongTable({
               disabled={stopping}
               className="rounded-lg border border-slate-700 px-3 py-2 text-sm font-medium text-slate-200 transition hover:bg-slate-800 disabled:opacity-50"
             >
-              {stopping ? "Stopping..." : "Stop"}
+              {stopping ? labels.stopping : labels.stop}
             </button>
           )}
           <button
             type="button"
-            onClick={() => void runEnrich()}
+            onClick={() => void runEnrich("youtube")}
             disabled={busy || selected.size === 0}
             className="inline-flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-900 px-3.5 py-2 text-sm font-medium text-slate-200 transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {enriching ? (
+            {enrichingKind === "youtube" ? (
               <SpinnerIcon className="h-4 w-4 animate-spin" />
             ) : (
-              <SparklesIcon className="h-4 w-4" />
+              <PlayIcon className="h-4 w-4" />
             )}
-            {enriching
-              ? fill(labels.autoFilling, {
+            {enrichingKind === "youtube"
+              ? fill(labels.autoFillingYouTube, {
                   done: progress.done,
                   total: progress.total,
                 })
-              : labels.autoFillSelected}
+              : labels.autoFillYouTube}
+          </button>
+          <button
+            type="button"
+            onClick={() => void runEnrich("lyrics")}
+            disabled={busy || selected.size === 0}
+            className="inline-flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-900 px-3.5 py-2 text-sm font-medium text-slate-200 transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {enrichingKind === "lyrics" ? (
+              <SpinnerIcon className="h-4 w-4 animate-spin" />
+            ) : (
+              <DocumentIcon className="h-4 w-4" />
+            )}
+            {enrichingKind === "lyrics"
+              ? fill(labels.autoFillingLyrics, {
+                  done: progress.done,
+                  total: progress.total,
+                })
+              : labels.autoFillLyrics}
           </button>
           <button
             type="button"
@@ -719,7 +713,19 @@ export function SongTable({
                     {startIndex + index + 1}
                   </td>
                   <td className="px-4 py-2 font-medium text-white">
-                    {song.title}
+                    <button
+                      type="button"
+                      onClick={() => setEditing(song)}
+                      aria-haspopup="dialog"
+                      aria-label={fill(labels.editSong, { title: song.title })}
+                      className="group inline-flex items-center gap-1.5 text-left font-medium text-white transition hover:text-violet-300"
+                      title={labels.editYoutubeLyrics}
+                    >
+                      <span className="underline decoration-slate-700 decoration-dotted underline-offset-4 group-hover:decoration-violet-400">
+                        {song.title}
+                      </span>
+                      <PencilIcon className="h-3.5 w-3.5 shrink-0 text-slate-500 transition group-hover:text-violet-300" />
+                    </button>
                   </td>
                   <td className="px-4 py-2 text-slate-300">{song.artist}</td>
                   <td className="px-4 py-2 text-slate-400">
@@ -786,9 +792,9 @@ export function SongTable({
                     </a>
                   </td>
                   <td className="px-4 py-2">
-                    <LyricsPreview
-                      songId={song.id}
+                    <LyricsCell
                       preview={song.lyrics_preview}
+                      fullText={song.lyrics_text}
                       source={song.lyrics_source}
                     />
                   </td>
@@ -802,11 +808,15 @@ export function SongTable({
                     <button
                       type="button"
                       onClick={() => setEditing(song)}
+                      aria-haspopup="dialog"
                       aria-label={fill(labels.editSong, { title: song.title })}
                       title={labels.editYoutubeLyrics}
                       className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-800 hover:text-white"
                     >
                       <PencilIcon className="h-4 w-4" />
+                      <span className="ml-1 text-xs">
+                        {labels.colEdit}
+                      </span>
                     </button>
                   </td>
                 </tr>

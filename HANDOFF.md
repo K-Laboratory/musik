@@ -8,9 +8,10 @@ Completed:
 - Added `.env.local` for local development using the hosted Supabase project.
 - Added row selection and chunked re-classification to `/admin/songs`.
 - Extended `/api/admin/classify/batch` to accept explicit `songIds`.
-- Added YouTube, transient lyrics-preview, and last-analyzed columns to the
-  admin Songs table. Lyrics previews are fetched on demand from LRCLIB.
-- Added an editor for YouTube URLs and full lyrics, plus batch auto-fill.
+- Added YouTube, stored lyrics preview/full-text hover, and last-analyzed
+  columns to the admin Songs table. Hovering never triggers a lyrics lookup.
+- Added a per-song editor for YouTube URLs, full lyrics, and classification,
+  plus separate batch auto-fill actions for YouTube and lyrics.
 - Added tkaraoke and lyrics.vn lyrics providers and a YouTube match scorer.
 - Added EN/VI language switching across the app and admin pages.
 - Applied `20250103000000_catalog_enrichment.sql` to the hosted Supabase
@@ -35,6 +36,86 @@ otherwise a YouTube search for the title and artist.
 
 Next step: review auto-filled matches for ambiguous songs, then continue with
 the review UI in Step 4.
+
+## 2026-10-19 song browser
+
+Completed:
+
+- Removed the no-lyrics rule. Hovering a lyrics cell shows the text already
+  stored in `catalog_songs.lyrics_text`; it makes no network request.
+- Added an always-visible pencil beside each song title and a full editor for
+  YouTube URL, lyrics/source URL, emotion tags, confidence, primary tag,
+  valence/arousal, and review status.
+- Split batch auto-fill into `Auto-fill YouTube` and `Auto-fill lyrics`, each
+  calling `/api/admin/enrich` with its own `kind`.
+- Added server-side search, generation, emotion, content-status,
+  classification-status, and year-range filters.
+- Added server-side sorting by year, title, artist, recent classification,
+  recent addition, and lyrics update time.
+- Added page sizes 25/50/100/200, a page-jump control, and filter-preserving
+  pagination. Filter state lives in the URL.
+- Fixed EN/VI switching so it preserves the current query string.
+- Added `supabase/migrations/20250104000000_song_browse_indexes.sql` with
+  trigram search and browse/sort indexes for larger catalogs.
+
+Checks: `npm run typecheck` and `npm run lint` pass. Manual browser checks
+against the hosted Supabase project verified 99 missing-YouTube songs, 82
+missing-lyrics songs, 47 sad songs, 1 needs-review song, a 2000-2005 year
+range returning 52 songs, page-size and page-jump behavior, and both language
+directions with filters retained.
+
+Open items:
+
+- The index migration is written but has not been applied to Supabase yet.
+- Batch selection is per page; a server-side job would be needed to process
+  an entire multi-thousand-song filter in one run.
+
+## 2026-10-19 catalog build (2,100 songs)
+
+Completed:
+
+- Built a candidate pool from iTunes' Vietnamese catalog plus curated artist
+  rosters for each generation, filtering karaoke, covers, live/medley cuts,
+  and duplicate versions.
+- Selected and inserted 2,000 new songs. The catalog now has exactly 2,100
+  songs: 350 in each of `pre1975`, `genx`, `millennial`, `gen9x`, `genz`, and
+  `diaspora`. The previous 100 Millennial songs were retained.
+- Used era windows for the final selection: pre-1975 <=1975, Gen X 1975-2005,
+  Millennial 1995-2015, 9x 2005-2020, Gen Z 2015+, Diaspora 1980+.
+- Enriched YouTube links for 2,096 of 2,100 songs. Four remain unlinked
+  because the catalog metadata conflicts with the available videos or only
+  covers exist: "Tình Yêu Chắp Vá", "Đừng Hỏi Vì Sao", "Be Water My Friend",
+  and "Cơn Mưa Ngang Qua".
+- Filled lyrics for 1,377 of 2,100 songs using tkaraoke, lyrics.vn, and
+  LRCLIB. 723 rows still lack lyrics; most are newer/obscure album tracks or
+  titles that differ from the site listing.
+- Classified all 2,100 songs with `deepseek-chat`: 2,100 `song_analysis`
+  rows, one marked `needs_review`.
+- Current primary-emotion distribution is led by bittersweet (626), sad
+  (604), nostalgic (204), and tender (204). Quadrants: Q3 sad 1,105,
+  Q1 happy 534, Q4 relaxed 337, Q2 angry 124.
+
+Scripts added:
+
+- `scripts/build-catalog-seed.mjs`
+- `scripts/select-final.mjs`
+- `scripts/import-catalog.mjs`
+- `scripts/fill-missing.mjs`
+- `scripts/enrich-catalog.ts`
+- `scripts/infer-years.mjs`
+
+The local bulk admin `catalog-bot@musik.local` was created in Supabase Auth
+and added to `public.admin_emails`. Its password is only in `.env.local`.
+
+Checks: final database counts and the admin Songs page both show 2,100 rows
+with 350 per generation; `npm run typecheck` and `npm run lint` pass.
+
+Open items:
+
+- Review the four missing YouTube links and the 723 lyrics gaps in the admin
+  "Missing YouTube"/"Missing lyrics" filters.
+- Apply `20250104000000_song_browse_indexes.sql` before the catalog grows
+  further.
 
 ## Local-first workflow
 

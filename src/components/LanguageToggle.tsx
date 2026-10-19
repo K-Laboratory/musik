@@ -1,17 +1,16 @@
 "use client";
 
 import { useLanguage, useLabels } from "@/lib/disguise";
-import { usePathname } from "next/navigation";
 
 export function LanguageToggle({ compact = false }: { compact?: boolean }) {
   const { language, setLanguage } = useLanguage();
   const labels = useLabels();
-  const pathname = usePathname();
 
   const choose = (code: "en" | "vi") => {
     setLanguage(code);
+    const next = `${window.location.pathname}${window.location.search}`;
     window.location.assign(
-      `/api/language?language=${code}&next=${encodeURIComponent(pathname)}`,
+      `/api/language?language=${code}&next=${encodeURIComponent(next)}`,
     );
   };
 

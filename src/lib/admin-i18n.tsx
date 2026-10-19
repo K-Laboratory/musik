@@ -14,8 +14,42 @@ export interface AdminLabels {
 
   songsTitle: string;
   songCount: string;
+  songMatchCount: string;
   searchPlaceholder: string;
+  filterSearch: string;
+  clearSearch: string;
   allGenerations: string;
+  filterGeneration: string;
+  filterEmotion: string;
+  allEmotions: string;
+  sortBy: string;
+  filterContent: string;
+  filterClassification: string;
+  filterYearFrom: string;
+  filterYearTo: string;
+  perPage: string;
+  clearFilters: string;
+  goToPage: string;
+  go: string;
+  songsLoadFailed: string;
+  anyContent: string;
+  youtubeMissing: string;
+  youtubePresent: string;
+  lyricsMissing: string;
+  lyricsPresent: string;
+  bothPresent: string;
+  anyClassification: string;
+  classified: string;
+  needsReviewOnly: string;
+  notClassifiedOnly: string;
+  sortYearAsc: string;
+  sortYearDesc: string;
+  sortTitleAsc: string;
+  sortTitleDesc: string;
+  sortArtistAsc: string;
+  sortRecentlyAnalyzed: string;
+  sortRecentlyAdded: string;
+  sortLyricsUpdated: string;
   filter: string;
   previous: string;
   next: string;
@@ -25,9 +59,11 @@ export interface AdminLabels {
   clear: string;
   stop: string;
   stopping: string;
-  autoFillSelected: string;
+  autoFillYouTube: string;
+  autoFillLyrics: string;
   reclassifySelected: string;
-  autoFilling: string;
+  autoFillingYouTube: string;
+  autoFillingLyrics: string;
   reclassifying: string;
 
   colNumber: string;
@@ -55,6 +91,7 @@ export interface AdminLabels {
   notFound: string;
   unavailable: string;
   fullLyrics: string;
+  lyricsHoverHint: string;
   saved: string;
   noSongs: string;
   lowConfidence: string;
@@ -63,6 +100,7 @@ export interface AdminLabels {
   editYoutubeLyrics: string;
 
   autoFilledSummary: string;
+  autoFilledKindSummary: string;
   reclassifiedSummary: string;
   stoppedSummary: string;
   autoFillFailed: string;
@@ -82,6 +120,15 @@ export interface AdminLabels {
   characters: string;
   source: string;
   lyricsSourceUrl: string;
+  classification: string;
+  valence: string;
+  arousal: string;
+  needsReview: string;
+  primaryTag: string;
+  confidence: string;
+  classificationRequired: string;
+  maxTags: string;
+  invalidClassification: string;
   cancel: string;
   saveChanges: string;
   saving: string;
@@ -139,20 +186,57 @@ const EN: AdminLabels = {
 
   songsTitle: "Songs",
   songCount: "{count} songs in the catalog",
+  songMatchCount: "{count} songs match the current filters",
   searchPlaceholder: "Search title or artist...",
+  filterSearch: "Search",
+  clearSearch: "Clear search",
   allGenerations: "All generations",
+  filterGeneration: "Generation",
+  filterEmotion: "Emotion",
+  allEmotions: "All emotions",
+  sortBy: "Sort by",
+  filterContent: "Content",
+  filterClassification: "Classification",
+  filterYearFrom: "Year from",
+  filterYearTo: "Year to",
+  perPage: "Rows per page",
+  clearFilters: "Clear filters",
+  goToPage: "Go to page",
+  go: "Go",
+  songsLoadFailed: "Could not load songs.",
+  anyContent: "Any content",
+  youtubeMissing: "Missing YouTube",
+  youtubePresent: "Has YouTube",
+  lyricsMissing: "Missing lyrics",
+  lyricsPresent: "Has lyrics",
+  bothPresent: "Has both",
+  anyClassification: "Any classification",
+  classified: "Classified",
+  needsReviewOnly: "Needs review",
+  notClassifiedOnly: "Not classified",
+  sortYearAsc: "Year, oldest first",
+  sortYearDesc: "Year, newest first",
+  sortTitleAsc: "Title A-Z",
+  sortTitleDesc: "Title Z-A",
+  sortArtistAsc: "Artist A-Z",
+  sortRecentlyAnalyzed: "Recently classified",
+  sortRecentlyAdded: "Recently added",
+  sortLyricsUpdated: "Lyrics updated recently",
   filter: "Filter",
   previous: "Previous",
   next: "Next",
   pageOf: "Page {page} of {pages}",
-  selectSongs: "Select songs to edit or auto-fill.",
+  selectSongs:
+    "Select songs for batch actions, or click a song title to edit.",
   selected: "{count} selected.",
   clear: "Clear",
   stop: "Stop",
   stopping: "Stopping...",
-  autoFillSelected: "Auto-fill selected",
+  autoFillYouTube: "Auto-fill YouTube",
+  autoFillLyrics: "Auto-fill lyrics",
   reclassifySelected: "Re-classify selected",
-  autoFilling: "Auto-filling {done}/{total}",
+  autoFillingYouTube: "YouTube {done}/{total}",
+  autoFillingLyrics: "Lyrics {done}/{total}",
   reclassifying: "Re-classifying {done}/{total}",
 
   colNumber: "#",
@@ -180,15 +264,18 @@ const EN: AdminLabels = {
   notFound: "Not found",
   unavailable: "Unavailable",
   fullLyrics: "Full lyrics",
+  lyricsHoverHint: "Hover for full lyrics",
   saved: "Saved",
   noSongs: "No songs match. Run the seed migration to load the catalog.",
   lowConfidence: "Low confidence",
   loadPreview: "Load a short lyrics preview",
   lyricsLookupFailed: "Lyrics lookup failed",
-  editYoutubeLyrics: "Edit YouTube URL and lyrics",
+  editYoutubeLyrics: "Edit YouTube URL, lyrics, and classification",
 
   autoFilledSummary:
     "Auto-filled {updated} songs. {partial} partially updated. {skipped} already complete. {failed} need attention.",
+  autoFilledKindSummary:
+    "Updated {updated} songs. {skipped} already complete. {failed} need attention.",
   reclassifiedSummary: "Re-classified {count} songs. {failed} failed.",
   stoppedSummary: "Stopped after {done} of {total} songs.",
   autoFillFailed: "Auto-fill failed.",
@@ -208,6 +295,15 @@ const EN: AdminLabels = {
   characters: "{count} characters",
   source: "Source",
   lyricsSourceUrl: "Lyrics source URL (optional)",
+  classification: "Classification",
+  valence: "Valence (-2 to 2)",
+  arousal: "Arousal (-2 to 2)",
+  needsReview: "Needs review",
+  primaryTag: "Primary",
+  confidence: "Confidence",
+  classificationRequired: "Choose at least one emotion tag.",
+  maxTags: "Choose no more than 3 emotion tags.",
+  invalidClassification: "Valence and arousal must be between -2 and 2.",
   cancel: "Cancel",
   saveChanges: "Save changes",
   saving: "Saving...",
@@ -269,20 +365,57 @@ const VI: AdminLabels = {
 
   songsTitle: "Bài hát",
   songCount: "{count} bài hát trong danh mục",
+  songMatchCount: "{count} bài hát phù hợp với bộ lọc",
   searchPlaceholder: "Tìm tên bài hát hoặc ca sĩ...",
+  filterSearch: "Tìm kiếm",
+  clearSearch: "Xóa tìm kiếm",
   allGenerations: "Tất cả thế hệ",
+  filterGeneration: "Thế hệ",
+  filterEmotion: "Cảm xúc",
+  allEmotions: "Tất cả cảm xúc",
+  sortBy: "Sắp xếp",
+  filterContent: "Nội dung",
+  filterClassification: "Phân loại",
+  filterYearFrom: "Từ năm",
+  filterYearTo: "Đến năm",
+  perPage: "Số dòng mỗi trang",
+  clearFilters: "Xóa bộ lọc",
+  goToPage: "Đi tới trang",
+  go: "Đi",
+  songsLoadFailed: "Không tải được danh sách bài hát.",
+  anyContent: "Mọi nội dung",
+  youtubeMissing: "Thiếu YouTube",
+  youtubePresent: "Có YouTube",
+  lyricsMissing: "Thiếu lời bài hát",
+  lyricsPresent: "Có lời bài hát",
+  bothPresent: "Có cả hai",
+  anyClassification: "Mọi phân loại",
+  classified: "Đã phân loại",
+  needsReviewOnly: "Cần xem lại",
+  notClassifiedOnly: "Chưa phân loại",
+  sortYearAsc: "Năm, cũ nhất trước",
+  sortYearDesc: "Năm, mới nhất trước",
+  sortTitleAsc: "Tên A-Z",
+  sortTitleDesc: "Tên Z-A",
+  sortArtistAsc: "Ca sĩ A-Z",
+  sortRecentlyAnalyzed: "Phân loại gần đây",
+  sortRecentlyAdded: "Mới thêm gần đây",
+  sortLyricsUpdated: "Lời mới cập nhật",
   filter: "Lọc",
   previous: "Trước",
   next: "Tiếp",
   pageOf: "Trang {page} / {pages}",
-  selectSongs: "Chọn bài hát để sửa hoặc tự động điền.",
+  selectSongs:
+    "Chọn bài hát để thao tác hàng loạt, hoặc bấm tên bài hát để sửa.",
   selected: "Đã chọn {count}.",
   clear: "Bỏ chọn",
   stop: "Dừng",
   stopping: "Đang dừng...",
-  autoFillSelected: "Tự động điền mục đã chọn",
+  autoFillYouTube: "Tự động điền YouTube",
+  autoFillLyrics: "Tự động điền lời",
   reclassifySelected: "Phân loại lại mục đã chọn",
-  autoFilling: "Đang tự động điền {done}/{total}",
+  autoFillingYouTube: "YouTube {done}/{total}",
+  autoFillingLyrics: "Lời {done}/{total}",
   reclassifying: "Đang phân loại lại {done}/{total}",
 
   colNumber: "#",
@@ -310,15 +443,18 @@ const VI: AdminLabels = {
   notFound: "Không tìm thấy",
   unavailable: "Không khả dụng",
   fullLyrics: "Toàn bộ lời",
+  lyricsHoverHint: "Rê chuột để xem đầy đủ",
   saved: "Đã lưu",
   noSongs: "Không có bài hát phù hợp. Hãy chạy migration seed.",
   lowConfidence: "Độ tin cậy thấp",
   loadPreview: "Tải bản xem trước lời bài hát",
   lyricsLookupFailed: "Tìm lời bài hát thất bại",
-  editYoutubeLyrics: "Sửa đường dẫn YouTube và lời bài hát",
+  editYoutubeLyrics: "Sửa đường dẫn YouTube, lời bài hát và phân loại",
 
   autoFilledSummary:
     "Đã tự động điền {updated} bài. {partial} bài điền một phần. {skipped} bài đã đủ. {failed} bài cần chú ý.",
+  autoFilledKindSummary:
+    "Đã cập nhật {updated} bài. {skipped} bài đã đủ. {failed} bài cần chú ý.",
   reclassifiedSummary: "Đã phân loại lại {count} bài. {failed} bài lỗi.",
   stoppedSummary: "Đã dừng sau {done}/{total} bài.",
   autoFillFailed: "Tự động điền thất bại.",
@@ -338,6 +474,15 @@ const VI: AdminLabels = {
   characters: "{count} ký tự",
   source: "Nguồn",
   lyricsSourceUrl: "Đường dẫn nguồn lời (không bắt buộc)",
+  classification: "Phân loại",
+  valence: "Sắc thái (-2 đến 2)",
+  arousal: "Năng lượng (-2 đến 2)",
+  needsReview: "Cần xem lại",
+  primaryTag: "Chính",
+  confidence: "Độ tin cậy",
+  classificationRequired: "Chọn ít nhất một nhãn cảm xúc.",
+  maxTags: "Chỉ chọn tối đa 3 nhãn cảm xúc.",
+  invalidClassification: "Sắc thái và năng lượng phải nằm trong khoảng -2 đến 2.",
   cancel: "Hủy",
   saveChanges: "Lưu thay đổi",
   saving: "Đang lưu...",

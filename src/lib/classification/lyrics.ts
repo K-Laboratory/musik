@@ -19,7 +19,9 @@ export interface LyricsResult {
   url: string | null;
 }
 
-const REQUEST_TIMEOUT_MS = 12_000;
+const REQUEST_TIMEOUT_MS = Number(
+  process.env.LYRICS_REQUEST_TIMEOUT_MS ?? 12_000,
+);
 
 interface LyricsProvider {
   name: string;
@@ -158,13 +160,18 @@ const tkaraoke: LyricsProvider = {
 
     const candidates = [
       ...searchHtml.matchAll(
-        /<a[^>]+href="([^"]+\.html)"[^>]+title="([^"]*?)\s+lyric"/gi,
+        /<a[^>]+href="([^"]+\.html)"[^>]+title="([^"]*)"/gi,
       ),
-    ].slice(0, 8);
+    ]
+      .filter((candidate) => !candidate[1]!.startsWith("/mp3/"))
+      .slice(0, 12);
 
     for (const candidate of candidates) {
       const href = candidate[1]!;
-      const title = decodeHtml(candidate[2]!);
+      const title = decodeHtml(candidate[2]!)
+        .replace(/^Bài hát\s+/i, "")
+        .replace(/\s+lyrics?$/i, "")
+        .trim();
       if (!looselyMatches(title, song.title)) continue;
 
       const pageUrl = new URL(href, base).toString();
