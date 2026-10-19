@@ -20,3 +20,15 @@ YouTube search for the title and artist.
 
 Next step: fill `CLASSIFIER_API_KEY` in `.env.local` to run the classifier
 locally. Continue with the review UI in Step 4.
+
+## Local-first workflow
+
+- Current work branch: `codex/local-admin-login`. Do not push or merge until
+  the local change is reviewed. Vercel auto-deploys every push to `main`.
+- `.env.local` connects the local site to the hosted Supabase project.
+- The login page now supports email/password sign-in as well as OAuth.
+- Local Google login needs `http://localhost:3000/auth/callback` in Supabase
+  Authentication -> URL Configuration -> Redirect URLs.
+- For password login, use an existing confirmed Supabase Auth user with a
+  password, or create one in Authentication -> Users. Its email must also be
+  present in `public.admin_emails` for `/admin` access.

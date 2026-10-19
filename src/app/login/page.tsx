@@ -2,9 +2,11 @@ import { redirect } from "next/navigation";
 
 import { LoginBrand, LoginFooter } from "@/components/LoginBrand";
 import { OAuthButtons } from "@/components/OAuthButtons";
+import { PasswordLogin } from "@/components/PasswordLogin";
 import { SetupNotice } from "@/components/SetupNotice";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
+import { safeRedirectPath } from "@/lib/url";
 
 export const dynamic = "force-dynamic";
 
@@ -38,8 +40,7 @@ export default async function LoginPage({
     redirect("/dashboard");
   }
 
-  const nextPath =
-    params.next && params.next.startsWith("/") ? params.next : "/dashboard";
+  const nextPath = safeRedirectPath(params.next ?? null);
   const errorMessage = params.error
     ? (ERROR_MESSAGES[params.error] ?? ERROR_MESSAGES.auth)
     : null;
@@ -64,6 +65,10 @@ export default async function LoginPage({
         )}
 
         <OAuthButtons next={nextPath} />
+
+        <div className="mt-6">
+          <PasswordLogin next={nextPath} />
+        </div>
 
         <LoginFooter />
       </div>
