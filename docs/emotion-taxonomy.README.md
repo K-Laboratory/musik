@@ -1,7 +1,7 @@
 # Emotion Taxonomy (machine-readable)
 
-This JSON mirrors `emotion-taxonomy.md`. Only the taxonomy and generation
-labels are stored here — no lyrics, no copyrighted content.
+This JSON mirrors `emotion-taxonomy.md` and contains the taxonomy and
+generation labels.
 
 - `valence` / `arousal`: representative point on a −2..+2 plane.
 - `quadrant`: coarse Russell quadrant for fast filtering.

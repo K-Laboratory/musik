@@ -13,9 +13,8 @@ const UUID_RE =
 /**
  * GET /api/admin/lyrics?songId=...
  *
- * Returns a short transient lyrics preview for the admin table. The full
- * lyrics are never sent to the browser or persisted; `url` points at the
- * provider so the reviewer can open the lyrics there.
+ * Returns a short lyrics preview for the admin table. `url` points at the
+ * provider so the reviewer can open the full lyrics there.
  */
 export async function GET(request: Request) {
   if (!(await isCurrentUserAdmin())) {

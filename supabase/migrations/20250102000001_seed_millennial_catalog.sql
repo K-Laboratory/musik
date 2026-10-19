@@ -5,7 +5,7 @@
 -- Source of truth: docs/seed-catalog-millennial.md
 -- Safe to re-run: the unique index on (title, artist) makes this an upsert.
 --
--- No lyrics are stored - only title / artist / year / generation.
+-- This seed contains catalog metadata only.
 -- ============================================================================
 
 insert into public.catalog_songs (title, artist, year, generation_id, source) values

@@ -1,7 +1,7 @@
 # Pilot seed catalog — Millennials (thế hệ 8x)
 
 100 real Vietnamese songs that shaped the **8x (millennial)** generation,
-grouped by era. This is a *catalog* only: title, artist, year. No lyrics.
+grouped by era. This file contains the catalog metadata: title, artist, year.
 
 Purpose: seed the emotion-classification pilot (Step 2). Each row will later be
 enriched with a source URL / recording id and classified into the taxonomy in
@@ -117,13 +117,12 @@ approximate.
 
 ## Notes / next steps
 
-- Artists and titles are given for **identification**; no lyrics are included
-  or fetched by this repo.
+- Artists and titles are given for **identification**.
 - Step 2 (schema + admin dashboard) will add, per song: source/recording id,
   generation. Step 3 (pipeline) will add: emotions[], valence, arousal,
   confidence, model/version, rationale.
 - Covers of older repertoire (Trịnh Công Sơn, bolero) are included because
   they were strongly present in the 8x listening experience; the pipeline
   should tag the **recording/performer**, not just the composer.
-- **Known sample-data risk:** lyric quotes are intentionally absent; titles and
-  artists are factual metadata and safe to store.
+- This seed file contains song metadata only; the classification pipeline
+  fetches lyrics separately when needed.

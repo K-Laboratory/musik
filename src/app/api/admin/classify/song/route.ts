@@ -18,7 +18,7 @@ const TAXONOMY_VERSION = 1;
  * POST /api/admin/classify/song  { songId }
  *
  * Classifies a single catalog song:
- *   fetch lyrics (transient) -> LLM -> store ONLY derived tags.
+ *   fetch lyrics -> LLM -> store the derived classification.
  * Idempotent per (song, taxonomy_version).
  */
 export async function POST(request: Request) {

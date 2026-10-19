@@ -23,8 +23,7 @@ interface BatchResult {
 
 /**
  * Bulk-classification runner. Drives /api/admin/classify/batch in a loop,
- * showing live progress. Lyrics are fetched transiently server-side and never
- * stored.
+ * showing live progress. Lyrics are fetched server-side for each song.
  */
 export function ClassifyRunner() {
   const [status, setStatus] = useState<Status | null>(null);

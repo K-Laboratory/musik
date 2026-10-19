@@ -125,7 +125,7 @@ function LyricsPreview({ songId }: { songId: string }) {
   if (state.status === "none") {
     return (
       <span className="text-xs text-slate-600" title="No lyrics found">
-        No lyrics
+        Not found
       </span>
     );
   }

@@ -13,25 +13,19 @@ next.**
 | Pilot size | **100 songs, one generation** (Millennials / 8x) |
 | Catalog source | Curated seed list from research (`seed-catalog-millennial.md`) |
 | Home | Pilot inside **this repo**; split out later |
-| Lyrics | **Fetched transiently only. Never stored.** Only derived tags are persisted. |
+| Lyrics | Fetched from LRCLIB for classification; admin shows a short preview. |
 
-## Why lyrics are not stored (important)
+## Lyrics handling
 
-Storing full lyrics — even "for training" or "not for release" — is
-reproduction plus the creation of a derivative work, which is the conduct at
-issue in the major AI copyright suits. It also puts the operator (you) at risk
-and violates lyrics sites' terms. Instead:
-
-- The pipeline **fetches lyrics at analysis time and discards the text**.
-- It stores only **facts about the song**: emotions, valence, arousal,
-  confidence, model+version, and a short rationale.
-- Re-analysis when the taxonomy changes = re-fetch by source URL and re-run.
-  The pipeline is **idempotent and versioned**, so this is cheap.
-- If you later license a lyrics corpus, a `lyrics_ref` slot exists and nothing
-  else changes.
+- The pipeline fetches lyrics from the configured provider when classifying a
+  song.
+- The admin Songs table can load a short preview on demand and links to the
+  provider for the full text.
+- Classification results are versioned by taxonomy. Re-analysis is idempotent
+  and can fetch the lyrics again when needed.
 
 ```
-SONG CATALOG (safe)  →  [transient lyrics fetch]  →  ANALYSIS  →  EMOTION TAGS (safe)
+SONG CATALOG  →  [lyrics fetch]  →  ANALYSIS  →  EMOTION TAGS
 ```
 
 ## Proposed data model (Supabase)
@@ -89,11 +83,10 @@ Notes:
 - `POST /api/admin/classify/batch` — classify a small batch (max 10). The admin
   UI loops this until nothing is pending.
 
-Per song the server: fetches lyrics **transiently** (LRCLIB by default) →
+Per song the server: fetches lyrics (LRCLIB by default) →
 builds a prompt from the taxonomy → calls an OpenAI-compatible chat model →
-stores ONLY `song_analysis` (valence, arousal, quadrant, model, rationale,
-needs_review) and `song_emotions` (tags + confidence). Lyrics are never
-written to the database.
+stores `song_analysis` (valence, arousal, quadrant, model, rationale,
+needs_review) and `song_emotions` (tags + confidence).
 
 Env vars: the classifier accepts any OpenAI-compatible provider. Set
 `CLASSIFIER_API_KEY` (preferred), or `DEEPSEEK_API_KEY` / `OPENAI_API_KEY`.

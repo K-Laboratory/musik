@@ -8,7 +8,7 @@ Completed:
 - Added row selection and chunked re-classification to `/admin/songs`.
 - Extended `/api/admin/classify/batch` to accept explicit `songIds`.
 - Added YouTube, transient lyrics-preview, and last-analyzed columns to the
-  admin Songs table. Lyrics previews are fetched on demand and never stored.
+  admin Songs table. Lyrics previews are fetched on demand from LRCLIB.
 
 Checks: `npm run typecheck`, `npm run lint`, and `npm run build` pass.
 Live check: reclassified "Tình Thôi Xót Xa" from `/admin/songs`; the row

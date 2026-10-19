@@ -37,8 +37,7 @@ export default async function AdminOverviewPage() {
           Overview
         </h1>
         <p className="mt-1 text-sm text-slate-400">
-          Emotion classification database. Lyrics are never stored — only
-          derived tags.
+          Emotion classification database.
         </p>
       </div>
 

@@ -3,11 +3,10 @@ import "server-only";
 import type { CatalogSong, Emotion } from "@/lib/types";
 
 /**
- * Transient lyrics fetcher.
+ * Lyrics fetcher.
  *
- * IMPORTANT: the text returned here is used ONLY to build the model prompt and
- * is never persisted. The pipeline stores the derived classification, not the
- * lyrics. See docs/classification-plan.md.
+ * The text returned here is used to build the model prompt. The admin table
+ * also uses it for a short preview. See docs/classification-plan.md.
  *
  * Configure with LRCLIB or a licensed provider via env vars. If neither is
  * set, fetchLyrics returns null and the pipeline classifies from metadata
@@ -201,10 +200,8 @@ export async function fetchLyrics(
   return null;
 }
 
-/** A compact, non-copyrighted preview for storing in the rationale field. */
+/** Returns a compact length summary for reviewers. */
 export function lyricsFingerprint(text: string): string {
-  // We deliberately do NOT slice lyric text into the DB. This only reports a
-  // stable length so reviewers can tell whether lyrics were available.
   return `${text.trim().length} chars`;
 }
 
