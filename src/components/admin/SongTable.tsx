@@ -49,6 +49,7 @@ interface LogEntry {
 }
 
 const CHUNK_SIZE = 5;
+const DISPLAY_TIME_ZONE = "America/Anchorage";
 
 interface LyricsPreviewState {
   status: "idle" | "loading" | "ready" | "none" | "error";
@@ -176,6 +177,7 @@ function AnalyzedAt({
   const label = new Date(value).toLocaleString(undefined, {
     dateStyle: "medium",
     timeStyle: "short",
+    timeZone: DISPLAY_TIME_ZONE,
   });
 
   return (
