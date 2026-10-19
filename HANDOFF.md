@@ -117,6 +117,41 @@ Open items:
 - Apply `20250104000000_song_browse_indexes.sql` before the catalog grows
   further.
 
+## 2026-10-19 catalog expansion and popularity
+
+Completed:
+
+- Expanded the catalog to 5,000 songs. Per-generation totals: pre-1975 833,
+  Gen X 833, Millennial 834, 9x bridge 833, Gen Z 834, Diaspora 833.
+- Added `public.song_popularity` for detailed metrics and denormalized
+  `catalog_songs.popularity_score` for list sorting.
+- Scored 4,968 songs from YouTube statistics. Tiers: Viral 178, Popular 1,059,
+  Established 1,893, Niche 1,813, Deep cut 25.
+- Popularity score combines views, views per day, engagement
+  (likes + comments / views), channel subscribers, and upload recency into a
+  0-100 summary. The admin table shows the score, tier, and a hover breakdown.
+- Added "Most popular" and "Least popular" sorting.
+- Corrected pre-1975 years so the bucket now spans 1944-1975.
+- Current coverage: YouTube 4,968/5,000, lyrics 3,199/5,000, analysis
+  5,000/5,000, popularity 4,968/5,000.
+- Classification has 12 rows marked `needs_review`. Quadrants: Q3 sad 2,603,
+  Q1 happy 1,324, Q4 relaxed 757, Q2 angry 316.
+
+Scripts added:
+
+- `scripts/popularity.mjs`
+- `scripts/add-2900.mjs`
+- `scripts/fix-pre1975-years.mjs`
+
+Migration: `20250105000000_song_popularity.sql`.
+
+Open items:
+
+- 32 songs still lack YouTube links; 1,801 lack lyrics. Both are visible in
+  the admin filters.
+- The score is a YouTube-based proxy, not a chart-rank measure. Re-run
+  `scripts/popularity.mjs` after future enrichment to refresh it.
+
 ## Local-first workflow
 
 - Current work branch: `codex/catalog-enrichment`. Do not push or merge until

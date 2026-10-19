@@ -210,6 +210,7 @@ export interface Database {
           lyrics_source: string | null;
           lyrics_source_url: string | null;
           lyrics_updated_at: string | null;
+          popularity_score: number | null;
           created_at: string;
         };
         Insert: {
@@ -230,6 +231,7 @@ export interface Database {
           lyrics_source?: string | null;
           lyrics_source_url?: string | null;
           lyrics_updated_at?: string | null;
+          popularity_score?: number | null;
           created_at?: string;
         };
         Update: {
@@ -250,6 +252,7 @@ export interface Database {
           lyrics_source?: string | null;
           lyrics_source_url?: string | null;
           lyrics_updated_at?: string | null;
+          popularity_score?: number | null;
           created_at?: string;
         };
         Relationships: [];
@@ -320,6 +323,60 @@ export interface Database {
           rationale?: string | null;
           needs_review?: boolean;
           analyzed_at?: string;
+        };
+        Relationships: [];
+      };
+      song_popularity: {
+        Row: {
+          song_id: string;
+          youtube_video_id: string | null;
+          view_count: number | null;
+          like_count: number | null;
+          comment_count: number | null;
+          channel_id: string | null;
+          channel_subscribers: number | null;
+          published_at: string | null;
+          duration_seconds: number | null;
+          views_per_day: number | null;
+          engagement_rate: number | null;
+          popularity_score: number;
+          popularity_tier: string;
+          source: string;
+          calculated_at: string;
+        };
+        Insert: {
+          song_id: string;
+          youtube_video_id?: string | null;
+          view_count?: number | null;
+          like_count?: number | null;
+          comment_count?: number | null;
+          channel_id?: string | null;
+          channel_subscribers?: number | null;
+          published_at?: string | null;
+          duration_seconds?: number | null;
+          views_per_day?: number | null;
+          engagement_rate?: number | null;
+          popularity_score: number;
+          popularity_tier: string;
+          source?: string;
+          calculated_at?: string;
+        };
+        Update: {
+          song_id?: string;
+          youtube_video_id?: string | null;
+          view_count?: number | null;
+          like_count?: number | null;
+          comment_count?: number | null;
+          channel_id?: string | null;
+          channel_subscribers?: number | null;
+          published_at?: string | null;
+          duration_seconds?: number | null;
+          views_per_day?: number | null;
+          engagement_rate?: number | null;
+          popularity_score?: number;
+          popularity_tier?: string;
+          source?: string;
+          calculated_at?: string;
         };
         Relationships: [];
       };

@@ -123,6 +123,8 @@ export function SongsFilter({
     title_asc: labels.sortTitleAsc,
     title_desc: labels.sortTitleDesc,
     artist_asc: labels.sortArtistAsc,
+    popularity_desc: labels.sortPopularityDesc,
+    popularity_asc: labels.sortPopularityAsc,
     recently_analyzed: labels.sortRecentlyAnalyzed,
     recently_added: labels.sortRecentlyAdded,
     lyrics_updated: labels.sortLyricsUpdated,

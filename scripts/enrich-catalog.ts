@@ -38,6 +38,7 @@ const ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const TAXONOMY_VERSION = 1;
 const YOUTUBE_DELAY_MS = 850;
 const LIMIT = Number(process.env.ENRICH_LIMIT ?? "0");
+const OFFSET = Number(process.env.ENRICH_OFFSET ?? "0");
 const LYRICS_CONCURRENCY = Number(process.env.LYRICS_CONCURRENCY ?? "4");
 const execFileAsync = promisify(execFile);
 const YOUTUBE_UA =
@@ -70,6 +71,13 @@ function headers(): Record<string, string> {
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function slicePending<T>(items: T[]): T[] {
+  return items.slice(
+    OFFSET,
+    LIMIT > 0 ? OFFSET + LIMIT : undefined,
+  );
 }
 
 function parseViews(text: string): number {
@@ -313,9 +321,9 @@ async function pool<T>(
 
 async function youtubeStage(songs: CatalogSong[]) {
   const done = await loadProgress("youtube");
-  const pending = songs
-    .filter((song) => !song.youtube_url && !done.has(song.id))
-    .slice(0, LIMIT > 0 ? LIMIT : undefined);
+  const pending = slicePending(
+    songs.filter((song) => !song.youtube_url && !done.has(song.id)),
+  );
   console.log(`youtube pending ${pending.length}`);
   let ok = 0;
   let failed = 0;
@@ -350,9 +358,9 @@ async function youtubeStage(songs: CatalogSong[]) {
 
 async function lyricsStage(songs: CatalogSong[]) {
   const done = await loadProgress("lyrics");
-  const pending = songs
-    .filter((song) => !song.lyrics_text && !done.has(song.id))
-    .slice(0, LIMIT > 0 ? LIMIT : undefined);
+  const pending = slicePending(
+    songs.filter((song) => !song.lyrics_text && !done.has(song.id)),
+  );
   console.log(`lyrics pending ${pending.length}`);
   let ok = 0;
   let failed = 0;
@@ -410,9 +418,9 @@ async function analysisStage(songs: CatalogSong[]) {
     ),
   );
   const done = await loadProgress("analysis");
-  const pending = songs
-    .filter((song) => !analyzed.has(song.id) && !done.has(song.id))
-    .slice(0, LIMIT > 0 ? LIMIT : undefined);
+  const pending = slicePending(
+    songs.filter((song) => !analyzed.has(song.id) && !done.has(song.id)),
+  );
   console.log(`analysis pending ${pending.length}`);
 
   let ok = 0;

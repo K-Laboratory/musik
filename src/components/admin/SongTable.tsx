@@ -52,6 +52,17 @@ export interface AdminSongRow {
     analyzed_at: string;
     model: string | null;
   } | null;
+  popularity: {
+    view_count: number | null;
+    like_count: number | null;
+    comment_count: number | null;
+    channel_subscribers: number | null;
+    published_at: string | null;
+    views_per_day: number | null;
+    engagement_rate: number | null;
+    popularity_score: number;
+    popularity_tier: string;
+  } | null;
 }
 
 interface BatchResponse {
@@ -202,6 +213,125 @@ function LyricsCell({
               {source ? ` - ${source}` : ""}
             </p>
             <p className="whitespace-pre-wrap">{fullText}</p>
+          </div>,
+          document.body,
+        )}
+    </>
+  );
+}
+
+function PopularityCell({
+  popularity,
+}: {
+  popularity: AdminSongRow["popularity"];
+}) {
+  const labels = useAdminLabels();
+  const { language } = useLanguage();
+  const [tip, setTip] = useState<{ left: number; top: number } | null>(null);
+
+  if (!popularity) {
+    return <span className="text-xs text-slate-600">-</span>;
+  }
+
+  const tierLabels: Record<string, string> = {
+    Viral: labels.tierViral,
+    Popular: labels.tierPopular,
+    Established: labels.tierEstablished,
+    Niche: labels.tierNiche,
+    "Deep cut": labels.tierDeepCut,
+  };
+  const tierClass: Record<string, string> = {
+    Viral: "bg-fuchsia-500/20 text-fuchsia-200",
+    Popular: "bg-emerald-500/20 text-emerald-200",
+    Established: "bg-sky-500/20 text-sky-200",
+    Niche: "bg-slate-700 text-slate-200",
+    "Deep cut": "bg-amber-500/20 text-amber-200",
+  };
+  const locale = language === "vi" ? "vi-VN" : "en-US";
+  const compact = (value: number | null) =>
+    value === null
+      ? "-"
+      : new Intl.NumberFormat(locale, {
+          notation: "compact",
+          maximumFractionDigits: 1,
+        }).format(value);
+
+  const show = (element: HTMLDivElement) => {
+    const rect = element.getBoundingClientRect();
+    const width = Math.min(280, window.innerWidth - 24);
+    setTip({
+      left: Math.min(
+        Math.max(12, rect.left),
+        Math.max(12, window.innerWidth - width - 12),
+      ),
+      top: Math.min(rect.bottom + 8, window.innerHeight - 260),
+    });
+  };
+
+  const tierLabel =
+    tierLabels[popularity.popularity_tier] ?? popularity.popularity_tier;
+  const tierColor =
+    tierClass[popularity.popularity_tier] ?? tierClass.Niche;
+
+  return (
+    <>
+      <div
+        className="cursor-help"
+        onMouseEnter={(event) => show(event.currentTarget)}
+        onMouseLeave={() => setTip(null)}
+      >
+        <span
+          className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold tabular-nums ${tierColor}`}
+        >
+          {popularity.popularity_score.toFixed(1)}
+        </span>
+        <span className="mt-0.5 block text-[11px] text-slate-500">
+          {tierLabel}
+        </span>
+      </div>
+      {tip &&
+        createPortal(
+          <div
+            className="fixed z-[60] w-[280px] rounded-xl border border-slate-700 bg-slate-950 p-3 text-xs shadow-2xl"
+            style={{ left: tip.left, top: tip.top }}
+          >
+            <p className="mb-2 text-[11px] font-medium uppercase tracking-wide text-slate-500">
+              {labels.popularity}
+            </p>
+            <dl className="grid grid-cols-[1fr_auto] gap-x-3 gap-y-1.5 text-slate-300">
+              <dt>{labels.popularityScore}</dt>
+              <dd className="tabular-nums text-white">
+                {popularity.popularity_score.toFixed(1)}
+              </dd>
+              <dt>{labels.popularityViews}</dt>
+              <dd className="tabular-nums">{compact(popularity.view_count)}</dd>
+              <dt>{labels.popularityLikes}</dt>
+              <dd className="tabular-nums">{compact(popularity.like_count)}</dd>
+              <dt>{labels.popularityComments}</dt>
+              <dd className="tabular-nums">
+                {compact(popularity.comment_count)}
+              </dd>
+              <dt>{labels.popularitySubscribers}</dt>
+              <dd className="tabular-nums">
+                {compact(popularity.channel_subscribers)}
+              </dd>
+              <dt>{labels.popularityViewsPerDay}</dt>
+              <dd className="tabular-nums">
+                {compact(popularity.views_per_day)}
+              </dd>
+              <dt>{labels.popularityEngagement}</dt>
+              <dd className="tabular-nums">
+                {popularity.engagement_rate === null
+                  ? "-"
+                  : `${(popularity.engagement_rate * 100).toFixed(1)}%`}
+              </dd>
+              <dt>{labels.popularityPublished}</dt>
+              <dd>
+                {popularity.published_at
+                  ? new Date(popularity.published_at).toLocaleDateString(locale)
+                  : "-"}
+              </dd>
+            </dl>
           </div>,
           document.body,
         )}
@@ -659,7 +789,7 @@ export function SongTable({
       )}
 
       <div className="overflow-x-auto rounded-2xl border border-slate-800">
-        <table className="w-full min-w-[1260px] text-left text-sm">
+        <table className="w-full min-w-[1360px] text-left text-sm">
           <thead className="bg-slate-900/60 text-xs uppercase tracking-wide text-slate-400">
             <tr>
               <th className="w-10 px-4 py-2.5">
@@ -679,6 +809,9 @@ export function SongTable({
               <th className="px-4 py-2.5 font-medium">{labels.colYear}</th>
               <th className="px-4 py-2.5 font-medium">{labels.colEmotions}</th>
               <th className="px-4 py-2.5 font-medium">{labels.colVA}</th>
+              <th className="px-4 py-2.5 font-medium">
+                {labels.colPopularity}
+              </th>
               <th className="px-4 py-2.5 font-medium">{labels.colYouTube}</th>
               <th className="px-4 py-2.5 font-medium">{labels.colLyrics}</th>
               <th className="px-4 py-2.5 font-medium">{labels.colAnalyzed}</th>
@@ -774,6 +907,9 @@ export function SongTable({
                       : "-"}
                   </td>
                   <td className="px-4 py-2">
+                    <PopularityCell popularity={song.popularity} />
+                  </td>
+                  <td className="px-4 py-2">
                     <a
                       href={youtube.href}
                       target="_blank"
@@ -825,7 +961,7 @@ export function SongTable({
             {songs.length === 0 && (
               <tr>
                 <td
-                  colSpan={11}
+                  colSpan={12}
                   className="px-4 py-10 text-center text-slate-500"
                 >
                   {labels.noSongs}

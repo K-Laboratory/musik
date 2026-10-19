@@ -23,6 +23,8 @@ export const SONG_SORTS = [
   "title_asc",
   "title_desc",
   "artist_asc",
+  "popularity_desc",
+  "popularity_asc",
   "recently_analyzed",
   "recently_added",
   "lyrics_updated",

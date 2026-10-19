@@ -139,6 +139,16 @@ export default async function AdminSongsPage({
         .order("year", { ascending: true, nullsFirst: false })
         .order("title", { ascending: true });
       break;
+    case "popularity_desc":
+      request = request
+        .order("popularity_score", { ascending: false, nullsFirst: false })
+        .order("title", { ascending: true });
+      break;
+    case "popularity_asc":
+      request = request
+        .order("popularity_score", { ascending: true, nullsFirst: false })
+        .order("title", { ascending: true });
+      break;
     case "recently_analyzed":
       request = request
         .order("analyzed_at", {
@@ -183,7 +193,8 @@ export default async function AdminSongsPage({
 
   const songIds = (songs ?? []).map((s) => s.id);
 
-  const [{ data: emotionRows }, { data: analysisRows }] = await Promise.all([
+  const [{ data: emotionRows }, { data: analysisRows }, { data: popularityRows }] =
+    await Promise.all([
     songIds.length
       ? supabase.from("song_emotions").select("*").in("song_id", songIds)
       : Promise.resolve({
@@ -213,7 +224,26 @@ export default async function AdminSongsPage({
             model: string | null;
           }[],
         }),
-  ]);
+      songIds.length
+        ? supabase
+            .from("song_popularity")
+            .select(
+              "song_id,view_count,like_count,comment_count,channel_subscribers,published_at,views_per_day,engagement_rate,popularity_score,popularity_tier",
+            )
+            .in("song_id", songIds)
+        : Promise.resolve({ data: [] as {
+            song_id: string;
+            view_count: number | null;
+            like_count: number | null;
+            comment_count: number | null;
+            channel_subscribers: number | null;
+            published_at: string | null;
+            views_per_day: number | null;
+            engagement_rate: number | null;
+            popularity_score: number;
+            popularity_tier: string;
+          }[] }),
+    ]);
 
   const emotionById = new Map((emotions ?? []).map((e) => [e.id, e]));
 
@@ -242,6 +272,9 @@ export default async function AdminSongsPage({
   for (const list of tagsBySong.values()) list.sort((a, b) => b.confidence - a.confidence);
 
   const analysisBySong = new Map((analysisRows ?? []).map((a) => [a.song_id, a]));
+  const popularityBySong = new Map(
+    (popularityRows ?? []).map((row) => [row.song_id, row]),
+  );
 
   const rows: AdminSongRow[] = (songs ?? []).map((song) => {
     const analysis = analysisBySong.get(song.id);
@@ -270,6 +303,7 @@ export default async function AdminSongsPage({
             model: analysis.model,
           }
         : null,
+      popularity: popularityBySong.get(song.id) ?? null,
     };
   });
 

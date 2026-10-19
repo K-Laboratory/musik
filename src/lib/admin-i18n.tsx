@@ -47,6 +47,8 @@ export interface AdminLabels {
   sortTitleAsc: string;
   sortTitleDesc: string;
   sortArtistAsc: string;
+  sortPopularityDesc: string;
+  sortPopularityAsc: string;
   sortRecentlyAnalyzed: string;
   sortRecentlyAdded: string;
   sortLyricsUpdated: string;
@@ -72,6 +74,7 @@ export interface AdminLabels {
   colYear: string;
   colEmotions: string;
   colVA: string;
+  colPopularity: string;
   colYouTube: string;
   colLyrics: string;
   colAnalyzed: string;
@@ -98,6 +101,21 @@ export interface AdminLabels {
   loadPreview: string;
   lyricsLookupFailed: string;
   editYoutubeLyrics: string;
+  popularity: string;
+  popularityScore: string;
+  popularityViews: string;
+  popularityLikes: string;
+  popularityComments: string;
+  popularitySubscribers: string;
+  popularityViewsPerDay: string;
+  popularityEngagement: string;
+  popularityPublished: string;
+  noPopularity: string;
+  tierViral: string;
+  tierPopular: string;
+  tierEstablished: string;
+  tierNiche: string;
+  tierDeepCut: string;
 
   autoFilledSummary: string;
   autoFilledKindSummary: string;
@@ -219,6 +237,8 @@ const EN: AdminLabels = {
   sortTitleAsc: "Title A-Z",
   sortTitleDesc: "Title Z-A",
   sortArtistAsc: "Artist A-Z",
+  sortPopularityDesc: "Most popular",
+  sortPopularityAsc: "Least popular",
   sortRecentlyAnalyzed: "Recently classified",
   sortRecentlyAdded: "Recently added",
   sortLyricsUpdated: "Lyrics updated recently",
@@ -245,6 +265,7 @@ const EN: AdminLabels = {
   colYear: "Year",
   colEmotions: "Emotions",
   colVA: "V / A",
+  colPopularity: "Popularity",
   colYouTube: "YouTube",
   colLyrics: "Lyrics",
   colAnalyzed: "Analyzed",
@@ -271,6 +292,21 @@ const EN: AdminLabels = {
   loadPreview: "Load a short lyrics preview",
   lyricsLookupFailed: "Lyrics lookup failed",
   editYoutubeLyrics: "Edit YouTube URL, lyrics, and classification",
+  popularity: "Popularity",
+  popularityScore: "Score",
+  popularityViews: "Views",
+  popularityLikes: "Likes",
+  popularityComments: "Comments",
+  popularitySubscribers: "Channel subscribers",
+  popularityViewsPerDay: "Views / day",
+  popularityEngagement: "Engagement",
+  popularityPublished: "Published",
+  noPopularity: "No popularity data",
+  tierViral: "Viral",
+  tierPopular: "Popular",
+  tierEstablished: "Established",
+  tierNiche: "Niche",
+  tierDeepCut: "Deep cut",
 
   autoFilledSummary:
     "Auto-filled {updated} songs. {partial} partially updated. {skipped} already complete. {failed} need attention.",
@@ -398,6 +434,8 @@ const VI: AdminLabels = {
   sortTitleAsc: "Tên A-Z",
   sortTitleDesc: "Tên Z-A",
   sortArtistAsc: "Ca sĩ A-Z",
+  sortPopularityDesc: "Phổ biến nhất",
+  sortPopularityAsc: "Ít phổ biến nhất",
   sortRecentlyAnalyzed: "Phân loại gần đây",
   sortRecentlyAdded: "Mới thêm gần đây",
   sortLyricsUpdated: "Lời mới cập nhật",
@@ -424,6 +462,7 @@ const VI: AdminLabels = {
   colYear: "Năm",
   colEmotions: "Cảm xúc",
   colVA: "V / A",
+  colPopularity: "Độ phổ biến",
   colYouTube: "YouTube",
   colLyrics: "Lời bài hát",
   colAnalyzed: "Đã phân tích",
@@ -450,6 +489,21 @@ const VI: AdminLabels = {
   loadPreview: "Tải bản xem trước lời bài hát",
   lyricsLookupFailed: "Tìm lời bài hát thất bại",
   editYoutubeLyrics: "Sửa đường dẫn YouTube, lời bài hát và phân loại",
+  popularity: "Độ phổ biến",
+  popularityScore: "Điểm",
+  popularityViews: "Lượt xem",
+  popularityLikes: "Lượt thích",
+  popularityComments: "Bình luận",
+  popularitySubscribers: "Người đăng ký kênh",
+  popularityViewsPerDay: "Lượt xem / ngày",
+  popularityEngagement: "Tương tác",
+  popularityPublished: "Ngày đăng",
+  noPopularity: "Chưa có dữ liệu phổ biến",
+  tierViral: "Bùng nổ",
+  tierPopular: "Phổ biến",
+  tierEstablished: "Ổn định",
+  tierNiche: "Ngách",
+  tierDeepCut: "Ít người biết",
 
   autoFilledSummary:
     "Đã tự động điền {updated} bài. {partial} bài điền một phần. {skipped} bài đã đủ. {failed} bài cần chú ý.",
