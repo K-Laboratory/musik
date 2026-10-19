@@ -156,8 +156,11 @@ export interface Database {
         Row: {
           id: string;
           name: string;
+          name_vi: string | null;
           definition: string | null;
+          definition_vi: string | null;
           sounds_like: string | null;
+          sounds_like_vi: string | null;
           valence: number;
           arousal: number;
           quadrant: string;
@@ -165,8 +168,11 @@ export interface Database {
         Insert: {
           id: string;
           name: string;
+          name_vi?: string | null;
           definition?: string | null;
+          definition_vi?: string | null;
           sounds_like?: string | null;
+          sounds_like_vi?: string | null;
           valence: number;
           arousal: number;
           quadrant: string;
@@ -174,8 +180,11 @@ export interface Database {
         Update: {
           id?: string;
           name?: string;
+          name_vi?: string | null;
           definition?: string | null;
+          definition_vi?: string | null;
           sounds_like?: string | null;
+          sounds_like_vi?: string | null;
           valence?: number;
           arousal?: number;
           quadrant?: string;

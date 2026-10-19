@@ -15,6 +15,9 @@ Completed:
 - Added EN/VI language switching across the app and admin pages.
 - Applied `20250103000000_catalog_enrichment.sql` to the hosted Supabase
   project. It adds YouTube and lyrics columns to `catalog_songs`.
+- Applied `20250103000001_emotion_translations.sql` to the hosted Supabase
+  project. It adds Vietnamese name, definition, and sounds-like columns to
+  `emotions`; IDs remain stable in English.
 
 Checks: `npm run typecheck`, `npm run lint`, and `npm run build` pass.
 Live check: reclassified "Tình Thôi Xót Xa" from `/admin/songs`; the row

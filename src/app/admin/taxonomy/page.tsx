@@ -1,3 +1,5 @@
+import { cookies } from "next/headers";
+
 import { createClient } from "@/lib/supabase/server";
 import { AdminText } from "@/lib/admin-i18n";
 
@@ -8,7 +10,19 @@ function pct(value: number): number {
   return ((Math.max(-2, Math.min(2, value)) + 2) / 4) * 100;
 }
 
+function quadrantLabel(quadrant: string, language: "en" | "vi"): string {
+  const labels: Record<string, [string, string]> = {
+    Q1_happy: ["Q1 - Happy / Activated", "Q1 - Vui / Kích hoạt"],
+    Q2_angry: ["Q2 - Angry / Tense", "Q2 - Giận / Căng"],
+    Q3_sad: ["Q3 - Sad / Low", "Q3 - Buồn / Trầm"],
+    Q4_relaxed: ["Q4 - Relaxed / Calm", "Q4 - Thư giãn / Bình yên"],
+  };
+  return labels[quadrant]?.[language === "vi" ? 1 : 0] ?? quadrant;
+}
+
 export default async function AdminTaxonomyPage() {
+  const language =
+    (await cookies()).get("musik_lang")?.value === "vi" ? "vi" : "en";
   const supabase = await createClient();
   const { data: emotions } = await supabase
     .from("emotions")
@@ -37,15 +51,15 @@ export default async function AdminTaxonomyPage() {
           <div className="absolute left-1/2 top-0 h-full w-px bg-slate-700/70" />
           <div className="absolute top-1/2 left-0 h-px w-full bg-slate-700/70" />
           <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs text-slate-500">
-            valence →
+            {language === "vi" ? "sắc thái →" : "valence →"}
           </span>
           <span className="absolute top-1/2 -left-6 -translate-y-1/2 -rotate-90 text-xs text-slate-500">
-            arousal →
+            {language === "vi" ? "năng lượng →" : "arousal →"}
           </span>
           {list.map((emotion) => (
             <span
               key={emotion.id}
-              title={`${emotion.name} (v=${emotion.valence}, a=${emotion.arousal})`}
+              title={`${language === "vi" ? emotion.name_vi ?? emotion.name : emotion.name} (v=${emotion.valence}, a=${emotion.arousal})`}
               className="absolute h-2.5 w-2.5 -translate-x-1/2 translate-y-1/2 rounded-full bg-violet-400 ring-2 ring-violet-400/20"
               style={{
                 left: `${pct(emotion.valence)}%`,
@@ -65,6 +79,7 @@ export default async function AdminTaxonomyPage() {
             <tr>
               <th className="px-4 py-2.5 font-medium"><AdminText k="id" /></th>
               <th className="px-4 py-2.5 font-medium"><AdminText k="name" /></th>
+              <th className="px-4 py-2.5 font-medium"><AdminText k="definition" /></th>
               <th className="px-4 py-2.5 font-medium"><AdminText k="soundsLike" /></th>
               <th className="px-4 py-2.5 font-medium"><AdminText k="quadrant" /></th>
               <th className="px-4 py-2.5 text-right font-medium">V</th>
@@ -78,13 +93,20 @@ export default async function AdminTaxonomyPage() {
                   {emotion.id}
                 </td>
                 <td className="px-4 py-2 font-medium text-white">
-                  {emotion.name}
+                  {language === "vi" ? emotion.name_vi ?? emotion.name : emotion.name}
                 </td>
                 <td className="px-4 py-2 text-slate-400">
-                  {emotion.sounds_like}
+                  {language === "vi"
+                    ? emotion.definition_vi ?? emotion.definition
+                    : emotion.definition}
                 </td>
                 <td className="px-4 py-2 text-slate-400">
-                  {emotion.quadrant}
+                  {language === "vi"
+                    ? emotion.sounds_like_vi ?? emotion.sounds_like
+                    : emotion.sounds_like}
+                </td>
+                <td className="px-4 py-2 text-slate-400">
+                  {quadrantLabel(emotion.quadrant, language)}
                 </td>
                 <td className="px-4 py-2 text-right tabular-nums text-slate-300">
                   {emotion.valence.toFixed(1)}
@@ -97,7 +119,7 @@ export default async function AdminTaxonomyPage() {
             {list.length === 0 && (
               <tr>
                 <td
-                  colSpan={6}
+                  colSpan={7}
                   className="px-4 py-10 text-center text-slate-500"
                 >
                   <AdminText k="noEmotions" />

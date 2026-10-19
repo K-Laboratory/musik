@@ -30,7 +30,13 @@ export interface AdminSongRow {
   lyrics_preview: string | null;
   lyrics_source: string | null;
   has_lyrics: boolean;
-  tags: { name: string; confidence: number; is_primary: boolean }[];
+  tags: {
+    id: string;
+    name: string;
+    name_vi: string | null;
+    confidence: number;
+    is_primary: boolean;
+  }[];
   analysis: {
     valence: number | null;
     arousal: number | null;
@@ -292,6 +298,7 @@ export function SongTable({
 }) {
   const router = useRouter();
   const labels = useAdminLabels();
+  const { language } = useLanguage();
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [running, setRunning] = useState(false);
   const [enriching, setEnriching] = useState(false);
@@ -725,9 +732,14 @@ export function SongTable({
                       </span>
                     ) : (
                       <span className="flex flex-wrap gap-1">
-                        {song.tags.map((tag) => (
+                        {song.tags.map((tag) => {
+                          const tagLabel =
+                            language === "vi" && tag.name_vi
+                              ? tag.name_vi
+                              : tag.name;
+                          return (
                           <span
-                            key={tag.name}
+                            key={tag.id}
                             className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${
                               tag.is_primary
                                 ? "bg-violet-600/25 text-violet-100"
@@ -735,9 +747,10 @@ export function SongTable({
                             }`}
                             title={`confidence ${tag.confidence.toFixed(2)}`}
                           >
-                            {tag.name}
+                            {tagLabel}
                           </span>
-                        ))}
+                          );
+                        })}
                         {song.analysis?.needs_review && (
                           <span
                             className="rounded-full bg-amber-500/20 px-2 py-0.5 text-[11px] font-medium text-amber-200"

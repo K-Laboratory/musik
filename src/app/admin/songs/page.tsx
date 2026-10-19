@@ -61,16 +61,28 @@ export default async function AdminSongsPage({
       songIds.length
         ? supabase.from("song_analysis").select("*").in("song_id", songIds)
         : Promise.resolve({ data: [] as { song_id: string; quadrant: string | null; valence: number | null; arousal: number | null; needs_review: boolean; analyzed_at: string; model: string | null }[] }),
-      supabase.from("emotions").select("id, name"),
+      supabase.from("emotions").select("id, name, name_vi"),
     ]);
 
-  const emotionName = new Map((emotions ?? []).map((e) => [e.id, e.name]));
+  const emotionById = new Map((emotions ?? []).map((e) => [e.id, e]));
 
-  const tagsBySong = new Map<string, { name: string; confidence: number; is_primary: boolean }[]>();
+  const tagsBySong = new Map<
+    string,
+    {
+      id: string;
+      name: string;
+      name_vi: string | null;
+      confidence: number;
+      is_primary: boolean;
+    }[]
+  >();
   for (const row of emotionRows ?? []) {
     const list = tagsBySong.get(row.song_id) ?? [];
+    const emotion = emotionById.get(row.emotion_id);
     list.push({
-      name: emotionName.get(row.emotion_id) ?? row.emotion_id,
+      id: row.emotion_id,
+      name: emotion?.name ?? row.emotion_id,
+      name_vi: emotion?.name_vi ?? null,
       confidence: row.confidence,
       is_primary: row.is_primary,
     });

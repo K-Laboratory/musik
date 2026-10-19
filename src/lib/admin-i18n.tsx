@@ -113,6 +113,7 @@ export interface AdminLabels {
   topRight: string;
   id: string;
   name: string;
+  definition: string;
   soundsLike: string;
   quadrant: string;
   noEmotions: string;
@@ -239,6 +240,7 @@ const EN: AdminLabels = {
   topRight: "Top-right = happy and energetic",
   id: "ID",
   name: "Name",
+  definition: "Definition",
   soundsLike: "Sounds like",
   quadrant: "Quadrant",
   noEmotions:
@@ -363,11 +365,12 @@ const VI: AdminLabels = {
 
   taxonomyTitle: "Phân loại cảm xúc",
   taxonomyDescription:
-    "{count} nhóm cảm xúc trên mặt phẳng valence-arousal. Mỗi bài hát được gắn một hoặc nhiều nhãn, kèm tọa độ V-A.",
+    "{count} nhóm cảm xúc trên mặt phẳng sắc thái - năng lượng. Mỗi bài hát được gắn một hoặc nhiều nhãn, kèm tọa độ V-A.",
   bottomLeft: "Góc dưới trái = buồn và tĩnh",
   topRight: "Góc trên phải = vui và sôi động",
   id: "ID",
   name: "Tên",
+  definition: "Định nghĩa",
   soundsLike: "Nghe giống",
   quadrant: "Góc phần tư",
   noEmotions: "Chưa có cảm xúc. Hãy chạy migration để seed taxonomy.",
