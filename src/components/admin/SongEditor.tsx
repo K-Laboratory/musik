@@ -274,7 +274,7 @@ export function SongEditor({
                   htmlFor="song-lyrics"
                   className="text-sm font-medium text-slate-200"
                 >
-                  Lyrics
+                  {labels.lyrics}
                 </label>
                 <button
                   type="button"
@@ -295,7 +295,7 @@ export function SongEditor({
                 value={lyricsText}
                 onChange={(event) => setLyricsText(event.target.value)}
                 rows={14}
-                placeholder="Paste or edit the lyrics here."
+                placeholder={labels.lyricsPlaceholder}
                 className="w-full resize-y rounded-lg border border-slate-700 bg-slate-950 px-3 py-2.5 font-sans text-sm leading-relaxed text-white placeholder:text-slate-600 focus:border-violet-500 focus:outline-none"
               />
               <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">

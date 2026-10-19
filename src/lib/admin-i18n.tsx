@@ -77,6 +77,7 @@ export interface AdminLabels {
   matched: string;
   lyrics: string;
   findLyrics: string;
+  lyricsPlaceholder: string;
   noSavedLyrics: string;
   characters: string;
   source: string;
@@ -201,6 +202,7 @@ const EN: AdminLabels = {
   matched: "Matched",
   lyrics: "Lyrics",
   findLyrics: "Find lyrics",
+  lyricsPlaceholder: "Paste or edit the lyrics here.",
   noSavedLyrics: "No saved lyrics yet.",
   characters: "{count} characters",
   source: "Source",
@@ -329,6 +331,7 @@ const VI: AdminLabels = {
   matched: "Đã khớp",
   lyrics: "Lời bài hát",
   findLyrics: "Tìm lời bài hát",
+  lyricsPlaceholder: "Dán hoặc sửa lời bài hát ở đây.",
   noSavedLyrics: "Chưa có lời bài hát được lưu.",
   characters: "{count} ký tự",
   source: "Nguồn",
