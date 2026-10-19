@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { AdminText } from "@/lib/admin-i18n";
 
 export const metadata = { title: "Taxonomy - Admin" };
 
@@ -21,11 +22,10 @@ export default async function AdminTaxonomyPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight text-white">
-          Emotion taxonomy
+          <AdminText k="taxonomyTitle" />
         </h1>
         <p className="mt-1 text-sm text-slate-400">
-          {list.length} categories on the valence–arousal plane. Every song is
-          tagged with one or more of these, plus V-A coordinates.
+          <AdminText k="taxonomyDescription" values={{ count: list.length }} />
         </p>
       </div>
 
@@ -55,7 +55,7 @@ export default async function AdminTaxonomyPage() {
           ))}
         </div>
         <p className="mt-8 text-center text-xs text-slate-500">
-          Bottom-left = sad & calm · Top-right = happy & energetic
+          <AdminText k="bottomLeft" /> · <AdminText k="topRight" />
         </p>
       </div>
 
@@ -63,10 +63,10 @@ export default async function AdminTaxonomyPage() {
         <table className="w-full text-left text-sm">
           <thead className="bg-slate-900/60 text-xs uppercase tracking-wide text-slate-400">
             <tr>
-              <th className="px-4 py-2.5 font-medium">ID</th>
-              <th className="px-4 py-2.5 font-medium">Name</th>
-              <th className="px-4 py-2.5 font-medium">Sounds like</th>
-              <th className="px-4 py-2.5 font-medium">Quadrant</th>
+              <th className="px-4 py-2.5 font-medium"><AdminText k="id" /></th>
+              <th className="px-4 py-2.5 font-medium"><AdminText k="name" /></th>
+              <th className="px-4 py-2.5 font-medium"><AdminText k="soundsLike" /></th>
+              <th className="px-4 py-2.5 font-medium"><AdminText k="quadrant" /></th>
               <th className="px-4 py-2.5 text-right font-medium">V</th>
               <th className="px-4 py-2.5 text-right font-medium">A</th>
             </tr>
@@ -100,8 +100,7 @@ export default async function AdminTaxonomyPage() {
                   colSpan={6}
                   className="px-4 py-10 text-center text-slate-500"
                 >
-                  No emotions loaded. Run the schema migration to seed the
-                  taxonomy.
+                  <AdminText k="noEmotions" />
                 </td>
               </tr>
             )}

@@ -5,9 +5,11 @@ import { useRouter } from "next/navigation";
 
 import { SpinnerIcon } from "@/components/Icons";
 import { createClient } from "@/lib/supabase/client";
+import { useLabels } from "@/lib/disguise";
 
 export function PasswordLogin({ next = "/dashboard" }: { next?: string }) {
   const router = useRouter();
+  const labels = useLabels();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [pending, setPending] = useState(false);
@@ -45,13 +47,13 @@ export function PasswordLogin({ next = "/dashboard" }: { next?: string }) {
       <div className="flex items-center gap-3">
         <span className="h-px flex-1 bg-slate-800" />
         <span className="text-xs font-medium uppercase tracking-wide text-slate-500">
-          Email and password
+          {labels.emailPasswordHeading}
         </span>
         <span className="h-px flex-1 bg-slate-800" />
       </div>
 
       <label className="block text-sm font-medium text-slate-300">
-        Email
+        {labels.emailLabel}
         <input
           type="email"
           value={email}
@@ -63,7 +65,7 @@ export function PasswordLogin({ next = "/dashboard" }: { next?: string }) {
       </label>
 
       <label className="block text-sm font-medium text-slate-300">
-        Password
+        {labels.passwordLabel}
         <input
           type="password"
           value={password}
@@ -89,7 +91,7 @@ export function PasswordLogin({ next = "/dashboard" }: { next?: string }) {
         className="flex w-full items-center justify-center gap-2 rounded-xl bg-violet-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-violet-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-400 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {pending && <SpinnerIcon className="h-4 w-4 animate-spin" />}
-        {pending ? "Signing in..." : "Sign in"}
+        {pending ? labels.signingInAction : labels.signInAction}
       </button>
     </form>
   );

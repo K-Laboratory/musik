@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { createClient } from "@/lib/supabase/client";
+import { useLabels } from "@/lib/disguise";
 import { OAUTH_PROVIDERS, type OAuthProviderConfig } from "@/lib/oauth";
 import { FacebookIcon, GitHubIcon, GoogleIcon, SpinnerIcon } from "./Icons";
 
@@ -19,6 +20,7 @@ function ProviderIcon({
 }
 
 export function OAuthButtons({ next = "/dashboard" }: { next?: string }) {
+  const labels = useLabels();
   const [pendingProvider, setPendingProvider] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -75,8 +77,8 @@ export function OAuthButtons({ next = "/dashboard" }: { next?: string }) {
             )}
             <span>
               {isPending
-                ? `Connecting to ${provider.label}...`
-                : `Sign in with ${provider.label}`}
+                ? labels.connectingTo(provider.label)
+                : labels.signInWith(provider.label)}
             </span>
           </button>
         );

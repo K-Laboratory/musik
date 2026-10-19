@@ -1,15 +1,17 @@
 import Link from "next/link";
 
+import { LanguageToggle } from "@/components/LanguageToggle";
 import { isCurrentUserAdmin } from "@/lib/admin";
+import { AdminText } from "@/lib/admin-i18n";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 
 export const dynamic = "force-dynamic";
 
 const ADMIN_NAV = [
-  { href: "/admin", label: "Overview" },
-  { href: "/admin/songs", label: "Songs" },
-  { href: "/admin/taxonomy", label: "Taxonomy" },
-  { href: "/admin/generations", label: "Generations" },
+  { href: "/admin", key: "navOverview" as const },
+  { href: "/admin/songs", key: "navSongs" as const },
+  { href: "/admin/taxonomy", key: "navTaxonomy" as const },
+  { href: "/admin/generations", key: "navGenerations" as const },
 ];
 
 /**
@@ -33,19 +35,17 @@ export default async function AdminLayout({
   if (!admin) {
     return (
       <main className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center px-4 text-center">
-        <h1 className="text-lg font-semibold text-white">Admins only</h1>
+        <h1 className="text-lg font-semibold text-white">
+          <AdminText k="adminsOnly" />
+        </h1>
         <p className="mt-2 text-sm text-slate-400">
-          Your account is not on the admin allowlist. Add your email to the{" "}
-          <code className="rounded bg-slate-800 px-1.5 py-0.5 text-xs">
-            admin_emails
-          </code>{" "}
-          table to get access.
+          <AdminText k="adminsOnlyHint" />
         </p>
         <Link
           href="/dashboard"
           className="mt-5 rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-violet-500"
         >
-          Back to the app
+          <AdminText k="backToApp" />
         </Link>
       </main>
     );
@@ -65,15 +65,18 @@ export default async function AdminLayout({
                 href={item.href}
                 className="rounded-md px-2.5 py-1.5 text-xs font-medium text-slate-300 transition hover:bg-slate-800 hover:text-white"
               >
-                {item.label}
+                <AdminText k={item.key} />
               </Link>
             ))}
           </nav>
+          <div className="ml-auto">
+            <LanguageToggle compact />
+          </div>
           <Link
             href="/dashboard"
-            className="ml-auto text-xs text-slate-400 hover:text-slate-200"
+            className="text-xs text-slate-400 hover:text-slate-200"
           >
-            Exit admin
+            <AdminText k="exitAdmin" />
           </Link>
         </div>
       </header>

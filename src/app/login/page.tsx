@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { LoginBrand, LoginFooter } from "@/components/LoginBrand";
+import { LanguageToggle } from "@/components/LanguageToggle";
 import { OAuthButtons } from "@/components/OAuthButtons";
 import { PasswordLogin } from "@/components/PasswordLogin";
 import { SetupNotice } from "@/components/SetupNotice";
@@ -47,6 +48,9 @@ export default async function LoginPage({
 
   return (
     <main className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-12">
+      <div className="absolute right-4 top-4 z-10">
+        <LanguageToggle />
+      </div>
       <div
         aria-hidden="true"
         className="pointer-events-none absolute -top-40 left-1/2 h-[36rem] w-[36rem] -translate-x-1/2 rounded-full bg-violet-600/20 blur-3xl"

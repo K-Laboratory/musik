@@ -19,7 +19,7 @@ export interface LyricsResult {
   url: string | null;
 }
 
-const REQUEST_TIMEOUT_MS = 8000;
+const REQUEST_TIMEOUT_MS = 12_000;
 
 interface LyricsProvider {
   name: string;
@@ -55,6 +55,69 @@ function stripTimestamps(synced: string | null | undefined): string | null {
   return lines.length ? lines.join("\n") : null;
 }
 
+function decodeHtml(value: string): string {
+  return value
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;|&apos;/gi, "'")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&#(\d+);/g, (_, code: string) =>
+      String.fromCodePoint(Number(code)),
+    )
+    .replace(/&#x([0-9a-f]+);/gi, (_, code: string) =>
+      String.fromCodePoint(parseInt(code, 16)),
+    );
+}
+
+function htmlToText(value: string): string {
+  return decodeHtml(
+    value
+      .replace(/<script[\s\S]*?<\/script>/gi, "")
+      .replace(/<style[\s\S]*?<\/style>/gi, "")
+      .replace(/<ins[\s\S]*?<\/ins>/gi, "")
+      .replace(/<br\s*\/?>/gi, "\n")
+      .replace(/<\/(?:p|div|h[1-6]|li)>/gi, "\n")
+      .replace(/<[^>]+>/g, ""),
+  )
+    .replace(/\r/g, "")
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+function slugForSearch(value: string): string {
+  return normalize(value).replace(/\s+/g, "-");
+}
+
+async function htmlFetch(
+  url: string,
+  referer?: string,
+): Promise<string | null> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  try {
+    const response = await fetch(url, {
+      headers: {
+        Accept: "text/html,application/xhtml+xml",
+        "Accept-Language": "vi,en;q=0.8",
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36",
+        ...(referer ? { Referer: referer } : {}),
+      },
+      signal: controller.signal,
+      cache: "no-store",
+    });
+    if (!response.ok) return null;
+    return await response.text();
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function jsonFetch<T>(
   url: string,
 ): Promise<T | null> {
@@ -77,6 +140,117 @@ async function jsonFetch<T>(
     clearTimeout(timer);
   }
 }
+
+/**
+ * Vietnamese lyrics sites often have the best coverage for this catalog.
+ * tkaraoke exposes a search page with `/s.tim?q=<slug>` and the lyrics are
+ * inside `div-content-lyric`.
+ */
+const tkaraoke: LyricsProvider = {
+  name: "tkaraoke",
+  async run(song) {
+    const base = "https://lyric.tkaraoke.com";
+    const searchUrl = `${base}/s.tim?q=${encodeURIComponent(
+      slugForSearch(song.title),
+    )}&t=11`;
+    const searchHtml = await htmlFetch(searchUrl);
+    if (!searchHtml) return null;
+
+    const candidates = [
+      ...searchHtml.matchAll(
+        /<a[^>]+href="([^"]+\.html)"[^>]+title="([^"]*?)\s+lyric"/gi,
+      ),
+    ].slice(0, 8);
+
+    for (const candidate of candidates) {
+      const href = candidate[1]!;
+      const title = decodeHtml(candidate[2]!);
+      if (!looselyMatches(title, song.title)) continue;
+
+      const pageUrl = new URL(href, base).toString();
+      const pageHtml = await htmlFetch(pageUrl, searchUrl);
+      if (!pageHtml) continue;
+
+      const marker = pageHtml.indexOf("div-content-lyric");
+      if (marker === -1) continue;
+
+      const contentStart = pageHtml.indexOf(">", marker);
+      const contentEnd = pageHtml.indexOf('<div class="row">', contentStart);
+      const block = pageHtml.slice(
+        contentStart + 1,
+        contentEnd === -1 ? contentStart + 50_000 : contentEnd,
+      );
+      const text = htmlToText(block);
+      if (text.length >= 80) {
+        return { text, provider: "tkaraoke", url: pageUrl };
+      }
+    }
+
+    return null;
+  },
+};
+
+/**
+ * lyrics.vn is a secondary Vietnamese provider. The site sometimes blocks
+ * server-side requests, so this provider fails softly and lets the next one
+ * take over.
+ */
+const lyricsVn: LyricsProvider = {
+  name: "lyrics.vn",
+  async run(song) {
+    const base = "https://lyrics.vn";
+    const searchUrl = `${base}/tim-kiem?q=${encodeURIComponent(
+      `${song.title} ${song.artist}`,
+    )}`;
+    const searchHtml = await htmlFetch(searchUrl);
+    if (!searchHtml) return null;
+
+    const candidates = [
+      ...searchHtml.matchAll(
+        /<a[^>]+href="([^"]+)"[^>]*>([\s\S]{0,200}?)<\/a>/gi,
+      ),
+    ]
+      .map((match) => ({
+        href: match[1]!,
+        label: htmlToText(match[2]!),
+      }))
+      .filter(
+        (item) =>
+          item.href.includes("lyrics") &&
+          item.label.length > 2 &&
+          looselyMatches(item.label, song.title),
+      )
+      .slice(0, 5);
+
+    for (const candidate of candidates) {
+      const pageUrl = new URL(candidate.href, base).toString();
+      const pageHtml = await htmlFetch(pageUrl, searchUrl);
+      if (!pageHtml) continue;
+
+      const markers = [
+        'class="lyrics"',
+        'id="lyrics"',
+        "<article",
+        'class="content"',
+      ];
+      let block = "";
+      for (const selector of markers) {
+        const marker = pageHtml.indexOf(selector);
+        if (marker === -1) continue;
+        const start = pageHtml.indexOf(">", marker);
+        const end = pageHtml.indexOf("</div>", start);
+        block = pageHtml.slice(start + 1, end === -1 ? start + 30_000 : end);
+        break;
+      }
+      const text = htmlToText(block);
+      if (text.length >= 80) {
+        return { text, provider: "lyrics.vn", url: pageUrl };
+      }
+    }
+
+    return null;
+  },
+};
 
 /**
  * LRCLIB exact lookup, then fuzzy search across its catalog. The exact `/get`
@@ -182,7 +356,7 @@ const webSearch: LyricsProvider = {
   },
 };
 
-const PROVIDERS: LyricsProvider[] = [lrclib, webSearch];
+const PROVIDERS: LyricsProvider[] = [tkaraoke, lyricsVn, lrclib, webSearch];
 
 /**
  * Returns lyrics text for analysis, or null when unavailable/unconfigured.

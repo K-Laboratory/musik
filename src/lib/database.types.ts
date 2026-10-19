@@ -192,6 +192,15 @@ export interface Database {
           source: string | null;
           source_id: string | null;
           source_url: string | null;
+          youtube_url: string | null;
+          youtube_video_id: string | null;
+          youtube_title: string | null;
+          youtube_channel: string | null;
+          youtube_updated_at: string | null;
+          lyrics_text: string | null;
+          lyrics_source: string | null;
+          lyrics_source_url: string | null;
+          lyrics_updated_at: string | null;
           created_at: string;
         };
         Insert: {
@@ -203,6 +212,15 @@ export interface Database {
           source?: string | null;
           source_id?: string | null;
           source_url?: string | null;
+          youtube_url?: string | null;
+          youtube_video_id?: string | null;
+          youtube_title?: string | null;
+          youtube_channel?: string | null;
+          youtube_updated_at?: string | null;
+          lyrics_text?: string | null;
+          lyrics_source?: string | null;
+          lyrics_source_url?: string | null;
+          lyrics_updated_at?: string | null;
           created_at?: string;
         };
         Update: {
@@ -214,6 +232,15 @@ export interface Database {
           source?: string | null;
           source_id?: string | null;
           source_url?: string | null;
+          youtube_url?: string | null;
+          youtube_video_id?: string | null;
+          youtube_title?: string | null;
+          youtube_channel?: string | null;
+          youtube_updated_at?: string | null;
+          lyrics_text?: string | null;
+          lyrics_source?: string | null;
+          lyrics_source_url?: string | null;
+          lyrics_updated_at?: string | null;
           created_at?: string;
         };
         Relationships: [];

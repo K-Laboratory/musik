@@ -14,6 +14,6 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico, icon.svg, etc. (metadata files)
      */
-    "/((?!_next/static|_next/image|favicon.ico|icon.svg|robots.txt|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|icon.svg|robots.txt|api/language|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };

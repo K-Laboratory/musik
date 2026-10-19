@@ -343,7 +343,7 @@ export function PlaylistPanel({ className = "" }: { className?: string }) {
           className="flex items-center gap-1.5 rounded-lg bg-violet-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-violet-500 disabled:cursor-not-allowed disabled:opacity-50"
         >
           <PlusIcon className="h-4 w-4" />
-          <span className="hidden sm:inline">Add</span>
+          <span className="hidden sm:inline">{labels.addAction}</span>
         </button>
       </form>
 

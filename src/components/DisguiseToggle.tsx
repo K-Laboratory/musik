@@ -1,7 +1,7 @@
 "use client";
 
 import { BriefcaseIcon, CoffeeIcon } from "@/components/Icons";
-import { useDisguise } from "@/lib/disguise";
+import { useDisguise, useLabels } from "@/lib/disguise";
 
 /**
  * Flips the app between the music theme and the classic "work" disguise.
@@ -10,6 +10,7 @@ import { useDisguise } from "@/lib/disguise";
  */
 export function DisguiseToggle({ className = "" }: { className?: string }) {
   const { isWork, toggle } = useDisguise();
+  const labels = useLabels();
 
   return (
     <button
@@ -28,7 +29,9 @@ export function DisguiseToggle({ className = "" }: { className?: string }) {
       ) : (
         <BriefcaseIcon className="h-4 w-4" />
       )}
-      <span className="hidden xl:inline">{isWork ? "Break" : "Work"}</span>
+      <span className="hidden xl:inline">
+        {isWork ? labels.breakMode : labels.workMode}
+      </span>
     </button>
   );
 }

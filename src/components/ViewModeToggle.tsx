@@ -1,15 +1,15 @@
 "use client";
 
 import { GridIcon, RowsIcon } from "@/components/Icons";
+import { useLabels } from "@/lib/disguise";
 import { useViewMode, type ViewMode } from "@/lib/view-mode";
 
 const OPTIONS: {
   value: ViewMode;
-  label: string;
   icon: typeof GridIcon;
 }[] = [
-  { value: "normal", label: "Normal", icon: GridIcon },
-  { value: "compact", label: "Compact", icon: RowsIcon },
+  { value: "normal", icon: GridIcon },
+  { value: "compact", icon: RowsIcon },
 ];
 
 /**
@@ -18,23 +18,26 @@ const OPTIONS: {
  */
 export function ViewModeToggle({ className = "" }: { className?: string }) {
   const { mode, setMode } = useViewMode();
+  const labels = useLabels();
 
   return (
     <div
       role="group"
-      aria-label="View mode"
+      aria-label={labels.viewMode}
       className={`flex items-center rounded-lg border border-slate-700 bg-slate-900 p-0.5 ${className}`}
     >
       {OPTIONS.map((option) => {
         const isActive = mode === option.value;
         const Icon = option.icon;
+        const label =
+          option.value === "normal" ? labels.normalView : labels.compactView;
         return (
           <button
             key={option.value}
             type="button"
             onClick={() => setMode(option.value)}
             aria-pressed={isActive}
-            title={`${option.label} mode`}
+            title={label}
             className={`flex items-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-medium transition ${
               isActive
                 ? "bg-violet-600/25 text-violet-200"
@@ -42,7 +45,7 @@ export function ViewModeToggle({ className = "" }: { className?: string }) {
             }`}
           >
             <Icon className="h-4 w-4" />
-            <span className="hidden xl:inline">{option.label}</span>
+            <span className="hidden xl:inline">{label}</span>
           </button>
         );
       })}

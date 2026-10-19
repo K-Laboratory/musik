@@ -10,7 +10,7 @@ import {
 } from "react";
 
 import { GripIcon, PauseIcon, PlayIcon, SettingsIcon } from "@/components/Icons";
-import { useDisguise } from "@/lib/disguise";
+import { useDisguise, useLabels } from "@/lib/disguise";
 import type { Song } from "@/lib/types";
 import { useViewMode } from "@/lib/view-mode";
 
@@ -52,6 +52,7 @@ export const SongCardVisual = forwardRef<HTMLDivElement, SongCardVisualProps>(
   ) {
     const isCompact = variant === "compact";
     const { isWork } = useDisguise();
+    const labels = useLabels();
 
     const grip = showGrip ? (
       <button
@@ -120,7 +121,7 @@ export const SongCardVisual = forwardRef<HTMLDivElement, SongCardVisualProps>(
             {song.title}
           </p>
           <span className="max-w-[6rem] shrink-0 truncate text-xs text-slate-400 sm:max-w-[10rem]">
-            {song.channel_title || "Unknown channel"}
+            {song.channel_title || labels.unknownChannel}
           </span>
           <span className="shrink-0 text-xs tabular-nums text-slate-400">
             {song.duration ?? "--:--"}
@@ -162,7 +163,7 @@ export const SongCardVisual = forwardRef<HTMLDivElement, SongCardVisualProps>(
             {song.title}
           </p>
           <p className="truncate text-xs text-slate-400">
-            {song.channel_title || "Unknown channel"}
+            {song.channel_title || labels.unknownChannel}
           </p>
         </div>
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useAdminLabels } from "@/lib/admin-i18n";
 
 interface Status {
   configured: boolean;
@@ -26,6 +27,7 @@ interface BatchResult {
  * showing live progress. Lyrics are fetched server-side for each song.
  */
 export function ClassifyRunner() {
+  const labels = useAdminLabels();
   const [status, setStatus] = useState<Status | null>(null);
   const [running, setRunning] = useState(false);
   const [log, setLog] = useState<string[]>([]);
@@ -49,7 +51,7 @@ export function ClassifyRunner() {
     try {
       for (;;) {
         if (stopRef.current) {
-          setLog((l) => [...l, "Stopped by user."]);
+          setLog((l) => [...l, labels.stopping]);
           break;
         }
         const res = await fetch("/api/admin/classify/batch", {
@@ -78,7 +80,7 @@ export function ClassifyRunner() {
       setRunning(false);
       void refreshStatus();
     }
-  }, [running, refreshStatus]);
+  }, [running, refreshStatus, labels]);
 
   const pct = status && status.total > 0
     ? Math.round((status.analyzed / status.total) * 100)
@@ -89,12 +91,15 @@ export function ClassifyRunner() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-400">
-            Classification pipeline
+            {labels.classifyHeading}
           </h2>
           <p className="mt-1 text-sm text-slate-300">
             {status
-              ? `${status.analyzed} / ${status.total} analyzed · ${status.pending} pending`
-              : "Loading status…"}
+              ? labels.classifyHelp
+                  .replace("{analyzed}", String(status.analyzed))
+                  .replace("{total}", String(status.total))
+                  .replace("{pending}", String(status.pending))
+              : labels.loading}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -106,7 +111,7 @@ export function ClassifyRunner() {
             disabled={!running}
             className="rounded-lg border border-slate-700 px-3 py-2 text-sm font-medium text-slate-200 transition hover:bg-slate-800 disabled:opacity-40"
           >
-            Stop
+            {labels.stop}
           </button>
           <button
             type="button"
@@ -114,7 +119,7 @@ export function ClassifyRunner() {
             disabled={running || !status?.configured || status?.pending === 0}
             className="rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-violet-500 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {running ? "Classifying…" : "Classify pending songs"}
+            {running ? labels.classifying : labels.classifyButton}
           </button>
         </div>
       </div>

@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { cookies } from "next/headers";
 
 import { DisguiseProvider } from "@/lib/disguise";
 
@@ -16,11 +17,15 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const cookieStore = await cookies();
+  const storedLanguage = cookieStore.get("musik_lang")?.value;
+  const language = storedLanguage === "vi" ? "vi" : "en";
+
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={language} suppressHydrationWarning>
       <body className="min-h-screen bg-slate-950 font-sans text-slate-100 antialiased">
         <script
           dangerouslySetInnerHTML={{
@@ -28,7 +33,7 @@ export default function RootLayout({
               "try{if(localStorage.getItem('favorite-songs:ui-mode')==='work'){document.documentElement.dataset.ui='work'}}catch(e){}",
           }}
         />
-        <DisguiseProvider>{children}</DisguiseProvider>
+        <DisguiseProvider initialLanguage={language}>{children}</DisguiseProvider>
       </body>
     </html>
   );

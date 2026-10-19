@@ -23,14 +23,20 @@ import {
  */
 
 export type UiMode = "music" | "work";
+export type Language = "en" | "vi";
 
 const STORAGE_KEY = "favorite-songs:ui-mode";
+const LANGUAGE_KEY = "favorite-songs:language";
+const LANGUAGE_COOKIE = "musik_lang";
 
 interface DisguiseContextValue {
   mode: UiMode;
   isWork: boolean;
   setMode: (mode: UiMode) => void;
   toggle: () => void;
+  language: Language;
+  setLanguage: (language: Language) => void;
+  toggleLanguage: () => void;
 }
 
 const DisguiseContext = createContext<DisguiseContextValue | null>(null);
@@ -43,6 +49,14 @@ function readStoredMode(): UiMode {
     // localStorage can be unavailable (private mode); fall back to music.
   }
   return "music";
+}
+
+function writeLanguageCookie(language: Language) {
+  try {
+    document.cookie = `${LANGUAGE_COOKIE}=${language}; path=/; max-age=31536000; samesite=lax`;
+  } catch {
+    // Ignore cookie failures.
+  }
 }
 
 /** Human-facing copy that changes with the disguise. */
@@ -91,6 +105,24 @@ export interface AppLabels {
   loadError: string;
   loginTagline: string;
   loginFooter: string;
+  navAdmin: string;
+  signOut: string;
+  viewMode: string;
+  appearance: string;
+  language: string;
+  signInWith: (provider: string) => string;
+  connectingTo: (provider: string) => string;
+  emailPasswordHeading: string;
+  emailLabel: string;
+  passwordLabel: string;
+  signInAction: string;
+  signingInAction: string;
+  normalView: string;
+  compactView: string;
+  workMode: string;
+  breakMode: string;
+  addAction: string;
+  unknownChannel: string;
 }
 
 const MUSIC_LABELS: AppLabels = {
@@ -139,6 +171,24 @@ const MUSIC_LABELS: AppLabels = {
   loginTagline: "Save the music you love, build playlists, and listen anytime.",
   loginFooter:
     "By signing in you agree to let us store your saved songs and playlists. We never post anything on your behalf.",
+  navAdmin: "Admin",
+  signOut: "Sign out",
+  viewMode: "View mode",
+  appearance: "Appearance",
+  language: "Language",
+  signInWith: (provider) => `Sign in with ${provider}`,
+  connectingTo: (provider) => `Connecting to ${provider}...`,
+  emailPasswordHeading: "Email and password",
+  emailLabel: "Email",
+  passwordLabel: "Password",
+  signInAction: "Sign in",
+  signingInAction: "Signing in...",
+  normalView: "Normal",
+  compactView: "Compact",
+  workMode: "Work",
+  breakMode: "Break",
+  addAction: "Add",
+  unknownChannel: "Unknown channel",
 };
 
 const WORK_LABELS: AppLabels = {
@@ -188,6 +238,92 @@ const WORK_LABELS: AppLabels = {
   loginTagline: "Sign in to access your workspace and files.",
   loginFooter:
     "By signing in you agree to let us store your files and projects. We never post anything on your behalf.",
+  navAdmin: "Admin",
+  signOut: "Sign out",
+  viewMode: "View mode",
+  appearance: "Appearance",
+  language: "Language",
+  signInWith: (provider) => `Sign in with ${provider}`,
+  connectingTo: (provider) => `Connecting to ${provider}...`,
+  emailPasswordHeading: "Email and password",
+  emailLabel: "Email",
+  passwordLabel: "Password",
+  signInAction: "Sign in",
+  signingInAction: "Signing in...",
+  normalView: "Normal",
+  compactView: "Compact",
+  workMode: "Work",
+  breakMode: "Break",
+  addAction: "Add",
+  unknownChannel: "Unknown channel",
+};
+
+const VI_LABELS: AppLabels = {
+  brand: "Bài Hát Yêu Thích",
+  navDashboard: "Bảng điều khiển",
+  defaultUser: "Người yêu nhạc",
+  findHeading: "Tìm bài hát",
+  findSubtitle: "Tìm trên YouTube và lưu bài hát vào thư viện.",
+  documentsHeading: "Bài hát của tôi",
+  emptyLibraryTitle: "Thư viện của bạn đang trống.",
+  emptyLibraryHint: "Dùng ô tìm kiếm phía trên để thêm bài hát đầu tiên.",
+  removeConfirm: (title) => `Xóa "${title}" khỏi thư viện?`,
+  removedFromLibrary: "Đã xóa khỏi thư viện.",
+  removeError: "Không thể xóa bài hát.",
+  searchAria: "Tìm bài hát",
+  searchPlaceholder: "Tìm bài hát trên YouTube...",
+  noResults: "Không tìm thấy bài hát. Hãy thử từ khóa khác.",
+  savedBadge: "Đã lưu",
+  alreadyInLibrary: (title) => `"${title}" đã có trong thư viện.`,
+  addedToLibrary: (title) => `Đã thêm "${title}" vào thư viện.`,
+  saveError: "Không thể lưu bài hát.",
+  projectsHeading: "Danh sách phát",
+  newProjectPlaceholder: "Tên danh sách phát mới",
+  dragTip: "Mẹo: kéo bài hát vào danh sách phát để thêm.",
+  noProjects: "Chưa có danh sách phát. Tạo một danh sách ở trên.",
+  itemCount: (count) => `${count} bài hát`,
+  createError: "Không thể tạo danh sách phát.",
+  createToast: "Đã tạo danh sách phát.",
+  renamedToast: "Đã đổi tên danh sách phát.",
+  renameError: "Không thể đổi tên danh sách phát.",
+  deleteConfirm: (name) => `Xóa danh sách phát "${name}"?`,
+  deletedToast: "Đã xóa danh sách phát.",
+  deleteError: "Không thể xóa danh sách phát.",
+  backToWorkspace: "Về bảng điều khiển",
+  playAll: "Phát tất cả",
+  emptyProjectTitle: "Danh sách phát này đang trống.",
+  emptyProjectHint:
+    "Kéo bài hát vào đây từ bảng điều khiển, hoặc thêm ở bên dưới.",
+  addFromWorkspace: "Thêm từ thư viện",
+  allInProject: "Mọi bài hát trong thư viện đã có trong danh sách này.",
+  notFoundTitle: "Không tìm thấy danh sách phát",
+  notFoundHint: "Có thể danh sách đã bị xóa hoặc liên kết không đúng.",
+  addedToProject: "Đã thêm vào danh sách phát.",
+  alreadyInProject: "Bài hát này đã có trong danh sách phát.",
+  addToProjectError: "Không thể thêm bài hát.",
+  loadError: "Không thể tải thư viện.",
+  loginTagline:
+    "Lưu những bài hát bạn yêu thích, tạo danh sách phát và nghe bất cứ lúc nào.",
+  loginFooter:
+    "Khi đăng nhập, bạn đồng ý để chúng tôi lưu bài hát và danh sách phát. Chúng tôi không đăng gì thay bạn.",
+  navAdmin: "Quản trị",
+  signOut: "Đăng xuất",
+  viewMode: "Chế độ xem",
+  appearance: "Giao diện",
+  language: "Ngôn ngữ",
+  signInWith: (provider) => `Đăng nhập bằng ${provider}`,
+  connectingTo: (provider) => `Đang kết nối ${provider}...`,
+  emailPasswordHeading: "Email và mật khẩu",
+  emailLabel: "Email",
+  passwordLabel: "Mật khẩu",
+  signInAction: "Đăng nhập",
+  signingInAction: "Đang đăng nhập...",
+  normalView: "Thường",
+  compactView: "Gọn",
+  workMode: "Công việc",
+  breakMode: "Nghỉ",
+  addAction: "Thêm",
+  unknownChannel: "Kênh không rõ",
 };
 
 function musicTitle(pathname: string): string {
@@ -204,12 +340,15 @@ function workTitle(pathname: string): string {
 
 export function DisguiseProvider({
   children,
+  initialLanguage = "en",
 }: {
   children: React.ReactNode;
+  initialLanguage?: Language;
 }) {
   // Start in music mode so the first client render matches the server render,
   // then adopt the saved choice once mounted.
   const [mode, setModeState] = useState<UiMode>("music");
+  const [language, setLanguageState] = useState<Language>(initialLanguage);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -222,6 +361,10 @@ export function DisguiseProvider({
     if (mode === "work") root.dataset.ui = "work";
     else delete root.dataset.ui;
   }, [mode]);
+
+  useEffect(() => {
+    document.documentElement.lang = language;
+  }, [language]);
 
   const setMode = useCallback((next: UiMode) => {
     setModeState(next);
@@ -237,6 +380,29 @@ export function DisguiseProvider({
       const next: UiMode = current === "music" ? "work" : "music";
       try {
         window.localStorage.setItem(STORAGE_KEY, next);
+      } catch {
+        // Ignore storage failures.
+      }
+      return next;
+    });
+  }, []);
+
+  const setLanguage = useCallback((next: Language) => {
+    setLanguageState(next);
+    writeLanguageCookie(next);
+    try {
+      window.localStorage.setItem(LANGUAGE_KEY, next);
+    } catch {
+      // Ignore storage failures.
+    }
+  }, []);
+
+  const toggleLanguage = useCallback(() => {
+    setLanguageState((current) => {
+      const next: Language = current === "en" ? "vi" : "en";
+      writeLanguageCookie(next);
+      try {
+        window.localStorage.setItem(LANGUAGE_KEY, next);
       } catch {
         // Ignore storage failures.
       }
@@ -294,8 +460,16 @@ export function DisguiseProvider({
   }, [mode, pathname]);
 
   const value = useMemo<DisguiseContextValue>(
-    () => ({ mode, isWork: mode === "work", setMode, toggle }),
-    [mode, setMode, toggle],
+    () => ({
+      mode,
+      isWork: mode === "work",
+      setMode,
+      toggle,
+      language,
+      setLanguage,
+      toggleLanguage,
+    }),
+    [mode, setMode, toggle, language, setLanguage, toggleLanguage],
   );
 
   return (
@@ -315,6 +489,16 @@ export function useDisguise(): DisguiseContextValue {
 
 /** Returns the copy for the active mode. */
 export function useLabels(): AppLabels {
-  const { isWork } = useDisguise();
-  return isWork ? WORK_LABELS : MUSIC_LABELS;
+  const { isWork, language } = useDisguise();
+  if (isWork) return WORK_LABELS;
+  return language === "vi" ? VI_LABELS : MUSIC_LABELS;
+}
+
+export function useLanguage(): {
+  language: Language;
+  setLanguage: (language: Language) => void;
+  toggleLanguage: () => void;
+} {
+  const { language, setLanguage, toggleLanguage } = useDisguise();
+  return { language, setLanguage, toggleLanguage };
 }

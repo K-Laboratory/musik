@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 import { NowPlayingBar } from "@/components/NowPlayingBar";
+import { LanguageToggle } from "@/components/LanguageToggle";
 import { useData } from "@/components/DataProvider";
 import { DisguiseToggle } from "@/components/DisguiseToggle";
 import { Toasts } from "@/components/Toasts";
@@ -131,9 +132,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 href="/admin"
                 className="rounded-lg border border-slate-700 px-2.5 py-1.5 text-xs font-medium text-slate-300 transition hover:border-slate-600 hover:bg-slate-800 hover:text-white"
               >
-                Admin
+                {labels.navAdmin}
               </Link>
             )}
+            <LanguageToggle compact />
             <DisguiseToggle />
             <div className="flex items-center gap-2.5">
               <Avatar src={avatarUrl} name={displayName} size={32} />
@@ -147,7 +149,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 className="flex items-center gap-1.5 rounded-lg border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-300 transition hover:border-slate-600 hover:bg-slate-800 hover:text-white"
               >
                 <LogoutIcon className="h-4 w-4" />
-                Sign out
+                {labels.signOut}
               </button>
             </form>
           </div>
@@ -179,16 +181,22 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             {!isWork && (
               <div className="mt-3 flex items-center justify-between gap-3">
                 <span className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                  View mode
+                  {labels.viewMode}
                 </span>
                 <ViewModeToggle />
               </div>
             )}
             <div className="mt-3 flex items-center justify-between gap-3">
               <span className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                Appearance
+                {labels.appearance}
               </span>
               <DisguiseToggle />
+            </div>
+            <div className="mt-3 flex items-center justify-between gap-3">
+              <span className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                {labels.language}
+              </span>
+              <LanguageToggle />
             </div>
             <form action="/auth/signout" method="post" className="mt-3">
               <button
@@ -196,7 +204,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 className="flex w-full items-center gap-2 rounded-lg border border-slate-700 px-3 py-2 text-sm font-medium text-slate-300 transition hover:bg-slate-800 hover:text-white"
               >
                 <LogoutIcon className="h-4 w-4" />
-                Sign out
+                {labels.signOut}
               </button>
             </form>
           </div>

@@ -6,10 +6,15 @@ import { useRouter } from "next/navigation";
 import {
   AlertIcon,
   CheckIcon,
+  PencilIcon,
   PlayIcon,
   RefreshIcon,
+  SparklesIcon,
   SpinnerIcon,
 } from "@/components/Icons";
+import { SongEditor } from "@/components/admin/SongEditor";
+import { useAdminLabels } from "@/lib/admin-i18n";
+import { useLanguage } from "@/lib/disguise";
 
 export interface AdminSongRow {
   id: string;
@@ -19,6 +24,12 @@ export interface AdminSongRow {
   source: string | null;
   source_id: string | null;
   source_url: string | null;
+  youtube_url: string | null;
+  youtube_title: string | null;
+  youtube_channel: string | null;
+  lyrics_preview: string | null;
+  lyrics_source: string | null;
+  has_lyrics: boolean;
   tags: { name: string; confidence: number; is_primary: boolean }[];
   analysis: {
     valence: number | null;
@@ -48,8 +59,42 @@ interface LogEntry {
   detail?: string;
 }
 
+interface EnrichResponse {
+  processed: number;
+  results: {
+    songId: string;
+    title: string;
+    youtube?: {
+      ok: boolean;
+      skipped?: boolean;
+      title?: string;
+      channel?: string;
+      score?: number;
+      error?: string;
+    };
+    lyrics?: {
+      ok: boolean;
+      skipped?: boolean;
+      provider?: string;
+      chars?: number;
+      error?: string;
+    };
+  }[];
+  error?: string;
+}
+
 const CHUNK_SIZE = 5;
+const ENRICH_CHUNK_SIZE = 3;
 const DISPLAY_TIME_ZONE = "America/Anchorage";
+
+function fill(
+  template: string,
+  values: Record<string, string | number>,
+): string {
+  return template.replace(/\{(\w+)\}/g, (_, key: string) =>
+    String(values[key] ?? `{${key}}`),
+  );
+}
 
 interface LyricsPreviewState {
   status: "idle" | "loading" | "ready" | "none" | "error";
@@ -59,9 +104,29 @@ interface LyricsPreviewState {
   url?: string | null;
 }
 
-function LyricsPreview({ songId }: { songId: string }) {
+function LyricsPreview({
+  songId,
+  preview,
+  source,
+}: {
+  songId: string;
+  preview: string | null;
+  source: string | null;
+}) {
+  const labels = useAdminLabels();
   const [state, setState] = useState<LyricsPreviewState>({ status: "idle" });
   const started = useRef(false);
+
+  if (preview) {
+    return (
+      <div className="max-w-[210px]" title={preview}>
+        <p className="line-clamp-2 text-xs text-slate-300">{preview}</p>
+        <span className="mt-0.5 block text-[11px] text-slate-500">
+          {source ?? labels.saved}
+        </span>
+      </div>
+    );
+  }
 
   const load = async () => {
     if (started.current) return;
@@ -107,9 +172,9 @@ function LyricsPreview({ songId }: { songId: string }) {
         onMouseEnter={() => void load()}
         onFocus={() => void load()}
         className="text-xs text-violet-300 transition hover:text-violet-200"
-        title="Load a short lyrics preview"
+        title={labels.loadPreview}
       >
-        Hover preview
+        {labels.hoverPreview}
       </button>
     );
   }
@@ -118,7 +183,7 @@ function LyricsPreview({ songId }: { songId: string }) {
     return (
       <span className="inline-flex items-center gap-1.5 text-xs text-slate-500">
         <SpinnerIcon className="h-3 w-3 animate-spin" />
-        Loading
+        {labels.loading}
       </span>
     );
   }
@@ -126,15 +191,15 @@ function LyricsPreview({ songId }: { songId: string }) {
   if (state.status === "none") {
     return (
       <span className="text-xs text-slate-600" title="No lyrics found">
-        Not found
+        {labels.notFound}
       </span>
     );
   }
 
   if (state.status === "error") {
     return (
-      <span className="text-xs text-slate-600" title="Lyrics lookup failed">
-        Unavailable
+      <span className="text-xs text-slate-600" title={labels.lyricsLookupFailed}>
+        {labels.unavailable}
       </span>
     );
   }
@@ -152,7 +217,7 @@ function LyricsPreview({ songId }: { songId: string }) {
           rel="noreferrer"
           className="mt-0.5 inline-block text-[11px] text-violet-300 hover:text-violet-200"
         >
-          Full lyrics
+          {labels.fullLyrics}
         </a>
       ) : (
         <span className="mt-0.5 block text-[11px] text-slate-600">
@@ -170,15 +235,20 @@ function AnalyzedAt({
   value: string | null;
   model: string | null;
 }) {
+  const labels = useAdminLabels();
+  const { language } = useLanguage();
   if (!value) {
-    return <span className="text-xs text-slate-600">Not analyzed</span>;
+    return <span className="text-xs text-slate-600">{labels.notAnalyzed}</span>;
   }
 
-  const label = new Date(value).toLocaleString(undefined, {
-    dateStyle: "medium",
-    timeStyle: "short",
-    timeZone: DISPLAY_TIME_ZONE,
-  });
+  const label = new Date(value).toLocaleString(
+    language === "vi" ? "vi-VN" : "en-US",
+    {
+      dateStyle: "medium",
+      timeStyle: "short",
+      timeZone: DISPLAY_TIME_ZONE,
+    },
+  );
 
   return (
     <time
@@ -194,11 +264,12 @@ function AnalyzedAt({
 
 function youTubeLink(song: AdminSongRow): { href: string; direct: boolean } {
   const direct =
-    song.source_url && /youtube\.com|youtu\.be/i.test(song.source_url)
+    song.youtube_url ??
+    (song.source_url && /youtube\.com|youtu\.be/i.test(song.source_url)
       ? song.source_url
       : song.source === "youtube" && song.source_id
         ? `https://www.youtube.com/watch?v=${encodeURIComponent(song.source_id)}`
-        : null;
+        : null);
 
   return {
     href:
@@ -220,15 +291,19 @@ export function SongTable({
   pageKey: string;
 }) {
   const router = useRouter();
+  const labels = useAdminLabels();
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [running, setRunning] = useState(false);
+  const [enriching, setEnriching] = useState(false);
   const [stopping, setStopping] = useState(false);
   const [progress, setProgress] = useState({ done: 0, total: 0 });
   const [log, setLog] = useState<LogEntry[]>([]);
   const [summary, setSummary] = useState("");
+  const [editing, setEditing] = useState<AdminSongRow | null>(null);
   const stopRef = useRef(false);
   const selectAllRef = useRef<HTMLInputElement>(null);
 
+  const busy = running || enriching;
   const allSelected = songs.length > 0 && selected.size === songs.length;
   const someSelected = selected.size > 0 && !allSelected;
 
@@ -243,6 +318,7 @@ export function SongTable({
     setLog([]);
     setSummary("");
     setProgress({ done: 0, total: 0 });
+    setEditing(null);
   }, [pageKey]);
 
   const toggleSong = (songId: string) => {
@@ -259,7 +335,7 @@ export function SongTable({
   };
 
   const run = async () => {
-    if (running || selected.size === 0) return;
+    if (busy || selected.size === 0) return;
 
     const ids = [...selected];
     stopRef.current = false;
@@ -324,7 +400,7 @@ export function SongTable({
               songId: chunk[0]!,
               title: `${missing} song${missing === 1 ? "" : "s"}`,
               ok: false,
-              detail: "No result returned.",
+              detail: labels.noResultReturned,
             },
           ]);
         }
@@ -335,17 +411,162 @@ export function SongTable({
 
       const attempted = succeeded + failed;
       if (stopRef.current && attempted < ids.length) {
-        setSummary(`Stopped after ${attempted} of ${ids.length} songs.`);
+        setSummary(
+          fill(labels.stoppedSummary, {
+            done: attempted,
+            total: ids.length,
+          }),
+        );
       } else if (failed > 0) {
-        setSummary(`Re-classified ${succeeded} songs. ${failed} failed.`);
+        setSummary(
+          fill(labels.reclassifiedSummary, {
+            count: succeeded,
+            failed,
+          }),
+        );
       } else {
-        setSummary(`Re-classified ${succeeded} song${succeeded === 1 ? "" : "s"}.`);
+        setSummary(
+          fill(labels.reclassifiedSummary, {
+            count: succeeded,
+            failed: 0,
+          }),
+        );
       }
 
       setSelected(new Set());
       router.refresh();
     } finally {
       setRunning(false);
+      setStopping(false);
+    }
+  };
+
+  const runEnrich = async () => {
+    if (busy || selected.size === 0) return;
+
+    const ids = [...selected];
+    stopRef.current = false;
+    setEnriching(true);
+    setStopping(false);
+    setLog([]);
+    setSummary("");
+    setProgress({ done: 0, total: ids.length });
+
+    let updated = 0;
+    let partial = 0;
+    let skipped = 0;
+    let failed = 0;
+    let done = 0;
+
+    try {
+      for (let offset = 0; offset < ids.length; offset += ENRICH_CHUNK_SIZE) {
+        if (stopRef.current) break;
+
+        const chunk = ids.slice(offset, offset + ENRICH_CHUNK_SIZE);
+        const response = await fetch("/api/admin/enrich", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ songIds: chunk, kind: "both" }),
+        });
+
+        if (!response.ok) {
+          const payload = (await response.json().catch(() => ({}))) as {
+            error?: string;
+          };
+          failed += chunk.length;
+          setLog((current) => [
+            ...current,
+            {
+              songId: chunk[0]!,
+              title: `${chunk.length} song${chunk.length === 1 ? "" : "s"}`,
+              ok: false,
+              detail: payload.error ?? response.statusText,
+            },
+          ]);
+          break;
+        }
+
+        const data = (await response.json()) as EnrichResponse;
+        for (const result of data.results) {
+          const parts: string[] = [];
+          let songFailed = false;
+          let changed = false;
+
+          if (result.youtube) {
+            if (result.youtube.skipped) {
+              parts.push(labels.youtubeAlreadySet);
+            } else if (result.youtube.ok) {
+              changed = true;
+              parts.push(
+                `YouTube: ${result.youtube.title ?? "match"}${result.youtube.score ? ` (${result.youtube.score})` : ""}`,
+              );
+            } else {
+              songFailed = true;
+              parts.push(`YouTube: ${result.youtube.error ?? labels.autoFillFailed}`);
+            }
+          }
+
+          if (result.lyrics) {
+            if (result.lyrics.skipped) {
+              parts.push(labels.lyricsAlreadySet);
+            } else if (result.lyrics.ok) {
+              changed = true;
+              parts.push(
+                `Lyrics: ${result.lyrics.provider ?? "found"} (${result.lyrics.chars ?? 0} chars)`,
+              );
+            } else {
+              songFailed = true;
+              parts.push(`Lyrics: ${result.lyrics.error ?? labels.autoFillFailed}`);
+            }
+          }
+
+          if (changed) {
+            updated += 1;
+            if (songFailed) partial += 1;
+          } else if (songFailed) {
+            failed += 1;
+          } else {
+            skipped += 1;
+          }
+
+          setLog((current) => [
+            ...current,
+            {
+              songId: result.songId,
+              title: result.title,
+              ok: changed || !songFailed,
+              detail: parts.join("; "),
+            },
+          ]);
+        }
+
+        done += chunk.length;
+        setProgress({ done, total: ids.length });
+      }
+
+      const attempted = updated + skipped + failed;
+      if (stopRef.current && attempted < ids.length) {
+        setSummary(
+          fill(labels.stoppedSummary, {
+            done: attempted,
+            total: ids.length,
+          }),
+        );
+      } else {
+        setSummary(
+          fill(labels.autoFilledSummary, {
+            updated,
+            partial,
+            skipped,
+            failed,
+          }),
+        );
+      }
+
+      setSelected(new Set());
+      router.refresh();
+    } finally {
+      setEnriching(false);
       setStopping(false);
     }
   };
@@ -365,20 +586,20 @@ export function SongTable({
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-900/40 px-3 py-2.5">
         <p className="text-sm text-slate-400">
           {selected.size === 0
-            ? "Select songs to re-classify."
-            : `${selected.size} selected. Existing tags and scores will be replaced.`}
+            ? labels.selectSongs
+            : fill(labels.selected, { count: selected.size })}
         </p>
         <div className="flex items-center gap-2">
-          {selected.size > 0 && !running && (
+          {selected.size > 0 && !busy && (
             <button
               type="button"
               onClick={() => setSelected(new Set())}
               className="rounded-lg px-2.5 py-2 text-sm font-medium text-slate-400 transition hover:bg-slate-800 hover:text-slate-200"
             >
-              Clear
+              {labels.clear}
             </button>
           )}
-          {running && (
+          {busy && (
             <button
               type="button"
               onClick={requestStop}
@@ -390,8 +611,26 @@ export function SongTable({
           )}
           <button
             type="button"
+            onClick={() => void runEnrich()}
+            disabled={busy || selected.size === 0}
+            className="inline-flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-900 px-3.5 py-2 text-sm font-medium text-slate-200 transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {enriching ? (
+              <SpinnerIcon className="h-4 w-4 animate-spin" />
+            ) : (
+              <SparklesIcon className="h-4 w-4" />
+            )}
+            {enriching
+              ? fill(labels.autoFilling, {
+                  done: progress.done,
+                  total: progress.total,
+                })
+              : labels.autoFillSelected}
+          </button>
+          <button
+            type="button"
             onClick={() => void run()}
-            disabled={running || selected.size === 0}
+            disabled={busy || selected.size === 0}
             className="inline-flex items-center gap-2 rounded-lg bg-violet-600 px-3.5 py-2 text-sm font-medium text-white transition hover:bg-violet-500 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {running ? (
@@ -400,13 +639,16 @@ export function SongTable({
               <RefreshIcon className="h-4 w-4" />
             )}
             {running
-              ? `Re-classifying ${progress.done}/${progress.total}`
-              : "Re-classify selected"}
+              ? fill(labels.reclassifying, {
+                  done: progress.done,
+                  total: progress.total,
+                })
+              : labels.reclassifySelected}
           </button>
         </div>
       </div>
 
-      {running && (
+      {busy && (
         <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
           <div
             className="h-full bg-violet-500 transition-all"
@@ -416,7 +658,7 @@ export function SongTable({
       )}
 
       <div className="overflow-x-auto rounded-2xl border border-slate-800">
-        <table className="w-full min-w-[1180px] text-left text-sm">
+        <table className="w-full min-w-[1260px] text-left text-sm">
           <thead className="bg-slate-900/60 text-xs uppercase tracking-wide text-slate-400">
             <tr>
               <th className="w-10 px-4 py-2.5">
@@ -425,20 +667,21 @@ export function SongTable({
                   type="checkbox"
                   checked={allSelected}
                   onChange={toggleAll}
-                  disabled={songs.length === 0 || running}
-                  aria-label="Select all songs on this page"
+                  disabled={songs.length === 0 || busy}
+                  aria-label={labels.selectAll}
                   className="h-4 w-4 rounded border-slate-600 bg-slate-900 accent-violet-600"
                 />
               </th>
               <th className="px-4 py-2.5 font-medium">#</th>
-              <th className="px-4 py-2.5 font-medium">Title</th>
-              <th className="px-4 py-2.5 font-medium">Artist</th>
-              <th className="px-4 py-2.5 font-medium">Year</th>
-              <th className="px-4 py-2.5 font-medium">Emotions</th>
-              <th className="px-4 py-2.5 font-medium">V / A</th>
-              <th className="px-4 py-2.5 font-medium">YouTube</th>
-              <th className="px-4 py-2.5 font-medium">Lyrics</th>
-              <th className="px-4 py-2.5 font-medium">Analyzed</th>
+              <th className="px-4 py-2.5 font-medium">{labels.colTitle}</th>
+              <th className="px-4 py-2.5 font-medium">{labels.colArtist}</th>
+              <th className="px-4 py-2.5 font-medium">{labels.colYear}</th>
+              <th className="px-4 py-2.5 font-medium">{labels.colEmotions}</th>
+              <th className="px-4 py-2.5 font-medium">{labels.colVA}</th>
+              <th className="px-4 py-2.5 font-medium">{labels.colYouTube}</th>
+              <th className="px-4 py-2.5 font-medium">{labels.colLyrics}</th>
+              <th className="px-4 py-2.5 font-medium">{labels.colAnalyzed}</th>
+              <th className="px-4 py-2.5 font-medium">{labels.colEdit}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-800">
@@ -457,8 +700,11 @@ export function SongTable({
                       type="checkbox"
                       checked={isSelected}
                       onChange={() => toggleSong(song.id)}
-                      disabled={running}
-                      aria-label={`Select ${song.title} by ${song.artist}`}
+                      disabled={busy}
+                      aria-label={fill(labels.selectSong, {
+                        title: song.title,
+                        artist: song.artist,
+                      })}
                       className="h-4 w-4 rounded border-slate-600 bg-slate-900 accent-violet-600"
                     />
                   </td>
@@ -475,7 +721,7 @@ export function SongTable({
                   <td className="px-4 py-2">
                     {song.tags.length === 0 ? (
                       <span className="text-xs text-slate-600">
-                        {song.analysis ? "-" : "not analyzed"}
+                        {song.analysis ? "-" : labels.notAnalyzed}
                       </span>
                     ) : (
                       <span className="flex flex-wrap gap-1">
@@ -495,9 +741,9 @@ export function SongTable({
                         {song.analysis?.needs_review && (
                           <span
                             className="rounded-full bg-amber-500/20 px-2 py-0.5 text-[11px] font-medium text-amber-200"
-                            title="Low confidence"
+                            title={labels.lowConfidence}
                           >
-                            review
+                            {labels.review}
                           </span>
                         )}
                       </span>
@@ -514,18 +760,24 @@ export function SongTable({
                       target="_blank"
                       rel="noreferrer"
                       title={
-                        youtube.direct
-                          ? "Open YouTube video"
-                          : "Search YouTube for this song"
+                        song.youtube_title
+                          ? `${song.youtube_title}${song.youtube_channel ? ` - ${song.youtube_channel}` : ""}`
+                          : youtube.direct
+                            ? labels.openYouTube
+                          : labels.searchYouTube
                       }
                       className="inline-flex items-center gap-1 text-xs font-medium text-violet-300 transition hover:text-violet-200"
                     >
                       <PlayIcon className="h-3 w-3" />
-                      {youtube.direct ? "Watch" : "Search"}
+                      {youtube.direct ? labels.watch : labels.search}
                     </a>
                   </td>
                   <td className="px-4 py-2">
-                    <LyricsPreview songId={song.id} />
+                    <LyricsPreview
+                      songId={song.id}
+                      preview={song.lyrics_preview}
+                      source={song.lyrics_source}
+                    />
                   </td>
                   <td className="px-4 py-2">
                     <AnalyzedAt
@@ -533,16 +785,27 @@ export function SongTable({
                       model={song.analysis?.model ?? null}
                     />
                   </td>
+                  <td className="px-4 py-2">
+                    <button
+                      type="button"
+                      onClick={() => setEditing(song)}
+                      aria-label={fill(labels.editSong, { title: song.title })}
+                      title={labels.editYoutubeLyrics}
+                      className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-800 hover:text-white"
+                    >
+                      <PencilIcon className="h-4 w-4" />
+                    </button>
+                  </td>
                 </tr>
               );
             })}
             {songs.length === 0 && (
               <tr>
                 <td
-                  colSpan={10}
+                  colSpan={11}
                   className="px-4 py-10 text-center text-slate-500"
                 >
-                  No songs match. Run the seed migration to load the catalog.
+                  {labels.noSongs}
                 </td>
               </tr>
             )}
@@ -590,6 +853,16 @@ export function SongTable({
             </div>
           )}
         </div>
+      )}
+
+      {editing && (
+        <SongEditor
+          song={editing}
+          onClose={() => {
+            setEditing(null);
+            router.refresh();
+          }}
+        />
       )}
     </div>
   );

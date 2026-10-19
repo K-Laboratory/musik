@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { AdminText } from "@/lib/admin-i18n";
 
 export const metadata = { title: "Generations - Admin" };
 
@@ -20,11 +21,10 @@ export default async function AdminGenerationsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight text-white">
-          Generations
+          <AdminText k="generationsTitle" />
         </h1>
         <p className="mt-1 text-sm text-slate-400">
-          Vietnamese generational cohorts. Song counts show how many catalog
-          songs are seeded per generation.
+          <AdminText k="generationsDescription" />
         </p>
       </div>
 
@@ -39,7 +39,10 @@ export default async function AdminGenerationsPage() {
                 {generation.label_en}
               </h2>
               <span className="shrink-0 rounded-full bg-violet-600/20 px-2.5 py-0.5 text-xs font-medium text-violet-200">
-                {counts.get(generation.id) ?? 0} songs
+                <AdminText
+                  k="songsCount"
+                  values={{ count: counts.get(generation.id) ?? 0 }}
+                />
               </span>
             </div>
             <p className="mt-0.5 text-sm text-violet-300">
@@ -47,8 +50,16 @@ export default async function AdminGenerationsPage() {
             </p>
             <p className="mt-2 text-xs text-slate-400">
               {generation.birth_start && generation.birth_end
-                ? `Born ${generation.birth_start}–${generation.birth_end}`
-                : "Birth years overlap other cohorts"}
+                ? (
+                    <AdminText
+                      k="born"
+                      values={{
+                        start: generation.birth_start,
+                        end: generation.birth_end,
+                      }}
+                    />
+                  )
+                : <AdminText k="birthOverlap" />}
             </p>
             <p className="mt-2 text-sm text-slate-300">
               {generation.formative_era}
@@ -57,7 +68,7 @@ export default async function AdminGenerationsPage() {
         ))}
         {(generations ?? []).length === 0 && (
           <p className="text-sm text-slate-500">
-            No generations loaded. Run the schema migration to seed them.
+            <AdminText k="noGenerations" />
           </p>
         )}
       </div>
