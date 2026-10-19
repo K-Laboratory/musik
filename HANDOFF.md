@@ -9,6 +9,8 @@ Completed:
 - Extended `/api/admin/classify/batch` to accept explicit `songIds`.
 
 Checks: `npm run typecheck`, `npm run lint`, and `npm run build` pass.
+Live check: reclassified "Tình Thôi Xót Xa" from `/admin/songs`; the row
+refreshed and the run log reported `lrclib` as the lyrics source.
 
 Next step: fill `CLASSIFIER_API_KEY` in `.env.local` to run the classifier
-locally, then deploy and verify the re-classification flow on Vercel.
+locally. Continue with the review UI in Step 4.
