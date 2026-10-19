@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import {
   AlertIcon,
   CheckIcon,
+  PlayIcon,
   RefreshIcon,
   SpinnerIcon,
 } from "@/components/Icons";
@@ -15,11 +16,16 @@ export interface AdminSongRow {
   title: string;
   artist: string;
   year: number | null;
+  source: string | null;
+  source_id: string | null;
+  source_url: string | null;
   tags: { name: string; confidence: number; is_primary: boolean }[];
   analysis: {
     valence: number | null;
     arousal: number | null;
     needs_review: boolean;
+    analyzed_at: string;
+    model: string | null;
   } | null;
 }
 
@@ -43,6 +49,164 @@ interface LogEntry {
 }
 
 const CHUNK_SIZE = 5;
+
+interface LyricsPreviewState {
+  status: "idle" | "loading" | "ready" | "none" | "error";
+  preview?: string;
+  excerpt?: string;
+  provider?: string;
+  url?: string | null;
+}
+
+function LyricsPreview({ songId }: { songId: string }) {
+  const [state, setState] = useState<LyricsPreviewState>({ status: "idle" });
+  const started = useRef(false);
+
+  const load = async () => {
+    if (started.current) return;
+    started.current = true;
+    setState({ status: "loading" });
+
+    try {
+      const response = await fetch(
+        `/api/admin/lyrics?songId=${encodeURIComponent(songId)}`,
+      );
+      if (!response.ok) {
+        setState({ status: "error" });
+        return;
+      }
+      const data = (await response.json()) as {
+        available: boolean;
+        provider?: string;
+        url?: string | null;
+        preview?: string;
+        excerpt?: string;
+      };
+      if (!data.available || !data.preview) {
+        setState({ status: "none" });
+        return;
+      }
+      setState({
+        status: "ready",
+        preview: data.preview,
+        excerpt: data.excerpt,
+        provider: data.provider,
+        url: data.url,
+      });
+    } catch {
+      setState({ status: "error" });
+    }
+  };
+
+  if (state.status === "idle") {
+    return (
+      <button
+        type="button"
+        onClick={() => void load()}
+        onMouseEnter={() => void load()}
+        onFocus={() => void load()}
+        className="text-xs text-violet-300 transition hover:text-violet-200"
+        title="Load a short lyrics preview"
+      >
+        Hover preview
+      </button>
+    );
+  }
+
+  if (state.status === "loading") {
+    return (
+      <span className="inline-flex items-center gap-1.5 text-xs text-slate-500">
+        <SpinnerIcon className="h-3 w-3 animate-spin" />
+        Loading
+      </span>
+    );
+  }
+
+  if (state.status === "none") {
+    return (
+      <span className="text-xs text-slate-600" title="No lyrics found">
+        No lyrics
+      </span>
+    );
+  }
+
+  if (state.status === "error") {
+    return (
+      <span className="text-xs text-slate-600" title="Lyrics lookup failed">
+        Unavailable
+      </span>
+    );
+  }
+
+  return (
+    <div
+      className="max-w-[210px]"
+      title={`${state.excerpt ?? state.preview ?? ""}\n\nSource: ${state.provider ?? "unknown"}`}
+    >
+      <p className="line-clamp-1 text-xs text-slate-300">{state.preview}</p>
+      {state.url ? (
+        <a
+          href={state.url}
+          target="_blank"
+          rel="noreferrer"
+          className="mt-0.5 inline-block text-[11px] text-violet-300 hover:text-violet-200"
+        >
+          Full lyrics
+        </a>
+      ) : (
+        <span className="mt-0.5 block text-[11px] text-slate-600">
+          {state.provider}
+        </span>
+      )}
+    </div>
+  );
+}
+
+function AnalyzedAt({
+  value,
+  model,
+}: {
+  value: string | null;
+  model: string | null;
+}) {
+  if (!value) {
+    return <span className="text-xs text-slate-600">Not analyzed</span>;
+  }
+
+  const label = new Date(value).toLocaleString(undefined, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+
+  return (
+    <time
+      dateTime={value}
+      title={model ? `Model: ${model}` : undefined}
+      suppressHydrationWarning
+      className="whitespace-nowrap text-xs text-slate-400"
+    >
+      {label}
+    </time>
+  );
+}
+
+function youTubeLink(song: AdminSongRow): { href: string; direct: boolean } {
+  const direct =
+    song.source_url && /youtube\.com|youtu\.be/i.test(song.source_url)
+      ? song.source_url
+      : song.source === "youtube" && song.source_id
+        ? `https://www.youtube.com/watch?v=${encodeURIComponent(song.source_id)}`
+        : null;
+
+  return {
+    href:
+      direct ??
+      `https://www.youtube.com/results?search_query=${encodeURIComponent(
+        `${song.title} ${song.artist}`,
+      )}`,
+    direct: Boolean(direct),
+  };
+}
 
 export function SongTable({
   songs,
@@ -250,7 +414,7 @@ export function SongTable({
       )}
 
       <div className="overflow-x-auto rounded-2xl border border-slate-800">
-        <table className="w-full min-w-[900px] text-left text-sm">
+        <table className="w-full min-w-[1180px] text-left text-sm">
           <thead className="bg-slate-900/60 text-xs uppercase tracking-wide text-slate-400">
             <tr>
               <th className="w-10 px-4 py-2.5">
@@ -270,11 +434,15 @@ export function SongTable({
               <th className="px-4 py-2.5 font-medium">Year</th>
               <th className="px-4 py-2.5 font-medium">Emotions</th>
               <th className="px-4 py-2.5 font-medium">V / A</th>
+              <th className="px-4 py-2.5 font-medium">YouTube</th>
+              <th className="px-4 py-2.5 font-medium">Lyrics</th>
+              <th className="px-4 py-2.5 font-medium">Analyzed</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-800">
             {songs.map((song, index) => {
               const isSelected = selected.has(song.id);
+              const youtube = youTubeLink(song);
               return (
                 <tr
                   key={song.id}
@@ -338,13 +506,38 @@ export function SongTable({
                       ? `${song.analysis.valence?.toFixed(1) ?? "-"} / ${song.analysis.arousal?.toFixed(1) ?? "-"}`
                       : "-"}
                   </td>
+                  <td className="px-4 py-2">
+                    <a
+                      href={youtube.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      title={
+                        youtube.direct
+                          ? "Open YouTube video"
+                          : "Search YouTube for this song"
+                      }
+                      className="inline-flex items-center gap-1 text-xs font-medium text-violet-300 transition hover:text-violet-200"
+                    >
+                      <PlayIcon className="h-3 w-3" />
+                      {youtube.direct ? "Watch" : "Search"}
+                    </a>
+                  </td>
+                  <td className="px-4 py-2">
+                    <LyricsPreview songId={song.id} />
+                  </td>
+                  <td className="px-4 py-2">
+                    <AnalyzedAt
+                      value={song.analysis?.analyzed_at ?? null}
+                      model={song.analysis?.model ?? null}
+                    />
+                  </td>
                 </tr>
               );
             })}
             {songs.length === 0 && (
               <tr>
                 <td
-                  colSpan={7}
+                  colSpan={10}
                   className="px-4 py-10 text-center text-slate-500"
                 >
                   No songs match. Run the seed migration to load the catalog.

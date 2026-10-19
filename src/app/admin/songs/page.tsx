@@ -52,7 +52,7 @@ export default async function AdminSongsPage({
         : Promise.resolve({ data: [] as { song_id: string; emotion_id: string; confidence: number; is_primary: boolean }[] }),
       songIds.length
         ? supabase.from("song_analysis").select("*").in("song_id", songIds)
-        : Promise.resolve({ data: [] as { song_id: string; quadrant: string | null; valence: number | null; arousal: number | null; needs_review: boolean }[] }),
+        : Promise.resolve({ data: [] as { song_id: string; quadrant: string | null; valence: number | null; arousal: number | null; needs_review: boolean; analyzed_at: string; model: string | null }[] }),
       supabase.from("emotions").select("id, name"),
     ]);
 
@@ -79,12 +79,17 @@ export default async function AdminSongsPage({
       title: song.title,
       artist: song.artist,
       year: song.year,
+      source: song.source,
+      source_id: song.source_id,
+      source_url: song.source_url,
       tags: tagsBySong.get(song.id) ?? [],
       analysis: analysis
         ? {
             valence: analysis.valence,
             arousal: analysis.arousal,
             needs_review: analysis.needs_review,
+            analyzed_at: analysis.analyzed_at,
+            model: analysis.model,
           }
         : null,
     };
