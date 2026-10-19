@@ -18,6 +18,13 @@ Completed:
 - Applied `20250103000001_emotion_translations.sql` to the hosted Supabase
   project. It adds Vietnamese name, definition, and sounds-like columns to
   `emotions`; IDs remain stable in English.
+- Local `.env.local` now has working `YOUTUBE_API_KEY` and `DEEPSEEK_API_KEY`
+  values. Never commit this file.
+- Fixed blank optional env values (`CLASSIFIER_API_BASE`, `CLASSIFIER_MODEL`,
+  `LYRICS_API_BASE`, `SEARCH_API_BASE`) so they no longer produce invalid
+  request URLs.
+- Tightened YouTube matching: results that do not mention the catalog artist
+  are rejected, preventing covers from being saved as the canonical recording.
 
 Checks: `npm run typecheck`, `npm run lint`, and `npm run build` pass.
 Live check: reclassified "Tình Thôi Xót Xa" from `/admin/songs`; the row
@@ -26,9 +33,8 @@ refreshed and the run log reported `lrclib` as the lyrics source.
 Catalog note: the YouTube column uses `catalog_songs.youtube_url` when set,
 otherwise a YouTube search for the title and artist.
 
-Next step: add `YOUTUBE_API_KEY` and `CLASSIFIER_API_KEY` to `.env.local` for
-local automatic YouTube search and classification. Continue with the review
-UI in Step 4.
+Next step: review auto-filled matches for ambiguous songs, then continue with
+the review UI in Step 4.
 
 ## Local-first workflow
 

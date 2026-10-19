@@ -260,7 +260,8 @@ const lyricsVn: LyricsProvider = {
 const lrclib: LyricsProvider = {
   name: "lrclib",
   async run(song) {
-    const base = process.env.LYRICS_API_BASE ?? "https://lrclib.net/api";
+    const base =
+      process.env.LYRICS_API_BASE?.trim() || "https://lrclib.net/api";
 
     const exactUrl = `${base}/get?${new URLSearchParams({
       track_name: song.title,
@@ -320,7 +321,8 @@ const webSearch: LyricsProvider = {
     const key = process.env.SEARCH_API_KEY;
     if (!key) return null;
 
-    const base = process.env.SEARCH_API_BASE ?? "https://api.tavily.com/search";
+    const base =
+      process.env.SEARCH_API_BASE?.trim() || "https://api.tavily.com/search";
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
     try {

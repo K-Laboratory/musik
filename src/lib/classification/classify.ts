@@ -34,19 +34,20 @@ function resolveProvider(): { apiKey: string; baseUrl: string; model: string } {
     process.env.DEEPSEEK_API_KEY ||
     process.env.OPENAI_API_KEY ||
     "";
+  const configuredBase = process.env.CLASSIFIER_API_BASE?.trim() ?? "";
 
   const usingDeepSeek =
-    !process.env.CLASSIFIER_API_BASE &&
+    !configuredBase &&
     !process.env.OPENAI_API_KEY &&
     Boolean(process.env.DEEPSEEK_API_KEY || process.env.CLASSIFIER_API_KEY);
 
   const baseUrl = (
-    process.env.CLASSIFIER_API_BASE ??
+    configuredBase ||
     (usingDeepSeek ? DEEPSEEK_BASE_URL : DEFAULT_BASE_URL)
   ).replace(/\/$/, "");
 
   const defaultModel = usingDeepSeek ? DEEPSEEK_DEFAULT_MODEL : DEFAULT_MODEL;
-  const model = process.env.CLASSIFIER_MODEL ?? defaultModel;
+  const model = process.env.CLASSIFIER_MODEL?.trim() || defaultModel;
 
   return { apiKey, baseUrl, model };
 }

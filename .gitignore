@@ -47,3 +47,4 @@ input/
 output/
 data/
 *.sqlite3
+.env*

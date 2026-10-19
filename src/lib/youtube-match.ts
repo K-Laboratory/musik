@@ -4,6 +4,7 @@ export interface YouTubeMatch {
   result: YouTubeSearchResult;
   score: number;
   reason: string;
+  artistMatched: boolean;
 }
 
 const TITLE_NOISE =
@@ -90,6 +91,11 @@ export function scoreYouTubeMatch(
   const artistInTitle = artistNorm
     ? resultTitleNorm.includes(artistNorm)
     : false;
+  const artistChannelOverlap = artistNorm
+    ? overlapFraction(result.channelTitle, artistTokens)
+    : 1;
+  const artistMatched =
+    !artistNorm || artistInChannel || artistInTitle || artistChannelOverlap >= 0.5;
   if (artistInChannel) {
     score += 28;
     reasons.push("artist channel");
@@ -97,8 +103,12 @@ export function scoreYouTubeMatch(
     score += 22;
     reasons.push("artist in title");
   } else {
-    const artistOverlap = overlapFraction(result.channelTitle, artistTokens);
-    score += artistOverlap * 12;
+    score += artistChannelOverlap * 12;
+  }
+
+  if (!artistMatched) {
+    score -= 25;
+    reasons.push("artist not matched");
   }
 
   if (/\b(?:vevo|topic|official)\b/.test(channelNorm)) {
@@ -124,6 +134,7 @@ export function scoreYouTubeMatch(
     result,
     score,
     reason: reasons.join(", ") || "search result",
+    artistMatched,
   };
 }
 
@@ -136,6 +147,7 @@ export function pickBestYouTubeMatch(
 ): YouTubeMatch | null {
   const ranked = results
     .map((result, index) => scoreYouTubeMatch(title, artist, result, index))
+    .filter((match) => match.artistMatched)
     .sort((a, b) => b.score - a.score);
   const best = ranked[0];
   return best && best.score >= minimumScore ? best : null;
