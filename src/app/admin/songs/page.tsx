@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { SongTable, type AdminSongRow } from "@/components/admin/SongTable";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata = { title: "Songs - Admin" };
@@ -55,8 +56,6 @@ export default async function AdminSongsPage({
       supabase.from("emotions").select("id, name"),
     ]);
 
-  const genLabel = new Map((gens ?? []).map((g) => [g.id, g.label_en]));
-  void genLabel;
   const emotionName = new Map((emotions ?? []).map((e) => [e.id, e.name]));
 
   const tagsBySong = new Map<string, { name: string; confidence: number; is_primary: boolean }[]>();
@@ -72,6 +71,24 @@ export default async function AdminSongsPage({
   for (const list of tagsBySong.values()) list.sort((a, b) => b.confidence - a.confidence);
 
   const analysisBySong = new Map((analysisRows ?? []).map((a) => [a.song_id, a]));
+
+  const rows: AdminSongRow[] = (songs ?? []).map((song) => {
+    const analysis = analysisBySong.get(song.id);
+    return {
+      id: song.id,
+      title: song.title,
+      artist: song.artist,
+      year: song.year,
+      tags: tagsBySong.get(song.id) ?? [],
+      analysis: analysis
+        ? {
+            valence: analysis.valence,
+            arousal: analysis.arousal,
+            needs_review: analysis.needs_review,
+          }
+        : null,
+    };
+  });
 
   const total = count ?? 0;
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
@@ -124,84 +141,11 @@ export default async function AdminSongsPage({
         </form>
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-slate-800">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-slate-900/60 text-xs uppercase tracking-wide text-slate-400">
-            <tr>
-              <th className="px-4 py-2.5 font-medium">#</th>
-              <th className="px-4 py-2.5 font-medium">Title</th>
-              <th className="px-4 py-2.5 font-medium">Artist</th>
-              <th className="px-4 py-2.5 font-medium">Year</th>
-              <th className="px-4 py-2.5 font-medium">Emotions</th>
-              <th className="px-4 py-2.5 font-medium">V / A</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-800">
-            {(songs ?? []).map((song, index) => {
-              const tags = tagsBySong.get(song.id) ?? [];
-              const analysis = analysisBySong.get(song.id);
-              return (
-                <tr key={song.id} className="hover:bg-slate-900/40">
-                  <td className="px-4 py-2 text-slate-500">{from + index + 1}</td>
-                  <td className="px-4 py-2 font-medium text-white">
-                    {song.title}
-                  </td>
-                  <td className="px-4 py-2 text-slate-300">{song.artist}</td>
-                  <td className="px-4 py-2 text-slate-400">
-                    {song.year ?? "—"}
-                  </td>
-                  <td className="px-4 py-2">
-                    {tags.length === 0 ? (
-                      <span className="text-xs text-slate-600">
-                        {analysis ? "—" : "not analyzed"}
-                      </span>
-                    ) : (
-                      <span className="flex flex-wrap gap-1">
-                        {tags.map((tag) => (
-                          <span
-                            key={tag.name}
-                            className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${
-                              tag.is_primary
-                                ? "bg-violet-600/25 text-violet-100"
-                                : "bg-slate-800 text-slate-300"
-                            }`}
-                            title={`confidence ${tag.confidence.toFixed(2)}`}
-                          >
-                            {tag.name}
-                          </span>
-                        ))}
-                        {analysis?.needs_review && (
-                          <span
-                            className="rounded-full bg-amber-500/20 px-2 py-0.5 text-[11px] font-medium text-amber-200"
-                            title="Low confidence"
-                          >
-                            review
-                          </span>
-                        )}
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-4 py-2 tabular-nums text-slate-400">
-                    {analysis
-                      ? `${analysis.valence?.toFixed(1) ?? "—"} / ${analysis.arousal?.toFixed(1) ?? "—"}`
-                      : "—"}
-                  </td>
-                </tr>
-              );
-            })}
-            {(songs ?? []).length === 0 && (
-              <tr>
-                <td
-                  colSpan={6}
-                  className="px-4 py-10 text-center text-slate-500"
-                >
-                  No songs match. Run the seed migration to load the catalog.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      <SongTable
+        songs={rows}
+        startIndex={from}
+        pageKey={`${query}|${gen}|${page}`}
+      />
 
       {pages > 1 && (
         <div className="flex items-center justify-between text-sm">

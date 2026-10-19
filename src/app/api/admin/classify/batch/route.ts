@@ -12,6 +12,8 @@ export const maxDuration = 60;
 const TAXONOMY_VERSION = 1;
 const MAX_BATCH = 10;
 const DELAY_MS = 300;
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -24,7 +26,9 @@ interface SongOutcome {
 }
 
 /**
- * POST /api/admin/classify/batch  { limit?: number, onlyPending?: boolean }
+ * POST /api/admin/classify/batch
+ *   { songIds?: string[] }              re-classify explicit songs
+ *   { limit?: number, onlyPending?: boolean }  process pending songs
  *
  * Processes a small batch of songs. The client calls this repeatedly until
  * `pending` is 0. Kept small so it fits a serverless time limit.
@@ -34,15 +38,35 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  let body: { limit?: number; onlyPending?: boolean } = {};
+  let body: { limit?: number; onlyPending?: boolean; songIds?: unknown } = {};
   try {
-    body = (await request.json()) as { limit?: number; onlyPending?: boolean };
+    body = (await request.json()) as {
+      limit?: number;
+      onlyPending?: boolean;
+      songIds?: unknown;
+    };
   } catch {
     // Empty body is fine; defaults apply.
   }
 
   const limit = Math.min(Math.max(body.limit ?? 5, 1), MAX_BATCH);
   const onlyPending = body.onlyPending ?? true;
+  const requestedIds = Array.isArray(body.songIds)
+    ? [
+        ...new Set(
+          body.songIds.filter(
+            (id): id is string => typeof id === "string" && UUID_RE.test(id),
+          ),
+        ),
+      ].slice(0, MAX_BATCH)
+    : [];
+
+  if (body.songIds !== undefined && requestedIds.length === 0) {
+    return NextResponse.json(
+      { error: "songIds must contain at least one valid song id." },
+      { status: 400 },
+    );
+  }
 
   const supabase = await createClient();
 
@@ -57,7 +81,16 @@ export async function POST(request: Request) {
 
   let candidates: CatalogSong[] = [];
 
-  if (onlyPending) {
+  if (requestedIds.length > 0) {
+    const { data: songs } = await supabase
+      .from("catalog_songs")
+      .select("*")
+      .in("id", requestedIds);
+    const byId = new Map((songs ?? []).map((song) => [song.id, song]));
+    candidates = requestedIds
+      .map((id) => byId.get(id))
+      .filter((song): song is CatalogSong => Boolean(song));
+  } else if (onlyPending) {
     const { data: analyzed } = await supabase
       .from("song_analysis")
       .select("song_id")
