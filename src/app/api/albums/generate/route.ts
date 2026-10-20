@@ -38,6 +38,20 @@ function integerOrNull(value: unknown): number | null {
   return Number.isInteger(parsed) ? parsed : null;
 }
 
+function numberRecord(value: unknown): Record<string, number> {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) {
+    return {};
+  }
+  return Object.fromEntries(
+    Object.entries(value)
+      .filter(
+        (entry): entry is [string, number] =>
+          typeof entry[1] === "number" && Number.isFinite(entry[1]),
+      )
+      .map(([key, strength]) => [key, Math.max(0, Math.min(100, Math.round(strength)))]),
+  );
+}
+
 function parseConfig(body: unknown): AlbumConfig {
   const value =
     body !== null && typeof body === "object"
@@ -68,6 +82,7 @@ function parseConfig(body: unknown): AlbumConfig {
   return {
     generationIds: stringArray(value.generationIds),
     emotionIds: stringArray(value.emotionIds),
+    emotionStrengths: numberRecord(value.emotionStrengths),
     yearFrom: integerOrNull(value.yearFrom),
     yearTo: integerOrNull(value.yearTo),
     count,

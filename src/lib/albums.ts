@@ -28,6 +28,7 @@ export type AlbumSignal =
 export interface AlbumConfig {
   generationIds: string[];
   emotionIds: string[];
+  emotionStrengths?: Record<string, number>;
   yearFrom: number | null;
   yearTo: number | null;
   count: number;

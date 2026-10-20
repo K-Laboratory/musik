@@ -2,7 +2,7 @@ import { AlbumDesigner, type SavedAlbumSummary } from "@/components/albums/Album
 import { albumStatsFromJson } from "@/lib/album-db";
 import { createClient } from "@/lib/supabase/server";
 
-export const metadata = { title: "Album design - Favorite Songs" };
+export const metadata = { title: "Collection builder - Favorite Songs" };
 export const dynamic = "force-dynamic";
 
 export default async function AlbumDesignPage() {
@@ -49,14 +49,6 @@ export default async function AlbumDesignPage() {
   if (emotionsResult.error) throw new Error(emotionsResult.error.message);
 
   const generations = generationsResult.data ?? [];
-  const counts = await Promise.all(
-    generations.map((generation) =>
-      supabase
-        .from("catalog_songs")
-        .select("id", { count: "exact", head: true })
-        .eq("generation_id", generation.id),
-    ),
-  );
   const yearMin = oldestYearResult.data?.year ?? 1940;
   const yearMax =
     newestYearResult.data?.year ?? new Date().getFullYear();
@@ -74,10 +66,7 @@ export default async function AlbumDesignPage() {
 
   return (
     <AlbumDesigner
-      generations={generations.map((generation, index) => ({
-        ...generation,
-        songCount: counts[index]?.count ?? 0,
-      }))}
+      generations={generations}
       emotions={emotionsResult.data ?? []}
       yearMin={yearMin}
       yearMax={yearMax}

@@ -39,7 +39,6 @@ export interface StudioGeneration {
   label_en: string;
   label_vi: string;
   position: number;
-  songCount: number;
 }
 
 export interface SavedAlbumSummary {
@@ -106,6 +105,13 @@ function labelForGeneration(
   return language === "vi" ? generation.label_vi : generation.label_en;
 }
 
+function emotionPosition(emotion: StudioEmotion) {
+  return {
+    left: `${8 + ((clamp(emotion.valence, -2, 2) + 2) / 4) * 84}%`,
+    top: `${8 + (1 - (clamp(emotion.arousal, -2, 2) + 2) / 4) * 84}%`,
+  };
+}
+
 export function AlbumDesigner({
   generations,
   emotions,
@@ -127,8 +133,9 @@ export function AlbumDesigner({
     [],
   );
   const [selectedEmotionIds, setSelectedEmotionIds] = useState<string[]>([]);
-  const [yearFrom, setYearFrom] = useState("");
-  const [yearTo, setYearTo] = useState("");
+  const [emotionStrengths, setEmotionStrengths] = useState<Record<string, number>>({});
+  const [yearRange, setYearRange] = useState<[number, number]>([yearMin, yearMax]);
+  const [yearRangeActive, setYearRangeActive] = useState(false);
   const [count, setCount] = useState(16);
   const [mainstream, setMainstream] = useState(68);
   const [energy, setEnergy] = useState<AlbumEnergy>("any");
@@ -157,8 +164,25 @@ export function AlbumDesigner({
     );
   }
 
+  function toggleEmotion(emotionId: string) {
+    if (selectedEmotionIds.includes(emotionId)) {
+      setSelectedEmotionIds((current) => current.filter((id) => id !== emotionId));
+      setEmotionStrengths((current) => {
+        const next = { ...current };
+        delete next[emotionId];
+        return next;
+      });
+      return;
+    }
+    setSelectedEmotionIds((current) => [...current, emotionId]);
+    setEmotionStrengths((current) => ({ ...current, [emotionId]: 50 }));
+  }
+
   function applyPreset(preset: (typeof PRESETS)[number]) {
     setSelectedEmotionIds(preset.emotions);
+    setEmotionStrengths(
+      Object.fromEntries(preset.emotions.map((emotionId) => [emotionId, 65])),
+    );
     setSelectedGenerationIds(preset.generations);
     setEnergy(preset.energy);
     setMainstream(preset.mainstream);
@@ -171,8 +195,9 @@ export function AlbumDesigner({
   function clearFilters() {
     setSelectedGenerationIds([]);
     setSelectedEmotionIds([]);
-    setYearFrom("");
-    setYearTo("");
+    setEmotionStrengths({});
+    setYearRange([yearMin, yearMax]);
+    setYearRangeActive(false);
     setEnergy("any");
     setMainstream(68);
     setCount(16);
@@ -187,8 +212,9 @@ export function AlbumDesigner({
     return {
       generationIds: selectedGenerationIds,
       emotionIds: selectedEmotionIds,
-      yearFrom: yearFrom ? Number(yearFrom) : null,
-      yearTo: yearTo ? Number(yearTo) : null,
+      emotionStrengths,
+      yearFrom: yearRangeActive ? yearRange[0] : null,
+      yearTo: yearRangeActive ? yearRange[1] : null,
       count,
       mainstream,
       energy,
@@ -380,9 +406,6 @@ export function AlbumDesigner({
                         <span className="block font-medium">
                           {labelForGeneration(generation, language)}
                         </span>
-                        <span className="mt-0.5 block text-[10px] text-slate-500">
-                          {copy.tracksUnit(generation.songCount)}
-                        </span>
                       </button>
                     );
                   })}
@@ -392,101 +415,272 @@ export function AlbumDesigner({
               <fieldset>
                 <legend className="flex w-full items-center justify-between gap-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
                   <span>{copy.emotionHeading}</span>
-                  <span className="font-normal normal-case tracking-normal text-slate-600">
+                  <span className="flex items-center gap-2 font-normal normal-case tracking-normal text-slate-500">
                     {selectedEmotionCount
                       ? `${selectedEmotionCount} / ${emotions.length}`
                       : copy.anyMood}
+                    {selectedEmotionCount > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedEmotionIds([]);
+                          setEmotionStrengths({});
+                        }}
+                        className="text-violet-300 transition hover:text-white"
+                      >
+                        {copy.anyMood}
+                      </button>
+                    )}
                   </span>
                 </legend>
-                <div className="mt-3 flex flex-wrap gap-1.5">
-                  <button
-                    type="button"
-                    aria-pressed={selectedEmotionCount === 0}
-                    onClick={() => setSelectedEmotionIds([])}
-                    className={`rounded-full border px-2.5 py-1.5 text-[11px] font-medium transition ${
-                      selectedEmotionCount === 0
-                        ? "border-violet-500/60 bg-violet-500/15 text-violet-100"
-                        : "border-slate-700 bg-slate-950/50 text-slate-300 hover:border-slate-600"
-                    }`}
-                  >
-                    {copy.anyMood}
-                  </button>
-                  {emotions.map((emotion) => {
+                <p className="mt-1 text-xs leading-5 text-slate-500">
+                  {copy.emotionMapHint}
+                </p>
+                <div className="mt-3 grid grid-cols-[3.5rem_minmax(0,1fr)] gap-2">
+                  <div className="flex h-64 flex-col items-end justify-between py-1 text-right text-[9px] text-slate-500 sm:h-72">
+                    <span>{copy.highEnergy}</span>
+                    <span className="-rotate-90 whitespace-nowrap text-[10px] font-medium uppercase tracking-wider">
+                      {copy.energyHeading}
+                    </span>
+                    <span>{copy.lowEnergy}</span>
+                  </div>
+                  <div>
+                  <div className="relative isolate h-64 overflow-hidden rounded-xl border border-slate-700/80 bg-slate-950/60 sm:h-72">
+                    <div className="absolute inset-0 grid grid-cols-2 grid-rows-2">
+                      <div className="border-b border-r border-white/5 bg-rose-400/[0.055]" />
+                      <div className="border-b border-white/5 bg-amber-300/[0.055]" />
+                      <div className="border-r border-white/5 bg-sky-400/[0.055]" />
+                      <div className="bg-emerald-400/[0.055]" />
+                    </div>
+                    <div className="absolute left-1/2 top-0 h-full border-l border-dashed border-slate-600/60" />
+                    <div className="absolute left-0 top-1/2 w-full border-t border-dashed border-slate-600/60" />
+                    {emotions.map((emotion) => {
                     const selected = selectedEmotionIds.includes(emotion.id);
+                    const position = emotionPosition(emotion);
+                    const name =
+                      language === "vi"
+                        ? emotion.name_vi ?? emotion.name
+                        : emotion.name;
                     return (
                       <button
                         key={emotion.id}
                         type="button"
                         aria-pressed={selected}
-                        onClick={() =>
-                          toggleValue(
-                            emotion.id,
-                            selectedEmotionIds,
-                            setSelectedEmotionIds,
-                          )
-                        }
-                        className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1.5 text-[11px] transition ${
+                        aria-label={name}
+                        title={name}
+                        onClick={() => toggleEmotion(emotion.id)}
+                        style={position}
+                        className={`group absolute z-10 flex h-8 w-8 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 ${
                           selected
-                            ? "border-violet-500/50 bg-violet-500/15 text-violet-100"
-                            : "border-slate-700 bg-slate-950/50 text-slate-300 hover:border-slate-600"
+                            ? "scale-110 border-white bg-violet-500 text-white shadow-lg shadow-violet-950/50"
+                            : "border-slate-950/70 text-slate-950 shadow-sm hover:z-20 hover:scale-110 hover:ring-2 hover:ring-white/70"
                         }`}
                       >
                         <span
-                          className={`h-1.5 w-1.5 rounded-full ${
+                          className={`h-2.5 w-2.5 rounded-full ${
                             QUADRANT_DOT[emotion.quadrant] ?? "bg-slate-400"
                           }`}
                         />
-                        {language === "vi"
-                          ? emotion.name_vi ?? emotion.name
-                          : emotion.name}
+                        <span className="pointer-events-none absolute bottom-9 left-1/2 hidden -translate-x-1/2 whitespace-nowrap rounded-md border border-slate-700 bg-slate-900 px-2 py-1 text-[10px] font-medium text-white shadow-xl group-hover:block group-focus-visible:block">
+                          {name}
+                        </span>
                       </button>
                     );
-                  })}
+                    })}
+                  </div>
+                  <div className="mt-2 flex items-center justify-between text-[10px] text-slate-500">
+                    <span>{copy.lowValence}</span>
+                    <span>{copy.highValence}</span>
+                  </div>
+                  </div>
                 </div>
+                <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                  {[
+                    ["Q1_happy", copy.emotionQuadrants[0]],
+                    ["Q2_angry", copy.emotionQuadrants[1]],
+                    ["Q3_sad", copy.emotionQuadrants[2]],
+                    ["Q4_relaxed", copy.emotionQuadrants[3]],
+                  ].map(([quadrant, label]) => (
+                    <div
+                      key={quadrant}
+                      className="rounded-lg border border-slate-800/80 bg-slate-950/35 p-2"
+                    >
+                      <p className="mb-1.5 text-[9px] font-medium text-slate-500">
+                        {label}
+                      </p>
+                      <div className="flex flex-wrap gap-1">
+                        {emotions
+                          .filter((emotion) => emotion.quadrant === quadrant)
+                          .map((emotion) => {
+                            const selected = selectedEmotionIds.includes(emotion.id);
+                            const name =
+                              language === "vi"
+                                ? emotion.name_vi ?? emotion.name
+                                : emotion.name;
+                            return (
+                              <button
+                                key={emotion.id}
+                                type="button"
+                                aria-pressed={selected}
+                                onClick={() => toggleEmotion(emotion.id)}
+                                className={`inline-flex min-h-7 items-center gap-1.5 rounded-md border px-2 py-1 text-[10px] transition ${selected ? "border-violet-400/60 bg-violet-500/15 text-violet-100" : "border-transparent text-slate-400 hover:border-slate-700 hover:bg-slate-900 hover:text-white"}`}
+                              >
+                                <span
+                                  className={`h-1.5 w-1.5 shrink-0 rounded-full ${QUADRANT_DOT[emotion.quadrant] ?? "bg-slate-400"}`}
+                                />
+                                {name}
+                              </button>
+                            );
+                          })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {activeEmotions.length > 0 && (
+                  <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                    {activeEmotions.map((emotion) => {
+                      const name =
+                        language === "vi"
+                          ? emotion.name_vi ?? emotion.name
+                          : emotion.name;
+                      const strength = emotionStrengths[emotion.id] ?? 50;
+                      const strengthLabel =
+                        strength < 34
+                          ? copy.subtle
+                          : strength < 67
+                            ? copy.balanced
+                            : copy.strong;
+                      return (
+                        <label
+                          key={emotion.id}
+                          className="rounded-lg border border-slate-800 bg-slate-950/50 px-3 py-2"
+                        >
+                          <span className="flex items-center justify-between gap-2 text-xs">
+                            <span className="flex min-w-0 items-center gap-2 font-medium text-slate-200">
+                              <span
+                                className={`h-2 w-2 shrink-0 rounded-full ${QUADRANT_DOT[emotion.quadrant] ?? "bg-slate-400"}`}
+                              />
+                              <span className="truncate">{name}</span>
+                            </span>
+                            <span className="shrink-0 text-[10px] text-slate-500">
+                              {strengthLabel} · {strength}%
+                            </span>
+                          </span>
+                          <span className="sr-only">{copy.emotionStrength}</span>
+                          <input
+                            type="range"
+                            min={0}
+                            max={100}
+                            value={strength}
+                            aria-label={`${copy.emotionStrength}: ${name}`}
+                            onChange={(event) =>
+                              setEmotionStrengths((current) => ({
+                                ...current,
+                                [emotion.id]: Number(event.target.value),
+                              }))
+                            }
+                            className="mt-1.5 h-4 w-full cursor-pointer accent-violet-400"
+                          />
+                        </label>
+                      );
+                    })}
+                  </div>
+                )}
               </fieldset>
 
               <div className="grid gap-5 lg:grid-cols-2">
                 <fieldset>
-                  <legend className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
-                    {copy.eraHeading}
+                  <legend className="flex w-full items-center justify-between gap-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                    <span>{copy.eraHeading}</span>
+                    <span className="text-sm font-semibold normal-case tracking-normal text-slate-100">
+                      {yearRangeActive
+                        ? `${yearRange[0]}–${yearRange[1]}`
+                        : copy.yearAll}
+                    </span>
                   </legend>
-                  <div className="mt-3 grid grid-cols-2 gap-2">
-                    <label className="text-[11px] text-slate-500">
-                      <span className="mb-1 block">{copy.fromYear}</span>
-                      <input
-                        type="number"
-                        min={1900}
-                        max={2100}
-                        value={yearFrom}
-                        placeholder={String(yearMin)}
-                        onChange={(event) => {
-                          const next = event.target.value;
-                          setYearFrom(next);
-                          if (next && yearTo && Number(next) > Number(yearTo)) {
-                            setYearTo(next);
-                          }
+                  <div className="mt-4">
+                    <div className="relative h-7 px-2">
+                      <div
+                        className="absolute left-2 right-2 top-1/2 h-1.5 -translate-y-1/2 rounded-full"
+                        style={{
+                          background: yearRangeActive
+                            ? `linear-gradient(to right, rgb(51 65 85) 0%, rgb(51 65 85) ${((yearRange[0] - yearMin) / Math.max(1, yearMax - yearMin)) * 100}%, rgb(139 92 246) ${((yearRange[0] - yearMin) / Math.max(1, yearMax - yearMin)) * 100}%, rgb(139 92 246) ${((yearRange[1] - yearMin) / Math.max(1, yearMax - yearMin)) * 100}%, rgb(51 65 85) ${((yearRange[1] - yearMin) / Math.max(1, yearMax - yearMin)) * 100}%, rgb(51 65 85) 100%)`
+                            : "rgb(51 65 85)",
                         }}
-                        className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-600 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
                       />
-                    </label>
-                    <label className="text-[11px] text-slate-500">
-                      <span className="mb-1 block">{copy.toYear}</span>
                       <input
-                        type="number"
-                        min={1900}
-                        max={2100}
-                        value={yearTo}
-                        placeholder={String(yearMax)}
+                        type="range"
+                        min={yearMin}
+                        max={yearMax}
+                        value={yearRange[0]}
+                        aria-label={copy.fromYear}
+                        aria-valuetext={String(yearRange[0])}
                         onChange={(event) => {
-                          const next = event.target.value;
-                          setYearTo(next);
-                          if (next && yearFrom && Number(next) < Number(yearFrom)) {
-                            setYearFrom(next);
-                          }
+                          const next = Number(event.target.value);
+                          setYearRange((current) => [
+                            Math.min(next, current[1]),
+                            current[1],
+                          ]);
+                          setYearRangeActive(true);
                         }}
-                        className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-600 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
+                        className="pointer-events-none absolute inset-x-2 top-1/2 h-6 w-[calc(100%-1rem)] -translate-y-1/2 appearance-none bg-transparent [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-slate-950 [&::-moz-range-thumb]:bg-white [&::-webkit-slider-runnable-track]:h-1.5 [&::-webkit-slider-runnable-track]:bg-transparent [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-slate-950 [&::-webkit-slider-thumb]:bg-white"
+                        style={{ zIndex: yearRange[0] >= yearRange[1] - 2 ? 30 : 20 }}
                       />
-                    </label>
+                      <input
+                        type="range"
+                        min={yearMin}
+                        max={yearMax}
+                        value={yearRange[1]}
+                        aria-label={copy.toYear}
+                        aria-valuetext={String(yearRange[1])}
+                        onChange={(event) => {
+                          const next = Number(event.target.value);
+                          setYearRange(([from]) => [from, Math.max(next, from)]);
+                          setYearRangeActive(true);
+                        }}
+                        className="pointer-events-none absolute inset-x-2 top-1/2 h-6 w-[calc(100%-1rem)] -translate-y-1/2 appearance-none bg-transparent [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-slate-950 [&::-moz-range-thumb]:bg-white [&::-webkit-slider-runnable-track]:h-1.5 [&::-webkit-slider-runnable-track]:bg-transparent [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-slate-950 [&::-webkit-slider-thumb]:bg-white"
+                        style={{ zIndex: yearRange[1] <= yearRange[0] + 2 ? 30 : 10 }}
+                      />
+                    </div>
+                    <div className="flex justify-between text-[10px] tabular-nums text-slate-500">
+                      <span>{yearMin}</span>
+                      <span>{yearMax}</span>
+                    </div>
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                      <button
+                        type="button"
+                        aria-pressed={!yearRangeActive}
+                        onClick={() => {
+                          setYearRange([yearMin, yearMax]);
+                          setYearRangeActive(false);
+                        }}
+                        className={`rounded-full border px-2.5 py-1 text-[10px] font-medium transition ${!yearRangeActive ? "border-violet-400/60 bg-violet-500/15 text-violet-100" : "border-slate-700 text-slate-400 hover:border-slate-500 hover:text-white"}`}
+                      >
+                        {copy.yearAll}
+                      </button>
+                      {copy.yearRanges.map((range) => {
+                        const from = Math.max(yearMin, range.from);
+                        const to = Math.min(yearMax, range.to);
+                        const selected =
+                          yearRangeActive &&
+                          yearRange[0] === from &&
+                          yearRange[1] === to;
+                        return (
+                          <button
+                            key={range.label}
+                            type="button"
+                            aria-pressed={selected}
+                            onClick={() => {
+                              setYearRange([from, to]);
+                              setYearRangeActive(true);
+                            }}
+                            className={`rounded-full border px-2.5 py-1 text-[10px] font-medium transition ${selected ? "border-violet-400/60 bg-violet-500/15 text-violet-100" : "border-slate-700 text-slate-400 hover:border-slate-500 hover:text-white"}`}
+                          >
+                            {range.label}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 </fieldset>
 

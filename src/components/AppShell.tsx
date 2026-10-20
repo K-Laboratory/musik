@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { NowPlayingBar } from "@/components/NowPlayingBar";
 import { LanguageToggle } from "@/components/LanguageToggle";
@@ -20,6 +20,7 @@ import {
   MenuIcon,
   MusicIcon,
   SettingsIcon,
+  SpinnerIcon,
   SparklesIcon,
 } from "./Icons";
 
@@ -83,7 +84,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const labels = useLabels();
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [pendingHref, setPendingHref] = useState<string | null>(null);
   const isAdmin = useIsAdmin();
+
+  useEffect(() => {
+    setPendingHref(null);
+  }, [pathname]);
 
   const displayName =
     profile?.display_name || user.email?.split("@")[0] || labels.defaultUser;
@@ -105,19 +111,32 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <nav className="flex flex-col gap-1 xl:flex-row xl:items-center xl:gap-2">
       {navItems.map((item) => {
         const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+        const isPending = pendingHref === item.href && !isActive;
         const Icon = item.icon;
         return (
           <Link
             key={item.href}
             href={item.href}
-            onClick={() => setMenuOpen(false)}
+            prefetch
+            aria-current={isActive ? "page" : undefined}
+            aria-busy={isPending}
+            onClick={() => {
+              setMenuOpen(false);
+              if (!isActive) setPendingHref(item.href);
+            }}
             className={`flex items-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium transition ${
               isActive
                 ? "bg-violet-600/20 text-violet-200"
-                : "text-slate-300 hover:bg-slate-800 hover:text-white"
+                : isPending
+                  ? "bg-slate-800 text-white"
+                  : "text-slate-300 hover:bg-slate-800 hover:text-white"
             }`}
           >
-            <Icon className="h-4 w-4" />
+            {isPending ? (
+              <SpinnerIcon className="h-4 w-4 animate-spin" />
+            ) : (
+              <Icon className="h-4 w-4" />
+            )}
             {labels[item.labelKey]}
           </Link>
         );

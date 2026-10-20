@@ -126,11 +126,18 @@ function normalizedConfig(config: AlbumConfig): AlbumConfig {
     yearFrom !== null && yearTo !== null && yearFrom > yearTo
       ? [yearTo, yearFrom]
       : [yearFrom, yearTo];
+  const emotionStrengths = Object.fromEntries(
+    emotionIds.map((id) => [
+      id,
+      clamp(Math.round(config.emotionStrengths?.[id] ?? 50), 0, 100),
+    ]),
+  );
 
   return {
     ...config,
     generationIds,
     emotionIds,
+    emotionStrengths,
     yearFrom: orderedYears[0] ?? null,
     yearTo: orderedYears[1] ?? null,
     count: clamp(
@@ -270,10 +277,22 @@ function weightedPick(
       weight *= 1 + Math.pow(1 - popularity / 100, 1.5) * 2;
     }
 
-    if (song.emotions.some((emotion) => emotion.isPrimary && selectedEmotions.has(emotion.id))) {
-      weight *= 1.9;
-    } else if (song.emotions.some((emotion) => selectedEmotions.has(emotion.id))) {
-      weight *= 1.2;
+    const primaryStrength = Math.max(
+      0,
+      ...song.emotions
+        .filter((emotion) => emotion.isPrimary && selectedEmotions.has(emotion.id))
+        .map((emotion) => config.emotionStrengths?.[emotion.id] ?? 50),
+    );
+    const supportingStrength = Math.max(
+      0,
+      ...song.emotions
+        .filter((emotion) => selectedEmotions.has(emotion.id))
+        .map((emotion) => config.emotionStrengths?.[emotion.id] ?? 50),
+    );
+    if (primaryStrength > 0) {
+      weight *= 1.25 + (primaryStrength / 100) * 1.3;
+    } else if (supportingStrength > 0) {
+      weight *= 1 + (supportingStrength / 100) * 0.4;
     }
 
     const confidence =

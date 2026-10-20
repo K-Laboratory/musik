@@ -165,11 +165,11 @@ export interface AppLabels {
 const MUSIC_LABELS: AppLabels = {
   brand: "Favorite Songs",
   navDashboard: "Dashboard",
-  navAlbumDesign: "Album creation",
-  albumCreationTitle: "Create an album from the full catalog",
+  navAlbumDesign: "Collection builder",
+  albumCreationTitle: "Build a collection from the full catalog",
   albumCreationHint:
     "Choose generations, emotions, era, energy, and the hit-to-discovery balance. Every album is filled and sequenced for you.",
-  albumCreationAction: "Open album creation",
+  albumCreationAction: "Open collection builder",
   defaultUser: "Music lover",
   findHeading: "Find a song",
   findSubtitle: "Search YouTube and save songs to your library.",
@@ -322,7 +322,7 @@ const WORK_LABELS: AppLabels = {
 const VI_LABELS: AppLabels = {
   brand: "Bài Hát Yêu Thích",
   navDashboard: "Bảng điều khiển",
-  navAlbumDesign: "Tạo album",
+  navAlbumDesign: "Tạo bộ sưu tập",
   albumCreationTitle: "Tạo album từ toàn bộ kho nhạc",
   albumCreationHint:
     "Chọn thế hệ, cảm xúc, giai đoạn, năng lượng và tỷ lệ hit/khám phá. Mọi album đều được tuyển đủ bài và sắp xếp thành trình tự hoàn chỉnh.",

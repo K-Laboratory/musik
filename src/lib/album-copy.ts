@@ -14,9 +14,21 @@ export interface AlbumCopy {
   allGenerations: string;
   emotionHeading: string;
   anyMood: string;
+  emotionMapHint: string;
+  emotionQuadrants: [string, string, string, string];
+  lowEnergy: string;
+  highEnergy: string;
+  lowValence: string;
+  highValence: string;
+  emotionStrength: string;
+  subtle: string;
+  balanced: string;
+  strong: string;
   eraHeading: string;
   fromYear: string;
   toYear: string;
+  yearAll: string;
+  yearRanges: Array<{ label: string; from: number; to: number }>;
   lengthHeading: string;
   tracksUnit: (count: number) => string;
   mixHeading: string;
@@ -112,9 +124,35 @@ export const ALBUM_COPY: Record<AlbumLanguage, AlbumCopy> = {
     allGenerations: "All generations",
     emotionHeading: "Emotional world",
     anyMood: "Any mood",
+    emotionMapHint:
+      "Choose moods on the map. Position shows how positive and energetic each feeling is.",
+    emotionQuadrants: [
+      "Positive · high energy",
+      "Unpleasant · high energy",
+      "Unpleasant · low energy",
+      "Positive · low energy",
+    ],
+    lowEnergy: "Low energy",
+    highEnergy: "High energy",
+    lowValence: "Unpleasant",
+    highValence: "Pleasant",
+    emotionStrength: "Intensity",
+    subtle: "Subtle",
+    balanced: "Balanced",
+    strong: "Strong",
     eraHeading: "Era",
     fromYear: "From",
     toYear: "To",
+    yearAll: "All years",
+    yearRanges: [
+      { label: "60s", from: 1960, to: 1969 },
+      { label: "70s", from: 1970, to: 1979 },
+      { label: "80s", from: 1980, to: 1989 },
+      { label: "90s", from: 1990, to: 1999 },
+      { label: "2000s", from: 2000, to: 2009 },
+      { label: "2010s", from: 2010, to: 2019 },
+      { label: "2020s", from: 2020, to: 2029 },
+    ],
     lengthHeading: "Album length",
     tracksUnit: (count) => `${count} tracks`,
     mixHeading: "Hit-to-discovery balance",
@@ -227,9 +265,35 @@ export const ALBUM_COPY: Record<AlbumLanguage, AlbumCopy> = {
     allGenerations: "Mọi thế hệ",
     emotionHeading: "Thế giới cảm xúc",
     anyMood: "Mọi cảm xúc",
+    emotionMapHint:
+      "Chọn cảm xúc trên bản đồ. Vị trí thể hiện mức độ tích cực và năng lượng.",
+    emotionQuadrants: [
+      "Tích cực · nhiều năng lượng",
+      "Khó chịu · nhiều năng lượng",
+      "Khó chịu · ít năng lượng",
+      "Tích cực · ít năng lượng",
+    ],
+    lowEnergy: "Ít năng lượng",
+    highEnergy: "Nhiều năng lượng",
+    lowValence: "Khó chịu",
+    highValence: "Dễ chịu",
+    emotionStrength: "Cường độ",
+    subtle: "Nhẹ",
+    balanced: "Cân bằng",
+    strong: "Mạnh",
     eraHeading: "Giai đoạn",
     fromYear: "Từ năm",
     toYear: "Đến năm",
+    yearAll: "Mọi năm",
+    yearRanges: [
+      { label: "60s", from: 1960, to: 1969 },
+      { label: "70s", from: 1970, to: 1979 },
+      { label: "80s", from: 1980, to: 1989 },
+      { label: "90s", from: 1990, to: 1999 },
+      { label: "2000s", from: 2000, to: 2009 },
+      { label: "2010s", from: 2010, to: 2019 },
+      { label: "2020s", from: 2020, to: 2029 },
+    ],
     lengthHeading: "Độ dài album",
     tracksUnit: (count) => `${count} bài`,
     mixHeading: "Cân bằng hit và khám phá",

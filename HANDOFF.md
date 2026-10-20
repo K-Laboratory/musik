@@ -294,3 +294,23 @@ Open items:
   while the dev server is active.
 - Dashboard changes were pushed to `origin/main` in commit `51f792d` for
   publication. Deployment status was not checked.
+
+## 2026-10-20 Collection builder UX
+
+- Replaced the builder's six per-generation count queries with the existing
+  catalog summary data, reducing initial server-side database roundtrips.
+- Added an immediate loading skeleton for the collection builder and route
+  transition feedback/prefetching in the app navigation.
+- Added a clickable valence/arousal emotion map with quadrant colors, accessible
+  emotion names, intensity tuning, and intensity-aware song selection.
+- Replaced year entry with a dual-handle range selector, decade shortcuts, and
+  an all-years option that keeps unknown-year songs eligible.
+- Renamed the user-facing page to Collection builder / Tạo bộ sưu tập and
+  updated the Dashboard entry point and page metadata.
+- Verified emotion selection/intensity, decade selection, and a generated
+  collection in the local browser. Lint, typecheck, production build, and
+  `git diff --check` pass.
+- The local dev server was stopped for the production build; restart it with
+  `npm run dev -- -p 3000` before local browser testing.
+- Changes are being published to `origin/main`; confirm the resulting commit
+  hash and deployment status after push.
