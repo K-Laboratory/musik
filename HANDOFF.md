@@ -203,6 +203,9 @@ Completed:
   before this fix appear in the Dashboard playlist panel immediately.
 - Album saves refresh the shared client data before returning to the Dashboard,
   so the new playlist appears without a manual page reload.
+- Work mode now keeps the complete player transport: previous, play/pause,
+  next, and close. The main control uses the standard transport icon instead
+  of the work-mode settings glyph.
 - Applied `20250106000000_user_albums.sql` to the hosted Supabase project.
   Albums and album tracks are user-owned and separate from personal playlists.
 

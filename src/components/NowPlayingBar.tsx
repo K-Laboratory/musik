@@ -7,7 +7,6 @@ import {
   CloseIcon,
   PauseIcon,
   PlayIcon,
-  SettingsIcon,
   SkipNextIcon,
   SkipPreviousIcon,
 } from "@/components/Icons";
@@ -158,52 +157,44 @@ export function NowPlayingBar() {
         )}
 
         <div className="flex shrink-0 items-center gap-1 sm:gap-1.5">
-          {!isWork && (
-            <button
-              type="button"
-              onClick={previous}
-              disabled={!hasPrevious}
-              aria-label="Previous song"
-              className="rounded-full p-2 text-slate-300 transition hover:bg-slate-800 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              <SkipPreviousIcon className="h-5 w-5" />
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={previous}
+            disabled={!hasPrevious}
+            aria-label="Previous song"
+            className="rounded-full p-2 text-slate-300 transition hover:bg-slate-800 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <SkipPreviousIcon className="h-5 w-5" />
+          </button>
           <button
             type="button"
             onClick={toggle}
             aria-label={isPlaying ? "Pause" : "Play"}
             className="flex h-10 w-10 items-center justify-center rounded-full bg-violet-600 text-white transition hover:bg-violet-500"
           >
-            {isWork ? (
-              <SettingsIcon className="h-5 w-5" />
-            ) : isPlaying ? (
+            {isPlaying ? (
               <PauseIcon className="h-5 w-5" />
             ) : (
               <PlayIcon className="h-5 w-5" />
             )}
           </button>
-          {!isWork && (
-            <>
-              <button
-                type="button"
-                onClick={next}
-                disabled={!hasNext}
-                aria-label="Next song"
-                className="rounded-full p-2 text-slate-300 transition hover:bg-slate-800 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                <SkipNextIcon className="h-5 w-5" />
-              </button>
-              <button
-                type="button"
-                onClick={stop}
-                aria-label="Close player"
-                className="ml-1 rounded-full p-2 text-slate-400 transition hover:bg-slate-800 hover:text-white"
-              >
-                <CloseIcon className="h-5 w-5" />
-              </button>
-            </>
-          )}
+          <button
+            type="button"
+            onClick={next}
+            disabled={!hasNext}
+            aria-label="Next song"
+            className="rounded-full p-2 text-slate-300 transition hover:bg-slate-800 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <SkipNextIcon className="h-5 w-5" />
+          </button>
+          <button
+            type="button"
+            onClick={stop}
+            aria-label="Close player"
+            className="ml-1 rounded-full p-2 text-slate-400 transition hover:bg-slate-800 hover:text-white"
+          >
+            <CloseIcon className="h-5 w-5" />
+          </button>
         </div>
       </div>
     </div>
