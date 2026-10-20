@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { DocumentIcon, MusicIcon } from "@/components/Icons";
 import { useDisguise, useLabels } from "@/lib/disguise";
 
@@ -30,8 +32,14 @@ export function LoginFooter() {
   const labels = useLabels();
 
   return (
-    <p className="mt-6 text-center text-xs leading-relaxed text-slate-500">
-      {labels.loginFooter}
-    </p>
+    <div className="mt-6 text-center text-xs leading-relaxed text-slate-500">
+      <p>{labels.loginFooter}</p>
+      <Link
+        href="/privacy"
+        className="mt-2 inline-block text-violet-300 underline decoration-violet-500/40 underline-offset-4 hover:text-violet-200"
+      >
+        Privacy Policy
+      </Link>
+    </div>
   );
 }
