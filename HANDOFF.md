@@ -222,3 +222,26 @@ Open items:
   five-item recent list.
 - Consider a user-selectable priority when era and mood filters conflict
   (currently era is preserved before mood during the final fallback stage).
+
+## 2026-10-19 Facebook login
+
+Completed:
+
+- Created the Meta app `Musik Login` (App ID `4560709130839879`).
+- Added the Facebook Login use case with `public_profile` and `email`.
+- Added the Supabase callback
+  `https://itdiekttnkqpmihcsqmz.supabase.co/auth/v1/callback` to Valid OAuth
+  Redirect URIs and set the production domain `musik-two-wine.vercel.app`.
+- Enabled Facebook in Supabase with the app credentials. The App Secret is
+  stored only in Supabase and is not recorded in this repository.
+- Added public `/privacy` and data-deletion instructions, linked from the login
+  page, and made the route public in middleware.
+- Added the Meta app icon at `public/musik-app-icon.jpg`.
+- Verified the complete live OAuth flow from `/login` through Facebook consent
+  and back to `/dashboard`.
+
+Remaining publication gate:
+
+- Meta's Publish action is disabled until business/identity verification is
+  completed. Until then, Facebook login works for the app owner, admins, and
+  configured test users, but not for arbitrary public accounts.
