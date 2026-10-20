@@ -33,11 +33,12 @@ export default function PrivacyPage() {
             Information we collect
           </h2>
           <p>
-            When you sign in with Google or Facebook, we receive the basic
-            account information those providers share: your name, email
-            address, provider identifier, and profile picture. We also store
-            the songs, playlists, albums, and preferences you create in the
-            app.
+            When you register or sign in with email, Supabase Authentication
+            processes your email address and password credentials. When you
+            sign in with Google, we receive the basic account information
+            Google shares: your name, email address, provider identifier, and
+            profile picture. We also store the songs, playlists, albums, and
+            preferences you create in the app.
           </p>
         </section>
 
@@ -59,9 +60,9 @@ export default function PrivacyPage() {
           </h2>
           <p>
             Authentication and application data are stored using Supabase.
-            The application is hosted by Vercel. Google, Facebook, and YouTube
-            process data under their own privacy policies when you use those
-            services. Authentication cookies are used to keep you signed in.
+            The application is hosted by Vercel. Google and YouTube process
+            data under their own privacy policies when you use those services.
+            Authentication cookies are used to keep you signed in.
           </p>
         </section>
 
@@ -84,8 +85,8 @@ export default function PrivacyPage() {
           </p>
           <p>
             You can also remove individual songs and playlists inside the app
-            or revoke the app&apos;s access from your Google or Facebook
-            account settings.
+            or revoke the app&apos;s access from your Google account settings
+            if you used Google sign-in.
           </p>
         </section>
 
@@ -108,11 +109,12 @@ export default function PrivacyPage() {
             Chính sách quyền riêng tư
           </h2>
           <p>
-            Khi đăng nhập bằng Google hoặc Facebook, chúng tôi nhận thông tin
-            cơ bản do nhà cung cấp chia sẻ như tên, email, mã định danh và ảnh
-            đại diện. Chúng tôi lưu bài hát, danh sách phát và album bạn tạo
-            để vận hành ứng dụng. Chúng tôi không bán dữ liệu cá nhân và không
-            đăng nội dung thay bạn.
+            Khi đăng ký hoặc đăng nhập bằng email, Supabase Authentication xử
+            lý địa chỉ email và thông tin xác thực mật khẩu. Khi đăng nhập bằng
+            Google, chúng tôi nhận thông tin cơ bản như tên, email, mã định danh
+            và ảnh đại diện. Chúng tôi lưu bài hát, danh sách phát và album bạn
+            tạo để vận hành ứng dụng. Chúng tôi không bán dữ liệu cá nhân và
+            không đăng nội dung thay bạn.
           </p>
           <p>
             Dữ liệu được lưu trên Supabase và ứng dụng được triển khai trên

@@ -245,3 +245,28 @@ Remaining publication gate:
 - Meta's Publish action is disabled until business/identity verification is
   completed. Until then, Facebook login works for the app owner, admins, and
   configured test users, but not for arbitrary public accounts.
+
+## 2026-10-19 email registration
+
+Completed:
+
+- Removed Facebook from the login page's OAuth provider list and removed its
+  now-unused icon. Google remains available; the Supabase Facebook provider
+  configuration was not changed.
+- Expanded email/password sign-in with a create-account mode, password
+  confirmation, and an eight-character minimum for new passwords.
+- New registrations send confirmation links through the existing auth
+  callback when Supabase email confirmation is enabled; the page explains
+  that the user should check their email.
+- Added English and Vietnamese labels for sign-in, registration, validation,
+  and confirmation states. Updated privacy text to match the login methods.
+
+Checks: `npm run typecheck`, `npm run lint`, and `npm run build` pass.
+
+Open items:
+
+- Confirm Supabase's Auth URL allowlist includes the production and local
+  `/auth/callback` URLs for email confirmation links.
+- Confirm production email delivery is configured if new public signups should
+  receive Supabase confirmation emails.
+- This change is local only; no commit or deployment has been made.

@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getOrigin, safeRedirectPath } from "@/lib/url";
 
-/** Facebook sometimes nests the avatar under `picture.data.url`. */
+/** Some OAuth providers nest the avatar under `picture.data.url`. */
 function extractAvatarUrl(metadata: Record<string, unknown>): string | null {
   const candidates = [metadata.avatar_url, metadata.picture];
   for (const candidate of candidates) {
@@ -22,7 +22,7 @@ function extractAvatarUrl(metadata: Record<string, unknown>): string | null {
 
 /**
  * OAuth callback. Supabase redirects here with a `code` after the user signs in
- * with Google/Facebook. We exchange it for a session (which sets the auth
+ * with an OAuth provider. We exchange it for a session (which sets the auth
  * cookies) and make sure a profile row exists.
  */
 export async function GET(request: Request) {

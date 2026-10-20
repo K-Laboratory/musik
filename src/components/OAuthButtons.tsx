@@ -5,7 +5,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useLabels } from "@/lib/disguise";
 import { OAUTH_PROVIDERS, type OAuthProviderConfig } from "@/lib/oauth";
-import { FacebookIcon, GitHubIcon, GoogleIcon, SpinnerIcon } from "./Icons";
+import { GitHubIcon, GoogleIcon, SpinnerIcon } from "./Icons";
 
 function ProviderIcon({
   icon,
@@ -15,7 +15,6 @@ function ProviderIcon({
   className?: string;
 }) {
   if (icon === "google") return <GoogleIcon className={className} />;
-  if (icon === "facebook") return <FacebookIcon className={className} />;
   return <GitHubIcon className={className} />;
 }
 

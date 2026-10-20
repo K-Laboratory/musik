@@ -145,8 +145,15 @@ export interface AppLabels {
   emailPasswordHeading: string;
   emailLabel: string;
   passwordLabel: string;
+  confirmPasswordLabel: string;
   signInAction: string;
   signingInAction: string;
+  createAccountAction: string;
+  creatingAccountAction: string;
+  switchToSignUp: string;
+  switchToSignIn: string;
+  confirmEmailNotice: string;
+  passwordMismatchError: string;
   normalView: string;
   compactView: string;
   workMode: string;
@@ -213,11 +220,18 @@ const MUSIC_LABELS: AppLabels = {
   language: "Language",
   signInWith: (provider) => `Sign in with ${provider}`,
   connectingTo: (provider) => `Connecting to ${provider}...`,
-  emailPasswordHeading: "Email and password",
+  emailPasswordHeading: "Continue with email",
   emailLabel: "Email",
   passwordLabel: "Password",
+  confirmPasswordLabel: "Confirm password",
   signInAction: "Sign in",
   signingInAction: "Signing in...",
+  createAccountAction: "Create account",
+  creatingAccountAction: "Creating account...",
+  switchToSignUp: "New here? Create an account",
+  switchToSignIn: "Already have an account? Sign in",
+  confirmEmailNotice: "Check your email for a confirmation link to finish creating your account.",
+  passwordMismatchError: "The passwords do not match.",
   normalView: "Normal",
   compactView: "Compact",
   workMode: "Work",
@@ -285,11 +299,18 @@ const WORK_LABELS: AppLabels = {
   language: "Language",
   signInWith: (provider) => `Sign in with ${provider}`,
   connectingTo: (provider) => `Connecting to ${provider}...`,
-  emailPasswordHeading: "Email and password",
+  emailPasswordHeading: "Continue with email",
   emailLabel: "Email",
   passwordLabel: "Password",
+  confirmPasswordLabel: "Confirm password",
   signInAction: "Sign in",
   signingInAction: "Signing in...",
+  createAccountAction: "Create account",
+  creatingAccountAction: "Creating account...",
+  switchToSignUp: "New here? Create an account",
+  switchToSignIn: "Already have an account? Sign in",
+  confirmEmailNotice: "Check your email for a confirmation link to finish creating your account.",
+  passwordMismatchError: "The passwords do not match.",
   normalView: "Normal",
   compactView: "Compact",
   workMode: "Work",
@@ -358,11 +379,18 @@ const VI_LABELS: AppLabels = {
   language: "Ngôn ngữ",
   signInWith: (provider) => `Đăng nhập bằng ${provider}`,
   connectingTo: (provider) => `Đang kết nối ${provider}...`,
-  emailPasswordHeading: "Email và mật khẩu",
+  emailPasswordHeading: "Tiếp tục bằng email",
   emailLabel: "Email",
   passwordLabel: "Mật khẩu",
+  confirmPasswordLabel: "Xác nhận mật khẩu",
   signInAction: "Đăng nhập",
   signingInAction: "Đang đăng nhập...",
+  createAccountAction: "Tạo tài khoản",
+  creatingAccountAction: "Đang tạo tài khoản...",
+  switchToSignUp: "Bạn mới? Tạo tài khoản",
+  switchToSignIn: "Đã có tài khoản? Đăng nhập",
+  confirmEmailNotice: "Hãy kiểm tra email và nhấn liên kết xác nhận để hoàn tất tạo tài khoản.",
+  passwordMismatchError: "Mật khẩu xác nhận không khớp.",
   normalView: "Thường",
   compactView: "Gọn",
   workMode: "Công việc",

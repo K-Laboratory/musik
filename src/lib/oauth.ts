@@ -1,6 +1,6 @@
 import type { Provider } from "@supabase/supabase-js";
 
-export type OAuthIcon = "google" | "facebook" | "github";
+export type OAuthIcon = "google" | "github";
 
 export interface OAuthProviderConfig {
   /** Supabase provider id. Must match the provider name in Supabase Auth. */
@@ -27,13 +27,6 @@ export const OAUTH_PROVIDERS: OAuthProviderConfig[] = [
     icon: "google",
     className:
       "bg-white text-slate-900 hover:bg-slate-100 focus-visible:outline-white",
-  },
-  {
-    id: "facebook",
-    label: "Facebook",
-    icon: "facebook",
-    className:
-      "bg-[#1877F2] text-white hover:bg-[#166fe5] focus-visible:outline-[#1877F2]",
   },
   // Example for later:
   // {
