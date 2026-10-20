@@ -292,4 +292,5 @@ Open items:
 - Verified the Dashboard's expanded playlist and bottom cushion in the open
   browser. `npm run typecheck` and `npm run lint` pass; skipped another build
   while the dev server is active.
-- No commit or deployment has been made.
+- Dashboard changes were pushed to `origin/main` in commit `51f792d` for
+  publication. Deployment status was not checked.
