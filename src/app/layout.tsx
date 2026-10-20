@@ -30,7 +30,7 @@ export default async function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html:
-              "try{if(localStorage.getItem('favorite-songs:ui-mode')==='work'){document.documentElement.dataset.ui='work'}}catch(e){}",
+              "try{if(localStorage.getItem('favorite-songs:ui-mode')==='work'){document.documentElement.dataset.ui='work';var i=document.querySelector('link[rel~=\"icon\"]');if(i){i.href='/workspace-icon.svg'}}}catch(e){}",
           }}
         />
         <DisguiseProvider initialLanguage={language}>{children}</DisguiseProvider>

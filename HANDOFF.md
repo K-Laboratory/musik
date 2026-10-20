@@ -188,6 +188,11 @@ Completed:
 - Added a compact Album creation entry point at the top of the dashboard.
 - Kept controls and page links in the collapsed menu below the wide desktop
   breakpoint to prevent header wrapping on tablets.
+- Kept Album creation and the dashboard entry point available in Work mode.
+  Work mode calls it "Collection builder" and uses collection-oriented
+  dashboard copy instead of music terminology.
+- Added a classic workspace favicon and switch it dynamically with the active
+  music/work mode, including the initial pre-hydration load.
 - Applied `20250106000000_user_albums.sql` to the hosted Supabase project.
   Albums and album tracks are user-owned and separate from personal playlists.
 

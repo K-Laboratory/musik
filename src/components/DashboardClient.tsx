@@ -113,27 +113,25 @@ export function DashboardClient() {
     >
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <div className="min-w-0 space-y-6">
-          {!isWork && (
-            <Link
-              href="/albums/design"
-              className="group flex items-center gap-3 rounded-xl border border-violet-500/25 bg-violet-500/[0.06] px-4 py-3 transition hover:border-violet-400/45 hover:bg-violet-500/[0.1]"
-            >
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-violet-500/15 text-violet-300">
-                <SparklesIcon className="h-5 w-5" />
+          <Link
+            href="/albums/design"
+            className="group flex items-center gap-3 rounded-xl border border-violet-500/25 bg-violet-500/[0.06] px-4 py-3 transition hover:border-violet-400/45 hover:bg-violet-500/[0.1]"
+          >
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-violet-500/15 text-violet-300">
+              <SparklesIcon className="h-5 w-5" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-semibold text-white">
+                {labels.albumCreationTitle}
               </span>
-              <span className="min-w-0 flex-1">
-                <span className="block text-sm font-semibold text-white">
-                  {labels.albumCreationTitle}
-                </span>
-                <span className="mt-0.5 block text-xs leading-5 text-slate-400">
-                  {labels.albumCreationHint}
-                </span>
+              <span className="mt-0.5 block text-xs leading-5 text-slate-400">
+                {labels.albumCreationHint}
               </span>
-              <span className="hidden shrink-0 text-xs font-medium text-violet-300 transition group-hover:text-violet-200 sm:block">
-                {labels.albumCreationAction}
-              </span>
-            </Link>
-          )}
+            </span>
+            <span className="hidden shrink-0 text-xs font-medium text-violet-300 transition group-hover:text-violet-200 sm:block">
+              {labels.albumCreationAction}
+            </span>
+          </Link>
 
           <section>
             <h1 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">

@@ -101,7 +101,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           },
         ]
       : []),
-  ].filter((item) => !isWork || item.href !== "/albums/design");
+  ];
 
   const navLinks = (
     <nav className="flex flex-col gap-1 xl:flex-row xl:items-center xl:gap-2">

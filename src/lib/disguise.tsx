@@ -28,6 +28,8 @@ export type Language = "en" | "vi";
 const STORAGE_KEY = "favorite-songs:ui-mode";
 const LANGUAGE_KEY = "favorite-songs:language";
 const LANGUAGE_COOKIE = "musik_lang";
+const MUSIC_ICON = "/icon.svg";
+const WORK_ICON = "/workspace-icon.svg";
 
 interface DisguiseContextValue {
   mode: UiMode;
@@ -57,6 +59,25 @@ function writeLanguageCookie(language: Language) {
   } catch {
     // Ignore cookie failures.
   }
+}
+
+function applyFavicon(mode: UiMode) {
+  if (typeof document === "undefined") return;
+  const href = mode === "work" ? WORK_ICON : MUSIC_ICON;
+  const links = document.querySelectorAll<HTMLLinkElement>('link[rel~="icon"]');
+
+  if (links.length === 0) {
+    const link = document.createElement("link");
+    link.rel = "icon";
+    link.type = "image/svg+xml";
+    link.href = href;
+    document.head.appendChild(link);
+    return;
+  }
+
+  links.forEach((link) => {
+    link.href = href;
+  });
 }
 
 /** Human-facing copy that changes with the disguise. */
@@ -203,10 +224,10 @@ const MUSIC_LABELS: AppLabels = {
 const WORK_LABELS: AppLabels = {
   brand: "Workspace",
   navDashboard: "Files",
-  navAlbumDesign: "Album design",
-  albumCreationTitle: "Create a collection",
+  navAlbumDesign: "Collection builder",
+  albumCreationTitle: "Build a curated collection from the catalog",
   albumCreationHint:
-    "Choose the scope and balance for a new collection.",
+    "Choose the cohorts, tone, period, intensity, and balance between familiar and lesser-known items. Every collection is filled and ordered for you.",
   albumCreationAction: "Open collection builder",
   defaultUser: "User",
   findHeading: "Search files",
@@ -379,6 +400,7 @@ export function DisguiseProvider({
     const root = document.documentElement;
     if (mode === "work") root.dataset.ui = "work";
     else delete root.dataset.ui;
+    applyFavicon(mode);
   }, [mode]);
 
   useEffect(() => {
