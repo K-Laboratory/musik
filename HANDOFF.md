@@ -193,6 +193,9 @@ Completed:
   dashboard copy instead of music terminology.
 - Added a classic workspace favicon and switch it dynamically with the active
   music/work mode, including the initial pre-hydration load.
+- Replaced Next's automatic icon convention with a single managed favicon
+  link. The old setup left both the music and workspace icons in the document,
+  allowing the browser to keep showing the music icon in Work mode.
 - Applied `20250106000000_user_albums.sql` to the hosted Supabase project.
   Albums and album tracks are user-owned and separate from personal playlists.
 

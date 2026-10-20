@@ -28,8 +28,8 @@ export type Language = "en" | "vi";
 const STORAGE_KEY = "favorite-songs:ui-mode";
 const LANGUAGE_KEY = "favorite-songs:language";
 const LANGUAGE_COOKIE = "musik_lang";
-const MUSIC_ICON = "/icon.svg";
-const WORK_ICON = "/workspace-icon.svg";
+const MUSIC_ICON = "/music-icon.svg?theme=music";
+const WORK_ICON = "/workspace-icon.svg?theme=work";
 
 interface DisguiseContextValue {
   mode: UiMode;
@@ -65,19 +65,24 @@ function applyFavicon(mode: UiMode) {
   if (typeof document === "undefined") return;
   const href = mode === "work" ? WORK_ICON : MUSIC_ICON;
   const links = document.querySelectorAll<HTMLLinkElement>('link[rel~="icon"]');
-
-  if (links.length === 0) {
-    const link = document.createElement("link");
-    link.rel = "icon";
-    link.type = "image/svg+xml";
-    link.href = href;
-    document.head.appendChild(link);
+  if (
+    links.length === 1 &&
+    links[0]?.getAttribute("href") === href &&
+    links[0]?.dataset.musikFavicon === "true"
+  ) {
     return;
   }
 
   links.forEach((link) => {
-    link.href = href;
+    link.remove();
   });
+
+  const link = document.createElement("link");
+  link.rel = "icon";
+  link.type = "image/svg+xml";
+  link.href = href;
+  link.dataset.musikFavicon = "true";
+  document.head.appendChild(link);
 }
 
 /** Human-facing copy that changes with the disguise. */
@@ -401,6 +406,14 @@ export function DisguiseProvider({
     if (mode === "work") root.dataset.ui = "work";
     else delete root.dataset.ui;
     applyFavicon(mode);
+
+    const observer = new MutationObserver(() => applyFavicon(mode));
+    observer.observe(document.head, {
+      childList: true,
+      attributes: true,
+      attributeFilter: ["href", "rel"],
+    });
+    return () => observer.disconnect();
   }, [mode]);
 
   useEffect(() => {

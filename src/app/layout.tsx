@@ -23,14 +23,25 @@ export default async function RootLayout({
   const cookieStore = await cookies();
   const storedLanguage = cookieStore.get("musik_lang")?.value;
   const language = storedLanguage === "vi" ? "vi" : "en";
+  const initialUiScript = [
+    "try{",
+    "var work=localStorage.getItem('favorite-songs:ui-mode')==='work';",
+    "if(work){document.documentElement.dataset.ui='work'}",
+    "document.querySelectorAll('link[rel~=\"icon\"]').forEach(function(link){link.remove()});",
+    "var icon=document.createElement('link');",
+    "icon.rel='icon';icon.type='image/svg+xml';",
+    "icon.dataset.musikFavicon='true';",
+    "icon.href=work?'/workspace-icon.svg?theme=work':'/music-icon.svg?theme=music';",
+    "document.head.appendChild(icon);",
+    "}catch(e){}",
+  ].join("");
 
   return (
     <html lang={language} suppressHydrationWarning>
       <body className="min-h-screen bg-slate-950 font-sans text-slate-100 antialiased">
         <script
           dangerouslySetInnerHTML={{
-            __html:
-              "try{if(localStorage.getItem('favorite-songs:ui-mode')==='work'){document.documentElement.dataset.ui='work';var i=document.querySelector('link[rel~=\"icon\"]');if(i){i.href='/workspace-icon.svg'}}}catch(e){}",
+            __html: initialUiScript,
           }}
         />
         <DisguiseProvider initialLanguage={language}>{children}</DisguiseProvider>
