@@ -8,7 +8,7 @@ import type { Database } from "@/lib/database.types";
  * included because they perform their own auth check and should return 401
  * JSON rather than an HTML redirect.
  */
-const PUBLIC_PREFIXES = ["/login", "/auth", "/api"];
+const PUBLIC_PREFIXES = ["/login", "/auth", "/api", "/privacy"];
 
 function isPublicPath(pathname: string): boolean {
   return PUBLIC_PREFIXES.some(
