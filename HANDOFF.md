@@ -196,6 +196,13 @@ Completed:
 - Replaced Next's automatic icon convention with a single managed favicon
   link. The old setup left both the music and workspace icons in the document,
   allowing the browser to keep showing the music icon in Work mode.
+- Saving an album now also creates a playlist with the same name, adds each
+  catalog recording to the user's library when missing, and preserves the
+  album order in `playlist_songs`.
+- Added `albums.playlist_id` and a one-time migration/backfill so albums saved
+  before this fix appear in the Dashboard playlist panel immediately.
+- Album saves refresh the shared client data before returning to the Dashboard,
+  so the new playlist appears without a manual page reload.
 - Applied `20250106000000_user_albums.sql` to the hosted Supabase project.
   Albums and album tracks are user-owned and separate from personal playlists.
 

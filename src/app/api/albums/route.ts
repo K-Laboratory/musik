@@ -100,7 +100,7 @@ export async function POST(request: Request) {
   const songIds = tracks.map((track) => track.songId);
   const { data: catalogRows, error: catalogError } = await supabase
     .from("catalog_songs")
-    .select("id,youtube_video_id")
+    .select("id,title,artist,youtube_video_id,youtube_channel")
     .in("id", songIds);
   if (catalogError) {
     return NextResponse.json({ error: catalogError.message }, { status: 500 });
@@ -116,6 +116,13 @@ export async function POST(request: Request) {
       { status: 409 },
     );
   }
+
+  const catalogById = new Map(
+    (catalogRows ?? []).map((song) => [song.id, song]),
+  );
+  const orderedTracks = [...tracks].sort(
+    (a, b) => a.position - b.position,
+  );
 
   const coverVideoIds = Array.isArray(body.coverVideoIds)
     ? body.coverVideoIds
@@ -156,5 +163,115 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: trackError.message }, { status: 500 });
   }
 
-  return NextResponse.json({ id: album.id });
+  const { data: playlist, error: playlistError } = await supabase
+    .from("playlists")
+    .insert({ user_id: user.id, name: title })
+    .select("id")
+    .single();
+  if (playlistError || !playlist) {
+    await supabase.from("albums").delete().eq("id", album.id);
+    return NextResponse.json(
+      { error: playlistError?.message ?? "Could not create the playlist." },
+      { status: 500 },
+    );
+  }
+
+  const uniqueVideos = new Map<
+    string,
+    { title: string; artist: string; channel: string | null }
+  >();
+  for (const track of orderedTracks) {
+    const catalog = catalogById.get(track.songId);
+    if (!catalog?.youtube_video_id) continue;
+    uniqueVideos.set(catalog.youtube_video_id, {
+      title: catalog.title,
+      artist: catalog.artist,
+      channel: catalog.youtube_channel,
+    });
+  }
+
+  const { error: libraryError } = await supabase.from("songs").upsert(
+    [...uniqueVideos.entries()].map(([videoId, song]) => ({
+      user_id: user.id,
+      youtube_video_id: videoId,
+      title: song.title,
+      channel_title: song.channel ?? song.artist,
+      thumbnail_url: `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
+    })),
+    { onConflict: "user_id,youtube_video_id" },
+  );
+  if (libraryError) {
+    await supabase.from("playlists").delete().eq("id", playlist.id);
+    await supabase.from("albums").delete().eq("id", album.id);
+    return NextResponse.json({ error: libraryError.message }, { status: 500 });
+  }
+
+  const { data: librarySongs, error: libraryReadError } = await supabase
+    .from("songs")
+    .select("id,youtube_video_id")
+    .eq("user_id", user.id)
+    .in("youtube_video_id", [...uniqueVideos.keys()]);
+  if (libraryReadError) {
+    await supabase.from("playlists").delete().eq("id", playlist.id);
+    await supabase.from("albums").delete().eq("id", album.id);
+    return NextResponse.json(
+      { error: libraryReadError.message },
+      { status: 500 },
+    );
+  }
+
+  const libraryIdByVideo = new Map(
+    (librarySongs ?? []).map((song) => [song.youtube_video_id, song.id]),
+  );
+  const seenSongIds = new Set<string>();
+  const playlistRows: {
+    playlist_id: string;
+    song_id: string;
+    position: number;
+  }[] = [];
+  for (const track of orderedTracks) {
+    const catalog = catalogById.get(track.songId);
+    if (!catalog?.youtube_video_id) continue;
+    const songId = libraryIdByVideo.get(catalog.youtube_video_id);
+    if (!songId || seenSongIds.has(songId)) continue;
+    seenSongIds.add(songId);
+    playlistRows.push({
+      playlist_id: playlist.id,
+      song_id: songId,
+      position: playlistRows.length,
+    });
+  }
+
+  if (playlistRows.length === 0) {
+    await supabase.from("playlists").delete().eq("id", playlist.id);
+    await supabase.from("albums").delete().eq("id", album.id);
+    return NextResponse.json(
+      { error: "Could not add the album tracks to the playlist." },
+      { status: 500 },
+    );
+  }
+
+  const { error: playlistSongError } = await supabase
+    .from("playlist_songs")
+    .insert(playlistRows);
+  if (playlistSongError) {
+    await supabase.from("playlists").delete().eq("id", playlist.id);
+    await supabase.from("albums").delete().eq("id", album.id);
+    return NextResponse.json(
+      { error: playlistSongError.message },
+      { status: 500 },
+    );
+  }
+
+  const { error: linkError } = await supabase
+    .from("albums")
+    .update({ playlist_id: playlist.id })
+    .eq("id", album.id);
+  if (linkError) {
+    await supabase.from("playlists").delete().eq("id", playlist.id);
+    await supabase.from("albums").delete().eq("id", album.id);
+    return NextResponse.json({ error: linkError.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ id: album.id, playlistId: playlist.id });
 }

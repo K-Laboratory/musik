@@ -390,6 +390,7 @@ export interface Database {
           stats: Json;
           track_count: number;
           cover_video_ids: string[];
+          playlist_id: string | null;
           created_at: string;
         };
         Insert: {
@@ -401,6 +402,7 @@ export interface Database {
           stats?: Json;
           track_count?: number;
           cover_video_ids?: string[];
+          playlist_id?: string | null;
           created_at?: string;
         };
         Update: {
@@ -412,6 +414,7 @@ export interface Database {
           stats?: Json;
           track_count?: number;
           cover_video_ids?: string[];
+          playlist_id?: string | null;
           created_at?: string;
         };
         Relationships: [];

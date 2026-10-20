@@ -120,7 +120,7 @@ export function AlbumDesigner({
   initialAlbums: SavedAlbumSummary[];
 }) {
   const router = useRouter();
-  const { notify } = useData();
+  const { notify, refresh } = useData();
   const { language } = useLanguage();
   const copy = ALBUM_COPY[language];
   const [selectedGenerationIds, setSelectedGenerationIds] = useState<string[]>(
@@ -244,6 +244,7 @@ export function AlbumDesigner({
       });
       const payload = (await response.json()) as {
         id?: string;
+        playlistId?: string;
         error?: string;
       };
       if (!response.ok || !payload.id) {
@@ -264,6 +265,7 @@ export function AlbumDesigner({
         },
         ...current,
       ]);
+      await refresh();
       router.refresh();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : copy.saveError);
