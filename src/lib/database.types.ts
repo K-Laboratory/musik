@@ -380,6 +380,69 @@ export interface Database {
         };
         Relationships: [];
       };
+      albums: {
+        Row: {
+          id: string;
+          user_id: string;
+          title: string;
+          description: string | null;
+          config: Json;
+          stats: Json;
+          track_count: number;
+          cover_video_ids: string[];
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          title: string;
+          description?: string | null;
+          config?: Json;
+          stats?: Json;
+          track_count?: number;
+          cover_video_ids?: string[];
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          title?: string;
+          description?: string | null;
+          config?: Json;
+          stats?: Json;
+          track_count?: number;
+          cover_video_ids?: string[];
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      album_songs: {
+        Row: {
+          id: string;
+          album_id: string;
+          song_id: string;
+          position: number;
+          role: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          album_id: string;
+          song_id: string;
+          position: number;
+          role?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          album_id?: string;
+          song_id?: string;
+          position?: number;
+          role?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: { is_admin: { Args: Record<string, never>; Returns: boolean } };

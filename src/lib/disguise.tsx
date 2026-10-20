@@ -63,6 +63,10 @@ function writeLanguageCookie(language: Language) {
 export interface AppLabels {
   brand: string;
   navDashboard: string;
+  navAlbumDesign: string;
+  albumCreationTitle: string;
+  albumCreationHint: string;
+  albumCreationAction: string;
   defaultUser: string;
   findHeading: string;
   findSubtitle: string;
@@ -128,6 +132,11 @@ export interface AppLabels {
 const MUSIC_LABELS: AppLabels = {
   brand: "Favorite Songs",
   navDashboard: "Dashboard",
+  navAlbumDesign: "Album creation",
+  albumCreationTitle: "Create an album from the full catalog",
+  albumCreationHint:
+    "Choose generations, emotions, era, energy, and the hit-to-discovery balance. Every album is filled and sequenced for you.",
+  albumCreationAction: "Open album creation",
   defaultUser: "Music lover",
   findHeading: "Find a song",
   findSubtitle: "Search YouTube and save songs to your library.",
@@ -194,6 +203,11 @@ const MUSIC_LABELS: AppLabels = {
 const WORK_LABELS: AppLabels = {
   brand: "Workspace",
   navDashboard: "Files",
+  navAlbumDesign: "Album design",
+  albumCreationTitle: "Create a collection",
+  albumCreationHint:
+    "Choose the scope and balance for a new collection.",
+  albumCreationAction: "Open collection builder",
   defaultUser: "User",
   findHeading: "Search files",
   findSubtitle: "Search the document index and add files to your workspace.",
@@ -261,6 +275,11 @@ const WORK_LABELS: AppLabels = {
 const VI_LABELS: AppLabels = {
   brand: "Bài Hát Yêu Thích",
   navDashboard: "Bảng điều khiển",
+  navAlbumDesign: "Tạo album",
+  albumCreationTitle: "Tạo album từ toàn bộ kho nhạc",
+  albumCreationHint:
+    "Chọn thế hệ, cảm xúc, giai đoạn, năng lượng và tỷ lệ hit/khám phá. Mọi album đều được tuyển đủ bài và sắp xếp thành trình tự hoàn chỉnh.",
+  albumCreationAction: "Mở trang tạo album",
   defaultUser: "Người yêu nhạc",
   findHeading: "Tìm bài hát",
   findSubtitle: "Tìm trên YouTube và lưu bài hát vào thư viện.",

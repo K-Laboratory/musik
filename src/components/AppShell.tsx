@@ -20,9 +20,18 @@ import {
   LogoutIcon,
   MenuIcon,
   MusicIcon,
+  SettingsIcon,
+  SparklesIcon,
 } from "./Icons";
 
-const NAV_ITEMS = [{ href: "/dashboard", label: "Dashboard", icon: ListIcon }];
+const NAV_ITEMS = [
+  { href: "/dashboard", labelKey: "navDashboard" as const, icon: ListIcon },
+  {
+    href: "/albums/design",
+    labelKey: "navAlbumDesign" as const,
+    icon: SparklesIcon,
+  },
+];
 
 function initialsFor(name: string): string {
   const trimmed = name.trim();
@@ -81,10 +90,22 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const displayName =
     profile?.display_name || user.email?.split("@")[0] || labels.defaultUser;
   const avatarUrl = profile?.avatar_url ?? null;
+  const navItems = [
+    ...NAV_ITEMS,
+    ...(isAdmin
+      ? [
+          {
+            href: "/admin",
+            labelKey: "navAdmin" as const,
+            icon: SettingsIcon,
+          },
+        ]
+      : []),
+  ].filter((item) => !isWork || item.href !== "/albums/design");
 
   const navLinks = (
-    <nav className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
-      {NAV_ITEMS.map((item) => {
+    <nav className="flex flex-col gap-1 xl:flex-row xl:items-center xl:gap-2">
+      {navItems.map((item) => {
         const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
         const Icon = item.icon;
         return (
@@ -92,14 +113,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             key={item.href}
             href={item.href}
             onClick={() => setMenuOpen(false)}
-            className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition ${
+            className={`flex items-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium transition ${
               isActive
                 ? "bg-violet-600/20 text-violet-200"
                 : "text-slate-300 hover:bg-slate-800 hover:text-white"
             }`}
           >
             <Icon className="h-4 w-4" />
-            {labels.navDashboard}
+            {labels[item.labelKey]}
           </Link>
         );
       })}
@@ -118,23 +139,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <MusicIcon className="h-5 w-5" />
               )}
             </span>
-            <span className="text-base font-semibold tracking-tight text-white">
+            <span className="whitespace-nowrap text-base font-semibold tracking-tight text-white">
               {labels.brand}
             </span>
           </Link>
 
-          <div className="hidden sm:block">{navLinks}</div>
+          <div className="hidden xl:block">{navLinks}</div>
 
-          <div className="hidden items-center gap-3 sm:flex">
+          <div className="hidden items-center gap-3 xl:flex">
             {!isWork && <ViewModeToggle />}
-            {isAdmin && (
-              <Link
-                href="/admin"
-                className="rounded-lg border border-slate-700 px-2.5 py-1.5 text-xs font-medium text-slate-300 transition hover:border-slate-600 hover:bg-slate-800 hover:text-white"
-              >
-                {labels.navAdmin}
-              </Link>
-            )}
             <LanguageToggle compact />
             <DisguiseToggle />
             <div className="flex items-center gap-2.5">
@@ -159,7 +172,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             aria-label={menuOpen ? "Close menu" : "Open menu"}
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen((open) => !open)}
-            className="rounded-lg border border-slate-700 p-2 text-slate-300 transition hover:bg-slate-800 sm:hidden"
+            className="rounded-lg border border-slate-700 p-2 text-slate-300 transition hover:bg-slate-800 xl:hidden"
           >
             {menuOpen ? (
               <CloseIcon className="h-5 w-5" />
@@ -170,7 +183,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
 
         {menuOpen && (
-          <div className="animate-fade-in border-t border-slate-800 bg-slate-950 px-4 py-4 sm:hidden">
+          <div className="animate-fade-in border-t border-slate-800 bg-slate-950 px-4 py-4 xl:hidden">
             <div className="mb-3 flex items-center gap-3">
               <Avatar src={avatarUrl} name={displayName} size={36} />
               <span className="truncate text-sm text-slate-300">

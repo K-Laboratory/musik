@@ -165,3 +165,42 @@ Open items:
   present in `public.admin_emails` for `/admin` access.
 - A local admin account (`local-admin@example.com`) exists in Supabase and is
   on the admin allowlist. The password is intentionally not stored in Git.
+
+## 2026-10-19 album design studio
+
+Completed:
+
+- Added `/albums/design`, a bilingual album studio for the public catalog.
+- Added generation, emotion, era, energy, length, hit-to-discovery balance,
+  artist-variety, album-title, and four mood-preset controls.
+- Added a server-side curation engine that fills every requested album, even
+  when filters are too narrow. It progressively widens the constraints and
+  marks affected tracks in the result.
+- The selector balances known favorites and discoveries, rotates across
+  selected generations, limits repeated artists, and sequences tracks as an
+  opener, build, centerpiece, release, and finale.
+- Added album cover mosaics from actual YouTube thumbnails, inline playback
+  through the existing global player, reshuffle, and save.
+- Added `/albums/[id]` for saved albums and "Album design" navigation.
+- Promoted the app navigation to three primary pages: Dashboard, Album
+  creation, and Admin. Admin is now part of the desktop and mobile nav for
+  allowlisted users.
+- Added a compact Album creation entry point at the top of the dashboard.
+- Kept controls and page links in the collapsed menu below the wide desktop
+  breakpoint to prevent header wrapping on tablets.
+- Applied `20250106000000_user_albums.sql` to the hosted Supabase project.
+  Albums and album tracks are user-owned and separate from personal playlists.
+
+Checks:
+
+- `npm run typecheck` and `npm run lint` pass.
+- Manual browser checks passed for the Vietnamese studio, preset generation,
+  narrow-filter fallback warnings, playback, save, saved-album reload, and
+  desktop/mobile layout.
+
+Open items:
+
+- Add album deletion or renaming if the collection grows beyond the current
+  five-item recent list.
+- Consider a user-selectable priority when era and mood filters conflict
+  (currently era is preserved before mood during the final fallback stage).
