@@ -104,7 +104,7 @@ export function NowPlayingBar() {
           : "translate-y-0 opacity-100"
       }`}
     >
-      <div className="mx-auto flex w-full max-w-7xl items-center gap-2 px-4 pt-2 text-[11px] tabular-nums text-slate-400 sm:px-6 lg:px-8">
+      <div className="mx-auto flex w-full max-w-7xl items-center gap-2 px-4 pt-1 text-[11px] tabular-nums text-slate-400 sm:px-6 lg:px-8">
         <span className="w-9 shrink-0 text-right">{formatTime(value)}</span>
         <input
           type="range"
@@ -133,12 +133,12 @@ export function NowPlayingBar() {
         <span className="w-9 shrink-0">{formatTime(duration)}</span>
       </div>
 
-      <div className="mx-auto flex w-full max-w-7xl items-center gap-3 px-4 py-2.5 sm:px-6 lg:px-8">
+      <div className="mx-auto flex w-full max-w-7xl items-center gap-2 px-4 py-1.5 sm:px-6 lg:px-8">
         <div
           className={`shrink-0 overflow-hidden rounded-lg bg-black ${
             isCompact || isWork
               ? "h-px w-px opacity-0"
-              : "aspect-video w-32 sm:w-52"
+              : "aspect-video w-20 sm:w-32"
           }`}
         >
           <PlayerEngine className="h-full w-full" />
@@ -162,20 +162,20 @@ export function NowPlayingBar() {
             onClick={previous}
             disabled={!hasPrevious}
             aria-label="Previous song"
-            className="rounded-full p-2 text-slate-300 transition hover:bg-slate-800 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+            className="rounded-full p-1.5 text-slate-300 transition hover:bg-slate-800 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
           >
-            <SkipPreviousIcon className="h-5 w-5" />
+            <SkipPreviousIcon className="h-4 w-4" />
           </button>
           <button
             type="button"
             onClick={toggle}
             aria-label={isPlaying ? "Pause" : "Play"}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-violet-600 text-white transition hover:bg-violet-500"
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-violet-600 text-white transition hover:bg-violet-500"
           >
             {isPlaying ? (
-              <PauseIcon className="h-5 w-5" />
+              <PauseIcon className="h-4 w-4" />
             ) : (
-              <PlayIcon className="h-5 w-5" />
+              <PlayIcon className="h-4 w-4" />
             )}
           </button>
           <button
@@ -183,17 +183,17 @@ export function NowPlayingBar() {
             onClick={next}
             disabled={!hasNext}
             aria-label="Next song"
-            className="rounded-full p-2 text-slate-300 transition hover:bg-slate-800 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+            className="rounded-full p-1.5 text-slate-300 transition hover:bg-slate-800 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
           >
-            <SkipNextIcon className="h-5 w-5" />
+            <SkipNextIcon className="h-4 w-4" />
           </button>
           <button
             type="button"
             onClick={stop}
             aria-label="Close player"
-            className="ml-1 rounded-full p-2 text-slate-400 transition hover:bg-slate-800 hover:text-white"
+            className="ml-1 rounded-full p-1.5 text-slate-400 transition hover:bg-slate-800 hover:text-white"
           >
-            <CloseIcon className="h-5 w-5" />
+            <CloseIcon className="h-4 w-4" />
           </button>
         </div>
       </div>

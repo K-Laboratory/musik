@@ -270,3 +270,26 @@ Open items:
 - Confirm production email delivery is configured if new public signups should
   receive Supabase confirmation emails.
 - This change is local only; no commit or deployment has been made.
+
+## 2026-10-20 Dashboard scroll and player sizing
+
+- Removed sticky positioning from the Dashboard playlist panel so the right
+  column scrolls naturally with the document and its bottom remains reachable.
+- Reduced the fixed player bar's video preview and transport controls to make
+  the bar substantially shorter while preserving previous, play/pause, next,
+  and close actions.
+- Verified with `npm run typecheck`, `npm run lint`, `npm run build`, and
+  `git diff --check`.
+- Local dev server remains available at `http://localhost:3000`. Playwright's
+  independent browser session is unauthenticated and redirects to `/login`.
+- Running `next build` while `next dev` shared the `.next` directory left the
+  login page temporarily unstyled; restarting `next dev` regenerated its
+  assets and restored the page. Avoid building while the dev server is active.
+- Reserved a consistent `16rem` bottom cushion (`18rem` at the `sm` breakpoint)
+  on every app page so expanded playlist content can scroll fully above the
+  fixed player. Kept top and bottom padding utilities separate to avoid
+  Tailwind `py-*` overriding the larger bottom spacing.
+- Verified the Dashboard's expanded playlist and bottom cushion in the open
+  browser. `npm run typecheck` and `npm run lint` pass; skipped another build
+  while the dev server is active.
+- No commit or deployment has been made.

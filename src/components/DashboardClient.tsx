@@ -230,7 +230,7 @@ export function DashboardClient() {
           </section>
         </div>
 
-        <PlaylistPanel className="h-fit lg:sticky lg:top-24" />
+        <PlaylistPanel className="h-fit" />
       </div>
 
       <DragOverlay dropAnimation={null}>

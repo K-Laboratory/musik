@@ -11,7 +11,6 @@ import { DisguiseToggle } from "@/components/DisguiseToggle";
 import { Toasts } from "@/components/Toasts";
 import { ViewModeToggle } from "@/components/ViewModeToggle";
 import { useDisguise, useLabels } from "@/lib/disguise";
-import { usePlayer } from "@/lib/player";
 import { useIsAdmin } from "@/lib/use-is-admin";
 import {
   CloseIcon,
@@ -80,7 +79,6 @@ function Avatar({
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { profile, user } = useData();
-  const { currentSong } = usePlayer();
   const { isWork } = useDisguise();
   const labels = useLabels();
   const pathname = usePathname();
@@ -224,11 +222,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         )}
       </header>
 
-      <main
-        className={`mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 sm:py-8 lg:px-8 ${
-          currentSong ? "pb-28 sm:pb-32" : ""
-        }`}
-      >
+      <main className="mx-auto w-full max-w-7xl flex-1 px-4 pt-6 pb-64 sm:px-6 sm:pt-8 sm:pb-72 lg:px-8">
         {children}
       </main>
 
