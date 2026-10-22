@@ -108,7 +108,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   ];
 
   const navLinks = (
-    <nav className="flex flex-col gap-1 xl:flex-row xl:items-center xl:gap-2">
+    <nav data-behavior-area="app_navigation" className="flex flex-col gap-1 xl:flex-row xl:items-center xl:gap-2">
       {navItems.map((item) => {
         const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
         const isPending = pendingHref === item.href && !isActive;

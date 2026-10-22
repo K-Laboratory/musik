@@ -97,6 +97,7 @@ export function NowPlayingBar() {
 
   return (
     <div
+      data-behavior-area="player_controls"
       aria-hidden={idle}
       className={`fixed inset-x-0 bottom-0 z-40 border-t border-slate-800 bg-slate-950/95 backdrop-blur transition-transform duration-200 ${
         idle
@@ -180,7 +181,7 @@ export function NowPlayingBar() {
           </button>
           <button
             type="button"
-            onClick={next}
+            onClick={() => next()}
             disabled={!hasNext}
             aria-label="Next song"
             className="rounded-full p-1.5 text-slate-300 transition hover:bg-slate-800 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"

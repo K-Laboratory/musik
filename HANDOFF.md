@@ -314,3 +314,106 @@ Open items:
   `npm run dev -- -p 3000` before local browser testing.
 - Changes are being published to `origin/main`; confirm the resulting commit
   hash and deployment status after push.
+
+## 2026-10-20 first-listen discovery redesign
+
+- Reworked the Dashboard first screen into a mood-led discovery home with a
+  high-contrast listening prompt, mood chips, a short playable mini-mix, and
+  clear paths into the existing collection builder and song search.
+- Added authenticated /api/discover, which builds an eight-track mood-matched
+  mix from the existing classified catalog through the album curation engine.
+  Mix tracks can play directly without first being saved to the user's library.
+- Preserved the personal library, playlists, collection builder and Work mode
+  entry points.
+- Checks passed: `npm run typecheck`, `npm run lint`, and `git diff --check`.
+- Initial browser review reached `/login`; later, the in-app browser was
+  authenticated and confirmed both the dashboard and collection builder.
+  Local dev server is running at `http://localhost:3000`.
+- Pre-existing .vscode/settings.json changes were left untouched.
+- Follow-up: review anonymous landing access and signup conversion separately.
+
+## 2026-10-20 content-first UI refinement
+
+- Tightened the collection builder: smaller page title and spacing, shorter
+  emotion map, removed repeated emotion chip lists, and replaced the empty
+  square release-cover placeholder with a compact summary row.
+- Reworked the Dashboard's discovery area into a compact mood toolbar and
+  two-column song list with thumbnails; removed the repeated collection promo.
+- Fixed mood discovery to resolve emotion IDs from the taxonomy table and made
+  automatic first-mix loading wait for user data initialization.
+- Checks passed: `npm run typecheck`, `npm run lint`, and `git diff --check`.
+- Verified the signed-in local browser on Dashboard and Collection builder.
+- Pre-existing `.vscode/settings.json` changes were left untouched.
+
+## 2026-10-21 dashboard space use
+
+- Moved dashboard search ahead of recommendations and made the playlist column
+  appear at 900px so a 950px viewport uses both columns.
+- Added catalog-backed generation counts and the eight most common feelings as
+  clickable discovery filters. Both update the eight-track mix.
+- Kept the saved Work appearance. In Work mode, Projects now use a compact
+  two-column strip above the full-width document list instead of leaving a
+  large unused right column.
+- Checks passed: `npm run typecheck`, `npm run lint`, and `git diff --check`.
+- Verified mood and generation filtering in the signed-in in-app browser. The
+  browser is left on `/dashboard` with Work appearance restored.
+
+## 2026-10-21 opt-in behavior-informed discovery
+
+- Added a first-party personalization switch, off by default, with a visible
+  per-area activity summary and a clear-history control. API writes verify the
+  authenticated user and the stored consent flag; RLS also blocks event inserts
+  when that flag is off.
+- Classified dashboard discovery, search, mix, library, playlist, generation,
+  emotion, navigation, player, collection, and settings areas. Captures visible
+  area time, clicks, mood/taxonomy choices, plays, pauses, skips, completions,
+  saves, and a coarse mouse pause after 2.5 seconds. Pointer coordinates,
+  paths, keystrokes, and search text are not stored.
+- Disguised Work-mode dashboard and playlist content is not counted as music
+  discovery or library behavior; actual player controls still count listening.
+- Recommendations use the existing emotion/generation catalog, log visible
+  song-card impressions to avoid repeats for seven days, favor plays,
+  completions, and saves, treat skips as negative feedback, give mouse pauses a
+  small weight, decay older signals, and show concise reasons for personalization.
+  Explicit current filters take precedence.
+- Added per-user event storage, daily area rollups, own-row RLS, user history
+  deletion, and 90-day cleanup (pg_cron when available; otherwise at most once
+  per day when the user opens the app).
+  Privacy policy updated in English and Vietnamese.
+- `npm run typecheck`, `npm run lint`, and `git diff --check` pass. A signed-in
+  browser review was not completed: the available Playwright browser redirects
+  `/dashboard` to `/login`.
+- New migration: `supabase/migrations/20261021000000_personalized_discovery.sql`.
+  It has not been applied to Supabase. Next step before feature use is to apply
+  that migration, then verify opt-in, event writes, summary, clear-history, and
+  personalized discovery with an authenticated account.
+- Preserve the pre-existing `.vscode/settings.json` edits and prior dashboard
+  work; no external database or deployment operation was run.
+
+## 2026-10-21 missing personalization migration fallback
+
+- Updated `/api/discover` to keep serving the ordinary catalog-based mood mix
+  when `recommendation_preferences` or `user_behavior_events` is absent from
+  the Supabase schema cache. Unrelated database errors still surface.
+- The personalization settings endpoint now reports setup as unavailable, and
+  the dashboard disables the opt-in switch with a clear status while mixes
+  continue to load. No hosted schema or data was changed.
+- Checks passed: `npm run typecheck`, `npm run lint`, and `git diff --check`.
+- Confirmed in the signed-in dashboard browser: eight catalog tracks loaded and
+  the personalization panel showed its pending-setup status.
+
+## 2026-10-21 hosted migration rollout
+
+- Linked the Supabase CLI to the configured hosted project and applied all ten
+  pending migrations, from `20250101000000_init.sql` through
+  `20261021000000_personalized_discovery.sql`.
+- Verified that every local migration version is recorded remotely with
+  `supabase migration list --linked`.
+- Queried the hosted schema and confirmed `recommendation_preferences`,
+  `user_behavior_events`, and `user_behavior_daily` exist. This resolves the
+  Dashboard's missing-table error. Refresh the signed-in Dashboard to load the
+  mix and personalization controls against the new schema.
+- The earlier notes saying the migration was unapplied and that no hosted
+  database operation had run are superseded by this rollout entry.
+- Supabase CLI setup files `supabase/config.toml` and `supabase/.gitignore`
+  were added. Credentials remain outside the repository.

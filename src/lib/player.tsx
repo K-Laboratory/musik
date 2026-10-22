@@ -11,6 +11,7 @@ import {
 } from "react";
 
 import { useData } from "@/components/DataProvider";
+import { usePersonalization } from "@/lib/personalization";
 import type { Song } from "@/lib/types";
 
 export type PlaybackSource =
@@ -49,7 +50,7 @@ interface PlayerContextValue {
   /** Play a playlist from `startIndex` (defaults to the first song). */
   playPlaylist: (playlistId: string, songs: Song[], startIndex?: number) => void;
   toggle: () => void;
-  next: () => void;
+  next: (completed?: boolean) => void;
   previous: () => void;
   stop: () => void;
   /** Jump to a position (in seconds) in the current song. */
@@ -75,8 +76,10 @@ const PlayerContext = createContext<PlayerContextValue | null>(null);
 
 export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const { songs } = useData();
+  const { track } = usePersonalization();
   const [state, setState] = useState<PlayerState>(initialState);
   const [isReady, setIsReady] = useState(false);
+  const playbackRef = useRef<{ songId: string | null; isPlaying: boolean }>({ songId: null, isPlaying: false });
 
   // Keep the latest library in a ref so `playSong` stays stable.
   const songsRef = useRef(songs);
@@ -128,7 +131,18 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     );
   }, []);
 
-  const next = useCallback(() => {
+  const next = useCallback((completed = false) => {
+    const currentSong = state.queue[state.index];
+    if (currentSong) {
+      track({
+        eventType: completed || (state.duration > 0 && state.currentTime / state.duration >= 0.9)
+          ? "complete"
+          : "skip",
+        areaKey: "player_controls",
+        itemType: "song",
+        itemId: currentSong.youtube_video_id,
+      });
+    }
     setState((current) => {
       if (current.index + 1 < current.queue.length) {
         return {
@@ -141,7 +155,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       }
       return { ...current, isPlaying: false };
     });
-  }, []);
+  }, [state.currentTime, state.duration, state.index, state.queue, track]);
 
   const previous = useCallback(() => {
     setState((current) => {
@@ -201,6 +215,27 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   );
 
   const currentSong = state.queue[state.index] ?? null;
+
+  useEffect(() => {
+    const previous = playbackRef.current;
+    const songId = currentSong?.youtube_video_id ?? null;
+    if (state.isPlaying && songId && (previous.songId !== songId || !previous.isPlaying)) {
+      track({
+        eventType: "play",
+        areaKey: "player_controls",
+        itemType: "song",
+        itemId: songId,
+      });
+    } else if (previous.isPlaying && !state.isPlaying && songId && state.currentTime < state.duration * 0.9) {
+      track({
+        eventType: "pause",
+        areaKey: "player_controls",
+        itemType: "song",
+        itemId: songId,
+      });
+    }
+    playbackRef.current = { songId, isPlaying: state.isPlaying };
+  }, [currentSong?.youtube_video_id, state.currentTime, state.duration, state.isPlaying, track]);
 
   const isCurrentSong = useCallback(
     (songId: string) => currentSong?.id === songId,

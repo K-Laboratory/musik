@@ -23,7 +23,7 @@ import { useMemo, useState } from "react";
 import { useData } from "@/components/DataProvider";
 import { AlertIcon, ListIcon, PlusIcon, TrashIcon } from "@/components/Icons";
 import { SortableSongRow } from "@/components/SongCard";
-import { useLabels } from "@/lib/disguise";
+import { useDisguise, useLabels } from "@/lib/disguise";
 import { getErrorMessage } from "@/lib/errors";
 import { usePlayer } from "@/lib/player";
 import type { PlaylistSong, Song } from "@/lib/types";
@@ -71,6 +71,7 @@ function PlaylistSongItem({
 }
 
 export function PlaylistDetailClient({ playlistId }: { playlistId: string }) {
+  const { isWork } = useDisguise();
   const {
     playlists,
     playlistSongs,
@@ -198,7 +199,7 @@ export function PlaylistDetailClient({ playlistId }: { playlistId: string }) {
   );
 
   return (
-    <div className="space-y-6">
+    <div data-behavior-area={isWork ? undefined : "playlist_detail"} className="space-y-6">
       <div>
         <Link
           href="/dashboard"

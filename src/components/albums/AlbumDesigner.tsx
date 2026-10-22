@@ -304,28 +304,28 @@ export function AlbumDesigner({
     result?.tracks.slice(0, 4).map((track) => track.videoId) ?? [];
 
   return (
-    <div className="space-y-6">
+    <div data-behavior-area="collection_builder" className="space-y-4">
       <header className="max-w-4xl">
         <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-violet-300">
           <SparklesIcon className="h-4 w-4" />
           {copy.studioEyebrow}
         </p>
-        <h1 className="mt-2 text-balance text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+        <h1 className="mt-1 text-balance text-2xl font-semibold tracking-tight text-white sm:text-3xl">
           {copy.studioTitle}
         </h1>
-        <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400">
+        <p className="mt-1.5 max-w-3xl text-sm leading-5 text-slate-400">
           {copy.studioIntro}
         </p>
-        <p className="mt-3 flex max-w-3xl items-start gap-2 rounded-lg border border-emerald-400/15 bg-emerald-400/[0.05] px-3 py-2 text-xs leading-5 text-emerald-200">
+        <p className="mt-2 flex max-w-3xl items-start gap-2 rounded-lg border border-emerald-400/15 bg-emerald-400/[0.05] px-3 py-1.5 text-xs leading-4 text-emerald-200">
           <CheckIcon className="mt-0.5 h-3.5 w-3.5 shrink-0" />
           {copy.guarantee}
         </p>
       </header>
 
-      <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_21rem]">
-        <div className="min-w-0 space-y-6">
+      <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_19rem]">
+        <div className="min-w-0 space-y-4">
           <section className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/35">
-            <div className="border-b border-slate-800 p-4 sm:p-5">
+            <div className="border-b border-slate-800 p-3 sm:p-4">
               <div className="flex items-center justify-between gap-3">
                 <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
                   {copy.presetHeading}
@@ -338,13 +338,13 @@ export function AlbumDesigner({
                   {copy.clearFilters}
                 </button>
               </div>
-              <div className="mt-3 grid gap-2 sm:grid-cols-2">
+              <div className="mt-2 grid gap-1.5 sm:grid-cols-2">
                 {PRESETS.map((preset) => (
                   <button
                     key={preset.key}
                     type="button"
                     onClick={() => applyPreset(preset)}
-                    className="group flex items-center justify-between gap-3 rounded-lg border border-slate-800 bg-slate-950/50 px-3 py-2.5 text-left transition hover:border-violet-500/40 hover:bg-violet-500/[0.06]"
+                    className="group flex items-center justify-between gap-3 rounded-lg border border-slate-800 bg-slate-950/50 px-3 py-2 text-left transition hover:border-violet-500/40 hover:bg-violet-500/[0.06]"
                   >
                     <span className="min-w-0">
                       <span className="block text-sm font-medium text-slate-200 group-hover:text-white">
@@ -360,7 +360,7 @@ export function AlbumDesigner({
               </div>
             </div>
 
-            <div className="space-y-6 p-4 sm:p-5">
+            <div className="space-y-4 p-3 sm:p-4">
               <fieldset>
                 <legend className="flex w-full items-center justify-between gap-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
                   <span>{copy.generationHeading}</span>
@@ -433,11 +433,11 @@ export function AlbumDesigner({
                     )}
                   </span>
                 </legend>
-                <p className="mt-1 text-xs leading-5 text-slate-500">
+                <p className="mt-1 text-[11px] leading-4 text-slate-500">
                   {copy.emotionMapHint}
                 </p>
-                <div className="mt-3 grid grid-cols-[3.5rem_minmax(0,1fr)] gap-2">
-                  <div className="flex h-64 flex-col items-end justify-between py-1 text-right text-[9px] text-slate-500 sm:h-72">
+                <div className="mt-2 grid grid-cols-[3.5rem_minmax(0,1fr)] gap-2">
+                  <div className="flex h-40 flex-col items-end justify-between py-1 text-right text-[9px] text-slate-500 sm:h-44">
                     <span>{copy.highEnergy}</span>
                     <span className="-rotate-90 whitespace-nowrap text-[10px] font-medium uppercase tracking-wider">
                       {copy.energyHeading}
@@ -445,7 +445,7 @@ export function AlbumDesigner({
                     <span>{copy.lowEnergy}</span>
                   </div>
                   <div>
-                  <div className="relative isolate h-64 overflow-hidden rounded-xl border border-slate-700/80 bg-slate-950/60 sm:h-72">
+                  <div className="relative isolate h-40 overflow-hidden rounded-xl border border-slate-700/80 bg-slate-950/60 sm:h-44">
                     <div className="absolute inset-0 grid grid-cols-2 grid-rows-2">
                       <div className="border-b border-r border-white/5 bg-rose-400/[0.055]" />
                       <div className="border-b border-white/5 bg-amber-300/[0.055]" />
@@ -493,48 +493,6 @@ export function AlbumDesigner({
                     <span>{copy.highValence}</span>
                   </div>
                   </div>
-                </div>
-                <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                  {[
-                    ["Q1_happy", copy.emotionQuadrants[0]],
-                    ["Q2_angry", copy.emotionQuadrants[1]],
-                    ["Q3_sad", copy.emotionQuadrants[2]],
-                    ["Q4_relaxed", copy.emotionQuadrants[3]],
-                  ].map(([quadrant, label]) => (
-                    <div
-                      key={quadrant}
-                      className="rounded-lg border border-slate-800/80 bg-slate-950/35 p-2"
-                    >
-                      <p className="mb-1.5 text-[9px] font-medium text-slate-500">
-                        {label}
-                      </p>
-                      <div className="flex flex-wrap gap-1">
-                        {emotions
-                          .filter((emotion) => emotion.quadrant === quadrant)
-                          .map((emotion) => {
-                            const selected = selectedEmotionIds.includes(emotion.id);
-                            const name =
-                              language === "vi"
-                                ? emotion.name_vi ?? emotion.name
-                                : emotion.name;
-                            return (
-                              <button
-                                key={emotion.id}
-                                type="button"
-                                aria-pressed={selected}
-                                onClick={() => toggleEmotion(emotion.id)}
-                                className={`inline-flex min-h-7 items-center gap-1.5 rounded-md border px-2 py-1 text-[10px] transition ${selected ? "border-violet-400/60 bg-violet-500/15 text-violet-100" : "border-transparent text-slate-400 hover:border-slate-700 hover:bg-slate-900 hover:text-white"}`}
-                              >
-                                <span
-                                  className={`h-1.5 w-1.5 shrink-0 rounded-full ${QUADRANT_DOT[emotion.quadrant] ?? "bg-slate-400"}`}
-                                />
-                                {name}
-                              </button>
-                            );
-                          })}
-                      </div>
-                    </div>
-                  ))}
                 </div>
                 {activeEmotions.length > 0 && (
                   <div className="mt-4 grid gap-2 sm:grid-cols-2">
@@ -910,26 +868,26 @@ export function AlbumDesigner({
               />
             </div>
           ) : (
-            <section className="rounded-2xl border border-dashed border-slate-800 px-6 py-14 text-center">
-              <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-900 text-slate-500">
+            <section className="rounded-xl border border-dashed border-slate-800 px-4 py-6 text-center">
+              <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 text-slate-500">
                 {generating ? (
                   <SpinnerIcon className="h-6 w-6 animate-spin text-violet-300" />
                 ) : (
                   <MusicIcon className="h-6 w-6" />
                 )}
               </span>
-              <h2 className="mt-4 text-base font-semibold text-slate-200">
+              <h2 className="mt-2 text-sm font-semibold text-slate-200">
                 {generating ? copy.generating : copy.emptyResultTitle}
               </h2>
-              <p className="mx-auto mt-1 max-w-md text-sm leading-6 text-slate-500">
+              <p className="mx-auto mt-1 max-w-md text-xs leading-5 text-slate-500">
                 {copy.emptyResultHint}
               </p>
             </section>
           )}
         </div>
 
-        <aside className="space-y-4 xl:sticky xl:top-24">
-          <section className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
+        <aside className="space-y-3 xl:sticky xl:top-20">
+          <section className="rounded-xl border border-slate-800 bg-slate-900/40 p-3">
             <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
               {copy.briefHeading}
             </p>
@@ -969,20 +927,20 @@ export function AlbumDesigner({
               </>
             ) : (
               <>
-                <div className="mt-3 flex aspect-square items-center justify-center rounded-2xl border border-dashed border-slate-800 bg-slate-950/60">
-                  <MusicIcon className="h-10 w-10 text-slate-700" />
-                </div>
-                <h2 className="mt-4 text-base font-semibold text-slate-200">
+                <div className="mt-3 flex items-center gap-3 rounded-lg border border-dashed border-slate-800 bg-slate-950/40 p-3">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-slate-800/70"><MusicIcon className="h-4 w-4 text-slate-400" /></span>
+                  <div><h2 className="text-sm font-semibold text-slate-200">
                   {copy.briefTitle}
-                </h2>
-                <p className="mt-2 text-xs leading-5 text-slate-500">
+                  </h2>
+                  <p className="mt-1 text-[11px] leading-4 text-slate-500">
                   {copy.briefDetail}
-                </p>
+                  </p></div>
+                </div>
               </>
             )}
           </section>
 
-          <section className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
+          <section className="rounded-xl border border-slate-800 bg-slate-900/40 p-3">
             <div className="flex items-center justify-between gap-3">
               <h2 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
                 {copy.myAlbums}

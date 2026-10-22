@@ -202,6 +202,9 @@ export function SongSearch() {
                   <li key={result.videoId}>
                     <button
                       type="button"
+                      data-behavior-action={inLibrary ? "click" : "save"}
+                      data-behavior-item-type="song"
+                      data-behavior-item-id={result.videoId}
                       onMouseEnter={() => setHighlighted(index)}
                       onClick={() => void handleSelect(result)}
                       disabled={isAdding}

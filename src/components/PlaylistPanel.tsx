@@ -271,7 +271,13 @@ export function PlaylistCard({
 }
 
 /** Sidebar panel: create a playlist + list existing playlists. */
-export function PlaylistPanel({ className = "" }: { className?: string }) {
+export function PlaylistPanel({
+  className = "",
+  wide = false,
+}: {
+  className?: string;
+  wide?: boolean;
+}) {
   const { playlists, playlistSongs, songs, createPlaylist, notify, loading } =
     useData();
   const labels = useLabels();
@@ -323,6 +329,7 @@ export function PlaylistPanel({ className = "" }: { className?: string }) {
 
   return (
     <section
+      data-behavior-area={wide ? undefined : "playlists"}
       className={`rounded-2xl border border-slate-800 bg-slate-900/40 p-4 ${className}`}
     >
       <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-400">
@@ -351,9 +358,9 @@ export function PlaylistPanel({ className = "" }: { className?: string }) {
         {labels.dragTip}
       </p>
 
-      <div className="mt-3 space-y-2">
+      <div className={`mt-3 ${wide ? "grid gap-2 sm:grid-cols-2" : "space-y-2"}`}>
         {loading && playlists.length === 0 && (
-          <div className="space-y-2" aria-hidden="true">
+          <div className={wide ? "grid gap-2 sm:grid-cols-2" : "space-y-2"} aria-hidden="true">
             <div className="h-16 animate-pulse rounded-xl bg-slate-800/60" />
             <div className="h-16 animate-pulse rounded-xl bg-slate-800/60" />
           </div>

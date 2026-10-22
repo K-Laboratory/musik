@@ -446,6 +446,105 @@ export interface Database {
         };
         Relationships: [];
       };
+      recommendation_preferences: {
+        Row: {
+          user_id: string;
+          personalization_enabled: boolean;
+          enabled_at: string | null;
+          last_cleanup_at: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          personalization_enabled?: boolean;
+          enabled_at?: string | null;
+          last_cleanup_at?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          personalization_enabled?: boolean;
+          enabled_at?: string | null;
+          last_cleanup_at?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      user_behavior_events: {
+        Row: {
+          id: number;
+          user_id: string;
+          session_id: string;
+          event_type: string;
+          area_key: string;
+          item_type: string | null;
+          item_id: string | null;
+          duration_ms: number | null;
+          is_click: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: number;
+          user_id: string;
+          session_id: string;
+          event_type: string;
+          area_key: string;
+          item_type?: string | null;
+          item_id?: string | null;
+          duration_ms?: number | null;
+          is_click?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: number;
+          user_id?: string;
+          session_id?: string;
+          event_type?: string;
+          area_key?: string;
+          item_type?: string | null;
+          item_id?: string | null;
+          duration_ms?: number | null;
+          is_click?: boolean;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      user_behavior_daily: {
+        Row: {
+          user_id: string;
+          activity_date: string;
+          area_key: string;
+          event_count: number;
+          click_count: number;
+          play_count: number;
+          view_count: number;
+          dwell_ms: number;
+          pointer_pause_count: number;
+        };
+        Insert: {
+          user_id: string;
+          activity_date: string;
+          area_key: string;
+          event_count?: number;
+          click_count?: number;
+          play_count?: number;
+          view_count?: number;
+          dwell_ms?: number;
+          pointer_pause_count?: number;
+        };
+        Update: {
+          user_id?: string;
+          activity_date?: string;
+          area_key?: string;
+          event_count?: number;
+          click_count?: number;
+          play_count?: number;
+          view_count?: number;
+          dwell_ms?: number;
+          pointer_pause_count?: number;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: { is_admin: { Args: Record<string, never>; Returns: boolean } };

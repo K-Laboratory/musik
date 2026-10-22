@@ -89,6 +89,7 @@ export function AlbumCollection({
 
   return (
     <section
+      data-behavior-area="saved_collection"
       className={`overflow-hidden rounded-2xl border border-slate-800 bg-slate-950/60 ${
         compact ? "max-w-3xl" : ""
       }`}

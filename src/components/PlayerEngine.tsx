@@ -90,7 +90,7 @@ export function PlayerEngine({ className = "" }: { className?: string }) {
               } else if (event.data === namespace.PlayerState.PAUSED) {
                 playingRef.current(false);
               } else if (event.data === namespace.PlayerState.ENDED) {
-                nextRef.current();
+                nextRef.current(true);
               }
             },
             onError: () => {

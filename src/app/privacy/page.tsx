@@ -52,6 +52,17 @@ export default function PrivacyPage() {
             service. We do not sell personal information or publish content on
             your social accounts.
           </p>
+          <p>
+            Optional personalized music recommendations are off until you turn
+            them on in the dashboard. When enabled, we store section views,
+            visible song cards, approximate section time, brief mouse pauses by section, clicks,
+            selected mood and catalog filters, and song plays, skips,
+            completions, and saves. Activity older than 90 days is pruned as
+            you use the app. We do not store pointer positions or paths,
+            keystrokes, or search text. You can turn
+            personalization off or clear its activity history from the
+            dashboard at any time.
+          </p>
         </section>
 
         <section className="space-y-3">
@@ -115,6 +126,17 @@ export default function PrivacyPage() {
             và ảnh đại diện. Chúng tôi lưu bài hát, danh sách phát và album bạn
             tạo để vận hành ứng dụng. Chúng tôi không bán dữ liệu cá nhân và
             không đăng nội dung thay bạn.
+          </p>
+          <p>
+            Đề xuất nhạc cá nhân hóa được tắt cho đến khi bạn bật trong bảng
+            điều khiển. Khi bật, chúng tôi lưu lượt xem khu vực, thời gian hiển
+            thị gần đúng, thẻ bài hát hiển thị, lần dừng chuột ngắn theo khu vực,
+            lượt nhấp, tâm trạng
+            và bộ lọc đã chọn, bài hát được nghe, bỏ qua, nghe hết và lưu. Hoạt
+            động cũ hơn 90 ngày sẽ được dọn khi bạn sử dụng ứng dụng. Chúng tôi
+            không lưu vị trí hoặc đường đi của chuột, phím gõ hay nội dung tìm
+            kiếm. Bạn có thể tắt cá nhân hóa hoặc xóa lịch sử bất cứ
+            lúc nào.
           </p>
           <p>
             Dữ liệu được lưu trên Supabase và ứng dụng được triển khai trên
