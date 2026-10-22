@@ -35,6 +35,8 @@ interface PersonalizationSummary {
 interface PersonalizationContextValue {
   enabled: boolean;
   available: boolean;
+  collectionEnabled: boolean;
+  retentionDays: number;
   loading: boolean;
   saving: boolean;
   error: string | null;
@@ -65,11 +67,14 @@ function sessionId() {
 export function PersonalizationProvider({ children }: { children: React.ReactNode }) {
   const [enabled, setEnabledState] = useState(false);
   const [available, setAvailable] = useState(true);
+  const [collectionEnabled, setCollectionEnabled] = useState(false);
+  const [retentionDays, setRetentionDays] = useState(90);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [summary, setSummary] = useState(emptySummary);
   const enabledRef = useRef(false);
+  const collectionEnabledRef = useRef(false);
   const queueRef = useRef<Array<BehaviorEvent & { sessionId: string }>>([]);
 
   useEffect(() => {
@@ -84,10 +89,16 @@ export function PersonalizationProvider({ children }: { children: React.ReactNod
       const payload = await response.json() as {
         enabled?: boolean;
         available?: boolean;
+        collectionEnabled?: boolean;
+        retentionDays?: number;
         summary?: PersonalizationSummary;
       };
       const isEnabled = payload.enabled === true;
+      const isCollectionEnabled = payload.collectionEnabled === true;
       setAvailable(payload.available !== false);
+      setCollectionEnabled(isCollectionEnabled);
+      collectionEnabledRef.current = isCollectionEnabled;
+      setRetentionDays([30, 60, 90].includes(payload.retentionDays ?? 90) ? payload.retentionDays! : 90);
       enabledRef.current = isEnabled;
       setEnabledState(isEnabled);
       setSummary(payload.summary ?? emptySummary);
@@ -104,7 +115,7 @@ export function PersonalizationProvider({ children }: { children: React.ReactNod
   }, [refresh]);
 
   const track = useCallback((event: BehaviorEvent) => {
-    if (!enabledRef.current || typeof window === "undefined") return;
+    if (!enabledRef.current || !collectionEnabledRef.current || typeof window === "undefined") return;
     queueRef.current.push({ ...event, sessionId: sessionId() });
     if (queueRef.current.length >= 20) {
       window.dispatchEvent(new Event("favorite-songs:flush-behavior"));
@@ -112,7 +123,7 @@ export function PersonalizationProvider({ children }: { children: React.ReactNod
   }, []);
 
   const flush = useCallback(async (keepalive = false) => {
-    if (!enabledRef.current || queueRef.current.length === 0) return;
+    if (!enabledRef.current || !collectionEnabledRef.current || queueRef.current.length === 0) return;
     const events = queueRef.current.splice(0, 30);
     try {
       const response = await fetch("/api/behavior", {
@@ -127,6 +138,10 @@ export function PersonalizationProvider({ children }: { children: React.ReactNod
       if (enabledRef.current) queueRef.current = [...events, ...queueRef.current].slice(-60);
     }
   }, [refresh]);
+
+  useEffect(() => {
+    if (!collectionEnabled) queueRef.current = [];
+  }, [collectionEnabled]);
 
   useEffect(() => {
     const interval = window.setInterval(() => void flush(), 8000);
@@ -144,7 +159,7 @@ export function PersonalizationProvider({ children }: { children: React.ReactNod
   }, [flush]);
 
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled || !collectionEnabled) return;
     const starts = new Map<Element, number>();
     const tracked = new Set<Element>();
     let pointerPauseTimer: number | null = null;
@@ -289,7 +304,7 @@ export function PersonalizationProvider({ children }: { children: React.ReactNod
       observer.disconnect();
       for (const element of starts.keys()) finish(element);
     };
-  }, [enabled, track]);
+  }, [enabled, collectionEnabled, track]);
 
   const setEnabled = useCallback(async (next: boolean) => {
     setSaving(true);
@@ -332,7 +347,7 @@ export function PersonalizationProvider({ children }: { children: React.ReactNod
   }, [refresh]);
 
   return (
-    <PersonalizationContext.Provider value={{ enabled, available, loading, saving, error, summary, setEnabled, clearHistory, track, refresh }}>
+    <PersonalizationContext.Provider value={{ enabled, available, collectionEnabled, retentionDays, loading, saving, error, summary, setEnabled, clearHistory, track, refresh }}>
       {children}
     </PersonalizationContext.Provider>
   );

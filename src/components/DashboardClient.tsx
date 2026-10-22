@@ -24,7 +24,6 @@ import {
   TrashIcon,
 } from "@/components/Icons";
 import { PlaylistPanel } from "@/components/PlaylistPanel";
-import { PersonalizationPanel } from "@/components/PersonalizationPanel";
 import { DraggableSongCard, SongCardVisual } from "@/components/SongCard";
 import { SongSearch } from "@/components/SongSearch";
 import { useDisguise, useLabels, useLanguage } from "@/lib/disguise";
@@ -309,7 +308,6 @@ export function DashboardClient() {
 
         {!isWork && <aside className="space-y-3">
           <PlaylistPanel className="h-fit" />
-          <PersonalizationPanel />
           {!isWork && <section data-behavior-area="browse_generations" className="rounded-xl border border-slate-800 bg-slate-900/40 p-3">
             <div className="mb-2 flex items-center justify-between gap-3">
               <h2 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">{language === "vi" ? "Khám phá theo thế hệ" : "Browse generations"}</h2>

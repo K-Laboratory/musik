@@ -545,9 +545,73 @@ export interface Database {
         };
         Relationships: [];
       };
+      recommendation_admin_settings: {
+        Row: {
+          id: boolean;
+          collection_enabled: boolean;
+          retention_days: number;
+          updated_by: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          id?: boolean;
+          collection_enabled?: boolean;
+          retention_days?: number;
+          updated_by?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          id?: boolean;
+          collection_enabled?: boolean;
+          retention_days?: number;
+          updated_by?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      recommendation_admin_settings_audit: {
+        Row: {
+          id: number;
+          actor_user_id: string | null;
+          previous_collection_enabled: boolean;
+          collection_enabled: boolean;
+          previous_retention_days: number;
+          retention_days: number;
+          changed_at: string;
+        };
+        Insert: {
+          id?: number;
+          actor_user_id?: string | null;
+          previous_collection_enabled: boolean;
+          collection_enabled: boolean;
+          previous_retention_days: number;
+          retention_days: number;
+          changed_at?: string;
+        };
+        Update: {
+          id?: number;
+          actor_user_id?: string | null;
+          previous_collection_enabled?: boolean;
+          collection_enabled?: boolean;
+          previous_retention_days?: number;
+          retention_days?: number;
+          changed_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
-    Functions: { is_admin: { Args: Record<string, never>; Returns: boolean } };
+    Functions: {
+      is_admin: { Args: Record<string, never>; Returns: boolean };
+      get_recommendation_collection_policy: {
+        Args: Record<string, never>;
+        Returns: { collection_enabled: boolean; retention_days: number }[];
+      };
+      admin_behavior_analytics: {
+        Args: { p_days: number };
+        Returns: Json;
+      };
+    };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
   };

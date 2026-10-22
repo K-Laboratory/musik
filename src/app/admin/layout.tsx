@@ -12,6 +12,7 @@ const ADMIN_NAV = [
   { href: "/admin/songs", key: "navSongs" as const },
   { href: "/admin/taxonomy", key: "navTaxonomy" as const },
   { href: "/admin/generations", key: "navGenerations" as const },
+  { href: "/admin/behavior", key: "navBehavior" as const },
 ];
 
 /**
@@ -54,27 +55,28 @@ export default async function AdminLayout({
   return (
     <div className="min-h-screen">
       <header className="sticky top-0 z-40 border-b border-slate-800 bg-slate-950/80 backdrop-blur">
-        <div className="mx-auto flex h-14 w-full max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
-          <Link href="/admin" className="text-sm font-semibold text-white">
-            Emotion Admin
+        <div className="mx-auto flex h-14 w-full max-w-7xl items-center gap-2 px-3 sm:gap-4 sm:px-6 lg:px-8">
+          <Link href="/admin" className="shrink-0 whitespace-nowrap text-[11px] font-semibold text-white sm:text-sm">
+            <span className="sm:hidden">Admin</span>
+            <span className="hidden sm:inline">Emotion Admin</span>
           </Link>
-          <nav className="flex items-center gap-1">
+          <nav className="flex min-w-0 flex-1 items-center gap-0.5 overflow-x-auto whitespace-nowrap [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:gap-1">
             {ADMIN_NAV.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="rounded-md px-2.5 py-1.5 text-xs font-medium text-slate-300 transition hover:bg-slate-800 hover:text-white"
+                className="shrink-0 rounded-md px-2 py-1.5 text-[10px] font-medium text-slate-300 transition hover:bg-slate-800 hover:text-white sm:px-2.5 sm:text-xs"
               >
                 <AdminText k={item.key} />
               </Link>
             ))}
           </nav>
-          <div className="ml-auto">
+          <div className="ml-auto shrink-0">
             <LanguageToggle compact />
           </div>
           <Link
             href="/dashboard"
-            className="text-xs text-slate-400 hover:text-slate-200"
+            className="shrink-0 whitespace-nowrap text-[10px] text-slate-400 hover:text-slate-200 sm:text-xs"
           >
             <AdminText k="exitAdmin" />
           </Link>

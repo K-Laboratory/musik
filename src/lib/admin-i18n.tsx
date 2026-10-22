@@ -7,6 +7,7 @@ export interface AdminLabels {
   navSongs: string;
   navTaxonomy: string;
   navGenerations: string;
+  navBehavior: string;
   exitAdmin: string;
   adminsOnly: string;
   adminsOnlyHint: string;
@@ -196,6 +197,7 @@ const EN: AdminLabels = {
   navSongs: "Songs",
   navTaxonomy: "Taxonomy",
   navGenerations: "Generations",
+  navBehavior: "Behavior insights",
   exitAdmin: "Exit admin",
   adminsOnly: "Admins only",
   adminsOnlyHint:
@@ -393,6 +395,7 @@ const VI: AdminLabels = {
   navSongs: "Bài hát",
   navTaxonomy: "Phân loại",
   navGenerations: "Thế hệ",
+  navBehavior: "Phân tích hành vi",
   exitAdmin: "Thoát quản trị",
   adminsOnly: "Chỉ quản trị viên",
   adminsOnlyHint:

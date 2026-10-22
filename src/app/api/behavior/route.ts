@@ -20,6 +20,14 @@ export async function POST(request: Request) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const { data: policyRows, error: policyError } = await supabase.rpc("get_recommendation_collection_policy");
+  if (policyError || !policyRows?.[0]) {
+    return NextResponse.json({ error: "Behavior collection settings are unavailable." }, { status: 503 });
+  }
+  if (!policyRows[0].collection_enabled) {
+    return NextResponse.json({ saved: 0, paused: true });
+  }
+
   const { data: preference, error: preferenceError } = await supabase
     .from("recommendation_preferences")
     .select("personalization_enabled")

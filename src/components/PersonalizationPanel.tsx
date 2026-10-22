@@ -43,7 +43,7 @@ function formatDwell(milliseconds: number, language: "en" | "vi") {
 
 export function PersonalizationPanel() {
   const { language } = useLanguage();
-  const { enabled, available, loading, saving, error, summary, setEnabled, clearHistory } = usePersonalization();
+  const { enabled, available, collectionEnabled, retentionDays, loading, saving, error, summary, setEnabled, clearHistory } = usePersonalization();
   const labels = AREA_LABELS[language];
   const en = language === "en";
 
@@ -64,6 +64,8 @@ export function PersonalizationPanel() {
           <p className="mt-0.5 text-[10px] leading-4 text-slate-400">
             {loading ? (en ? "Loading settings…" : "Đang tải cài đặt…") : !available
               ? (en ? "Personalized suggestions aren’t set up yet · catalog mixes still work" : "Đề xuất cá nhân hóa chưa được thiết lập · danh sách nhạc vẫn hoạt động")
+              : !collectionEnabled
+              ? (en ? "Paused by the service · your choice is saved" : "Dịch vụ đang tạm dừng · lựa chọn của bạn vẫn được lưu")
               : enabled
               ? (en ? "Learning from your listening" : "Đang học từ thói quen nghe")
               : (en ? "Off until you choose to enable it" : "Chỉ bật khi bạn chọn")}
@@ -91,8 +93,9 @@ export function PersonalizationPanel() {
       {available && (enabled || summary.events > 0) && (
         <div className="mt-2 border-t border-slate-800 pt-2">
           {!enabled && summary.events > 0 && <p className="mb-1.5 text-[10px] leading-4 text-amber-200/80">{en ? "Personalization is off; saved activity is not used for suggestions." : "Đã tắt cá nhân hóa; hoạt động cũ không được dùng để đề xuất."}</p>}
+          {enabled && !collectionEnabled && <p className="mb-1.5 text-[10px] leading-4 text-amber-200/80">{en ? "Collection is paused service-wide. Your setting stays on, but no new activity is recorded." : "Dịch vụ đã tạm dừng thu thập. Cài đặt của bạn vẫn bật nhưng không ghi nhận hoạt động mới."}</p>}
           <p className="text-[10px] text-slate-300">
-            {summary.plays} {en ? "plays" : "lượt nghe"} · {summary.events} {en ? "signals in 90 days" : "tín hiệu trong 90 ngày"}
+            {summary.plays} {en ? "plays" : "lượt nghe"} · {summary.events} {en ? `signals in ${retentionDays} days` : `tín hiệu trong ${retentionDays} ngày`}
           </p>
           {summary.areas.length > 0 && (
             <ul className="mt-1.5 grid gap-1">

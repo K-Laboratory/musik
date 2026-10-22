@@ -31,6 +31,11 @@ const NAV_ITEMS = [
     labelKey: "navAlbumDesign" as const,
     icon: SparklesIcon,
   },
+  {
+    href: "/settings/privacy",
+    labelKey: "navPrivacy" as const,
+    icon: SettingsIcon,
+  },
 ];
 
 function initialsFor(name: string): string {

@@ -402,6 +402,31 @@ Open items:
 - Confirmed in the signed-in dashboard browser: eight catalog tracks loaded and
   the personalization panel showed its pending-setup status.
 
+## 2026-10-21 behavior insights and privacy controls
+
+- Removed the personalization card from Dashboard and added a dedicated
+  `/settings/privacy` page linked from app navigation. The page explains the
+  captured signals, gives each listener their own activity summary and controls,
+  and discloses aggregate analytics use.
+- Added `/admin/behavior` for 7/30/90-day aggregate activity insights and
+  `/admin/behavior/settings` for a service-wide collection pause and 30/60/90
+  day retention choice, with a settings audit log. Admin reports suppress
+  groups below five contributors and do not expose individual account trails.
+- Collection still requires the per-account personalization preference, which
+  remains off by default. The global pause is checked in the API and enforced
+  by the event-insert RLS policy. Mouse coordinates, paths, keystrokes, and
+  search text remain unrecorded.
+- Updated the English and Vietnamese privacy disclosures for aggregate use and
+  configurable retention. Applied
+  `20261021010000_behavior_admin_console.sql` to the linked Supabase project;
+  `supabase migration list --linked` confirms the local and remote versions
+  match.
+- Checks passed: `npm run typecheck`, `npm run lint`, `npm run build`, and
+  `git diff --check`. Typecheck was rerun after the build regenerated
+  `.next/types`.
+- Preserve pre-existing `.vscode/settings.json` edits. No user-level behavior
+  data is accessible to administrators through these new pages.
+
 ## 2026-10-21 hosted migration rollout
 
 - Linked the Supabase CLI to the configured hosted project and applied all ten

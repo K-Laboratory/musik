@@ -9,6 +9,8 @@ function unavailable() {
   return NextResponse.json({
     enabled: false,
     available: false,
+    collectionEnabled: false,
+    retentionDays: 90,
     summary: { events: 0, plays: 0, areas: [] },
   });
 }
@@ -17,6 +19,12 @@ export async function GET() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { data: policyRows, error: policyError } = await supabase.rpc("get_recommendation_collection_policy");
+  if (policyError || !policyRows?.[0]) {
+    return NextResponse.json({ error: "Could not load behavior collection settings." }, { status: 503 });
+  }
+  const policy = policyRows[0];
 
   const { data: preference, error: preferenceError } = await supabase
     .from("recommendation_preferences")
@@ -31,7 +39,7 @@ export async function GET() {
   const cleanupDue = preference && (!preference.last_cleanup_at ||
     Date.parse(preference.last_cleanup_at) < Date.now() - 24 * 60 * 60 * 1000);
   if (cleanupDue) {
-    const retentionCutoff = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
+    const retentionCutoff = new Date(Date.now() - policy.retention_days * 24 * 60 * 60 * 1000).toISOString();
     const [eventsCleanup, summaryCleanup] = await Promise.all([
       supabase.from("user_behavior_events").delete().eq("user_id", user.id).lt("created_at", retentionCutoff),
       supabase.from("user_behavior_daily").delete().eq("user_id", user.id).lt("activity_date", retentionCutoff.slice(0, 10)),
@@ -52,7 +60,7 @@ export async function GET() {
     }
   }
 
-  const cutoff = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  const cutoff = new Date(Date.now() - policy.retention_days * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
   const { data: dailyRows, error: dailyError } = await supabase
     .from("user_behavior_daily")
     .select("area_key,event_count,click_count,play_count,view_count,dwell_ms,pointer_pause_count")
@@ -86,6 +94,8 @@ export async function GET() {
   return NextResponse.json({
     enabled: preference?.personalization_enabled === true,
     available: true,
+    collectionEnabled: policy.collection_enabled,
+    retentionDays: policy.retention_days,
     summary: {
       events: eventCount,
       plays,

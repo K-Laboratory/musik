@@ -90,6 +90,7 @@ export interface AppLabels {
   brand: string;
   navDashboard: string;
   navAlbumDesign: string;
+  navPrivacy: string;
   albumCreationTitle: string;
   albumCreationHint: string;
   albumCreationAction: string;
@@ -166,6 +167,7 @@ const MUSIC_LABELS: AppLabels = {
   brand: "Favorite Songs",
   navDashboard: "Dashboard",
   navAlbumDesign: "Collection builder",
+  navPrivacy: "Privacy & data",
   albumCreationTitle: "Build a collection from the full catalog",
   albumCreationHint:
     "Choose generations, emotions, era, energy, and the hit-to-discovery balance. Every album is filled and sequenced for you.",
@@ -244,6 +246,7 @@ const WORK_LABELS: AppLabels = {
   brand: "Workspace",
   navDashboard: "Files",
   navAlbumDesign: "Collection builder",
+  navPrivacy: "Privacy",
   albumCreationTitle: "Build a curated collection from the catalog",
   albumCreationHint:
     "Choose the cohorts, tone, period, intensity, and balance between familiar and lesser-known items. Every collection is filled and ordered for you.",
@@ -323,6 +326,7 @@ const VI_LABELS: AppLabels = {
   brand: "Bài Hát Yêu Thích",
   navDashboard: "Bảng điều khiển",
   navAlbumDesign: "Tạo bộ sưu tập",
+  navPrivacy: "Quyền riêng tư",
   albumCreationTitle: "Tạo album từ toàn bộ kho nhạc",
   albumCreationHint:
     "Chọn thế hệ, cảm xúc, giai đoạn, năng lượng và tỷ lệ hit/khám phá. Mọi album đều được tuyển đủ bài và sắp xếp thành trình tự hoàn chỉnh.",
