@@ -101,6 +101,27 @@ body.dnd-dragging {
   --color-red-950: #ffe3e3;
 }
 
+/* Campaign accent follows the active seasonal calendar entry. */
+[data-season] header {
+  border-bottom-color: var(--season-accent, #8b5cf6);
+}
+
+[data-season] header .bg-violet-600\/20 {
+  background-color: color-mix(in srgb, var(--season-accent, #8b5cf6) 20%, transparent);
+}
+
+[data-season] header .text-violet-300 {
+  color: var(--season-accent, #8b5cf6);
+}
+
+.seasonal-banner {
+  background: color-mix(in srgb, var(--season-accent, #8b5cf6) 12%, #0f172a);
+}
+
+[data-ui="work"] .seasonal-banner {
+  background: color-mix(in srgb, var(--season-accent, #8b5cf6) 10%, #ffffff);
+}
+
 /* Everything is square and flat, like the classic shell. */
 [data-ui="work"] *,
 [data-ui="work"] *::before,

@@ -442,3 +442,38 @@ Open items:
   database operation had run are superseded by this rollout entry.
 - Supabase CLI setup files `supabase/config.toml` and `supabase/.gitignore`
   were added. Credentials remain outside the repository.
+
+## 2026-10-22 generation totals and catalog link
+
+- The admin Generations page previously selected every `generation_id` without
+  pagination. Supabase returned only the first 1,000 rows, making the cards
+  falsely look like only 1,000 of 5,000 songs were assigned.
+- Replaced the in-memory tally with exact per-generation database counts and
+  added an assigned/total/unassigned summary in English and Vietnamese.
+- Audited the hosted catalog using the local bulk-admin login: 5,000 total,
+  0 unassigned; Pre-1975 833, Gen X 833, Millennials 834, 9x bridge 833,
+  Gen Z 834, Diaspora 833.
+- Added and applied `20261022000000_generation_catalog_fk.sql`, an idempotent
+  migration ensuring `catalog_songs.generation_id` references
+  `generations.id` with `ON DELETE SET NULL`.
+- `npm run typecheck` and `npm run lint` pass. Remote migration listing
+  confirms the new migration is applied. `.vscode/settings.json` remains a
+  pre-existing user edit and was not changed.
+
+## 2026-10-22 seasonal campaigns
+
+- Added `seasonal_campaigns` and `seasonal_display_settings` with admin-only
+  management policies and signed-in read access. Seeded Spring, Summer, Autumn,
+  Winter, Christmas, New Year, Lunar New Year, Valentine’s Day, and Halloween.
+- Added `/admin/seasons` for bilingual campaign copy, emoji, accent color,
+  recurring month/day windows, priority, enablement, and automatic/manual
+  display selection. Lunar New Year can be featured manually because its date
+  changes each year.
+- Added a seasonal banner and app accent that follow the active campaign. The
+  automatic schedule uses Vietnam time and supports date ranges crossing the
+  year boundary.
+- Applied `20261022010000_seasonal_campaigns.sql` to the hosted database and
+  verified all nine seeded campaigns and the enabled/automatic default.
+- `npm run typecheck` and `npm run lint` pass. A local browser visit to the
+  admin page redirected to login, so an authenticated visual review remains
+  open. Port 3000 was already occupied; no server process was stopped.

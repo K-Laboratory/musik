@@ -12,6 +12,7 @@ const ADMIN_NAV = [
   { href: "/admin/songs", key: "navSongs" as const },
   { href: "/admin/taxonomy", key: "navTaxonomy" as const },
   { href: "/admin/generations", key: "navGenerations" as const },
+  { href: "/admin/seasons", key: "navSeasons" as const },
   { href: "/admin/behavior", key: "navBehavior" as const },
 ];
 

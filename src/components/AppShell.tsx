@@ -10,6 +10,7 @@ import { useData } from "@/components/DataProvider";
 import { DisguiseToggle } from "@/components/DisguiseToggle";
 import { Toasts } from "@/components/Toasts";
 import { ViewModeToggle } from "@/components/ViewModeToggle";
+import { SeasonalBanner } from "@/components/SeasonalBanner";
 import { useDisguise, useLabels } from "@/lib/disguise";
 import { useIsAdmin } from "@/lib/use-is-admin";
 import {
@@ -245,6 +246,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         )}
       </header>
+
+      <SeasonalBanner />
 
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 pt-6 pb-64 sm:px-6 sm:pt-8 sm:pb-72 lg:px-8">
         {children}

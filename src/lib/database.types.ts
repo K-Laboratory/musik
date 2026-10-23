@@ -599,6 +599,90 @@ export interface Database {
         };
         Relationships: [];
       };
+      seasonal_campaigns: {
+        Row: {
+          id: string;
+          name_en: string;
+          name_vi: string;
+          headline_en: string;
+          headline_vi: string;
+          message_en: string;
+          message_vi: string;
+          emoji: string;
+          accent_color: string;
+          start_month: number | null;
+          start_day: number | null;
+          end_month: number | null;
+          end_day: number | null;
+          enabled: boolean;
+          priority: number;
+          updated_at: string;
+        };
+        Insert: {
+          id: string;
+          name_en: string;
+          name_vi: string;
+          headline_en: string;
+          headline_vi: string;
+          message_en?: string;
+          message_vi?: string;
+          emoji?: string;
+          accent_color?: string;
+          start_month?: number | null;
+          start_day?: number | null;
+          end_month?: number | null;
+          end_day?: number | null;
+          enabled?: boolean;
+          priority?: number;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          name_en?: string;
+          name_vi?: string;
+          headline_en?: string;
+          headline_vi?: string;
+          message_en?: string;
+          message_vi?: string;
+          emoji?: string;
+          accent_color?: string;
+          start_month?: number | null;
+          start_day?: number | null;
+          end_month?: number | null;
+          end_day?: number | null;
+          enabled?: boolean;
+          priority?: number;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      seasonal_display_settings: {
+        Row: {
+          id: boolean;
+          display_enabled: boolean;
+          display_mode: string;
+          selected_campaign_id: string | null;
+          updated_by: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          id?: boolean;
+          display_enabled?: boolean;
+          display_mode?: string;
+          selected_campaign_id?: string | null;
+          updated_by?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          id?: boolean;
+          display_enabled?: boolean;
+          display_mode?: string;
+          selected_campaign_id?: string | null;
+          updated_by?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {

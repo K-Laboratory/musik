@@ -6,16 +6,34 @@ export const metadata = { title: "Generations - Admin" };
 export default async function AdminGenerationsPage() {
   const supabase = await createClient();
 
-  const [{ data: generations }, { data: songs }] = await Promise.all([
-    supabase.from("generations").select("*").order("position", { ascending: true }),
-    supabase.from("catalog_songs").select("generation_id"),
-  ]);
+  const { data: generations } = await supabase
+    .from("generations")
+    .select("*")
+    .order("position", { ascending: true });
 
-  const counts = new Map<string, number>();
-  for (const song of songs ?? []) {
-    if (!song.generation_id) continue;
-    counts.set(song.generation_id, (counts.get(song.generation_id) ?? 0) + 1);
-  }
+  const [{ count: totalSongs }, { count: unassignedSongs }, ...generationCounts] =
+    await Promise.all([
+      supabase
+        .from("catalog_songs")
+        .select("id", { count: "exact", head: true }),
+      supabase
+        .from("catalog_songs")
+        .select("id", { count: "exact", head: true })
+        .is("generation_id", null),
+      ...(generations ?? []).map((generation) =>
+        supabase
+          .from("catalog_songs")
+          .select("id", { count: "exact", head: true })
+          .eq("generation_id", generation.id),
+      ),
+    ]);
+
+  const counts = new Map(
+    (generations ?? []).map((generation, index) => [
+      generation.id,
+      generationCounts[index]?.count ?? 0,
+    ]),
+  );
 
   return (
     <div className="space-y-6">
@@ -25,6 +43,16 @@ export default async function AdminGenerationsPage() {
         </h1>
         <p className="mt-1 text-sm text-slate-400">
           <AdminText k="generationsDescription" />
+        </p>
+        <p className="mt-2 text-sm text-slate-300">
+          <AdminText
+            k="generationAssignmentSummary"
+            values={{
+              assigned: (totalSongs ?? 0) - (unassignedSongs ?? 0),
+              total: totalSongs ?? 0,
+              unassigned: unassignedSongs ?? 0,
+            }}
+          />
         </p>
       </div>
 

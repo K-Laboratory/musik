@@ -7,6 +7,7 @@ export interface AdminLabels {
   navSongs: string;
   navTaxonomy: string;
   navGenerations: string;
+  navSeasons: string;
   navBehavior: string;
   exitAdmin: string;
   adminsOnly: string;
@@ -186,6 +187,7 @@ export interface AdminLabels {
 
   generationsTitle: string;
   generationsDescription: string;
+  generationAssignmentSummary: string;
   songsCount: string;
   born: string;
   birthOverlap: string;
@@ -197,6 +199,7 @@ const EN: AdminLabels = {
   navSongs: "Songs",
   navTaxonomy: "Taxonomy",
   navGenerations: "Generations",
+  navSeasons: "Seasons",
   navBehavior: "Behavior insights",
   exitAdmin: "Exit admin",
   adminsOnly: "Admins only",
@@ -382,7 +385,9 @@ const EN: AdminLabels = {
 
   generationsTitle: "Generations",
   generationsDescription:
-    "Vietnamese generational cohorts. Song counts show how many catalog songs are seeded per generation.",
+    "Vietnamese generational cohorts. Counts use exact database totals across the full catalog.",
+  generationAssignmentSummary:
+    "{assigned} of {total} songs assigned · {unassigned} unassigned",
   songsCount: "{count} songs",
   born: "Born {start}-{end}",
   birthOverlap: "Birth years overlap other cohorts",
@@ -395,6 +400,7 @@ const VI: AdminLabels = {
   navSongs: "Bài hát",
   navTaxonomy: "Phân loại",
   navGenerations: "Thế hệ",
+  navSeasons: "Mùa lễ hội",
   navBehavior: "Phân tích hành vi",
   exitAdmin: "Thoát quản trị",
   adminsOnly: "Chỉ quản trị viên",
@@ -579,7 +585,9 @@ const VI: AdminLabels = {
 
   generationsTitle: "Thế hệ",
   generationsDescription:
-    "Các thế hệ người Việt. Số bài hát cho biết mỗi thế hệ có bao nhiêu bài trong danh mục.",
+    "Các thế hệ người Việt. Số liệu được đếm chính xác trên toàn bộ danh mục.",
+  generationAssignmentSummary:
+    "Đã gán {assigned}/{total} bài hát · Chưa gán {unassigned}",
   songsCount: "{count} bài hát",
   born: "Sinh {start}-{end}",
   birthOverlap: "Năm sinh chồng lấn với thế hệ khác",
